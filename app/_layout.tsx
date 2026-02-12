@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { SQLiteProvider } from "expo-sqlite";
 import {
   useFonts,
   Inter_400Regular,
@@ -15,6 +16,7 @@ import {
 } from "@expo-google-fonts/jetbrains-mono";
 import * as SplashScreen from "expo-splash-screen";
 import { colors } from "@/constants/colors";
+import { DB_NAME, initDb } from "@/lib/db";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,7 +42,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <SQLiteProvider databaseName={DB_NAME} onInit={initDb}>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -56,6 +58,10 @@ export default function RootLayout() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="history"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="stock/[symbol]"
           options={({ route }) => ({
             title:
@@ -64,6 +70,6 @@ export default function RootLayout() {
           })}
         />
       </Stack>
-    </>
+    </SQLiteProvider>
   );
 }

@@ -9,3 +9,4 @@ export { PriceText } from './price-text';
 export { PercentageText } from './percentage-text';
 export { StockChart } from './stock-chart';
 export { FinancialsChart } from './financials-chart';
+export { StockCard } from './stock-card';

@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, Platform, Pressable, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, FlatList, Platform, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { runScan, fetchChart } from "@/lib/scanner";
 import type { Stock, ScanResult, ScanProgress, IndexType, OHLCVBar } from "@/lib/scanner";
-import { StyledText, PriceText, PercentageText, Card, Button, ProgressBar, Divider, StockChart } from "@/components/ui";
+import { saveScan, getLatestScan, compareScanResults } from "@/lib/db";
+import type { ComparisonResult } from "@/lib/db";
+import { StyledText, Button, ProgressBar, Divider, Badge, StockCard } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { spacing, borderRadius } from "@/constants/spacing";
 
@@ -14,17 +17,18 @@ const TABS: { key: IndexType; label: string }[] = [
   { key: "sp500", label: "S&P 500" },
 ];
 
-const SPARKLINE_W = 80;
-const SPARKLINE_H = 80;
-
 export default function Index() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const db = useSQLiteContext();
+
   const [activeTab, setActiveTab] = useState<IndexType>("nasdaq");
   const [results, setResults] = useState<Partial<Record<IndexType, ScanResult>>>({});
+  const [comparisons, setComparisons] = useState<Partial<Record<IndexType, ComparisonResult>>>({});
   const [scanningIndex, setScanningIndex] = useState<IndexType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
+  const [dbLoaded, setDbLoaded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   // Chart cache: symbol → OHLCV bars (1M)
@@ -35,13 +39,36 @@ export default function Index() {
   const isScanning = scanningIndex === activeTab;
   const isAnyScanRunning = scanningIndex !== null;
 
+  // Load latest scans from DB on mount
+  useEffect(() => {
+    (async () => {
+      const loaded: Partial<Record<IndexType, ScanResult>> = {};
+      for (const tab of TABS) {
+        const record = await getLatestScan(db, tab.key);
+        if (record) {
+          loaded[tab.key] = {
+            index: record.index_type,
+            count: record.count,
+            scanned_at: record.scanned_at,
+            stocks: record.stocks,
+          };
+        }
+      }
+      setResults(loaded);
+      setDbLoaded(true);
+    })();
+  }, [db]);
+
   const startScan = useCallback(async () => {
-    if (scanningIndex !== null) return; // prevent concurrent scans
+    if (scanningIndex !== null) return;
 
     const target = activeTab;
     setScanningIndex(target);
     setError(null);
     setProgress(null);
+
+    // Get previous scan for comparison before running new scan
+    const previousScan = await getLatestScan(db, target);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -52,7 +79,23 @@ export default function Index() {
         signal: controller.signal,
         onProgress: (p) => setProgress(p),
       });
+
+      // Save to DB
+      await saveScan(db, scanResult);
+
       setResults((prev) => ({ ...prev, [target]: scanResult }));
+
+      // Compute comparison
+      if (previousScan) {
+        const comparison = compareScanResults(scanResult.stocks, previousScan.stocks);
+        setComparisons((prev) => ({ ...prev, [target]: comparison }));
+      } else {
+        setComparisons((prev) => {
+          const next = { ...prev };
+          delete next[target];
+          return next;
+        });
+      }
     } catch (e) {
       if ((e as Error).message !== "Scan aborted") {
         setError(e instanceof Error ? e.message : "Scan failed");
@@ -62,13 +105,13 @@ export default function Index() {
       setProgress(null);
       abortRef.current = null;
     }
-  }, [activeTab, scanningIndex]);
+  }, [activeTab, scanningIndex, db]);
 
   const cancelScan = useCallback(() => {
     abortRef.current?.abort();
   }, []);
 
-  // Load 1M sparkline data for scan results
+  // Load 1M chart data for scan results
   useEffect(() => {
     if (!currentResult || currentResult.stocks.length === 0) return;
     if (chartLoadingRef.current) return;
@@ -103,6 +146,17 @@ export default function Index() {
     })();
   }, [currentResult]);
 
+  // Precompute comparison lookups for O(1) access in renderItem
+  const comparison = comparisons[activeTab];
+  const newSymbolSet = useMemo(
+    () => new Set(comparison?.new_entries.map((s) => s.symbol) ?? []),
+    [comparison]
+  );
+  const commonMap = useMemo(
+    () => new Map(comparison?.common.map((c) => [c.symbol, c]) ?? []),
+    [comparison]
+  );
+
   const formatTimestamp = (ts: string) => {
     try {
       return new Date(ts).toLocaleString();
@@ -112,77 +166,32 @@ export default function Index() {
   };
 
   const renderStockItem = ({ item }: { item: Stock }) => {
-    const sparkData = chartCache[item.symbol];
+    let badge = null;
+    if (comparison) {
+      if (newSymbolSet.has(item.symbol)) {
+        badge = <Badge label="NEW" variant="info" />;
+      } else {
+        const common = commonMap.get(item.symbol);
+        if (common && common.rs_delta > 0) {
+          badge = <Badge label={`RS +${common.rs_delta.toFixed(1)}`} variant="success" />;
+        } else if (common && common.rs_delta < 0) {
+          badge = <Badge label={`RS ${common.rs_delta.toFixed(1)}`} variant="danger" />;
+        }
+      }
+    }
 
     return (
-      <Card
+      <StockCard
+        stock={item}
+        chartBars={chartCache[item.symbol]}
+        badge={badge}
         onPress={() =>
           router.push({
             pathname: "/stock/[symbol]",
             params: { symbol: item.symbol, data: JSON.stringify(item) },
           })
         }
-        style={styles.stockCard}
-      >
-        <View style={styles.cardHeader}>
-          <StyledText variant="h3" color={colors.accent_light[400]}>
-            {item.symbol}
-          </StyledText>
-          <PriceText value={item.close} />
-        </View>
-
-        <View style={styles.cardBody}>
-          <View style={styles.metricsCol}>
-            <View style={styles.metric}>
-              <StyledText variant="caption" color={colors.secondary[500]}>
-                RS Percentile
-              </StyledText>
-              <StyledText variant="data" color={colors.accent_warm[300]}>
-                {item.rs_percentile.toFixed(1)}
-              </StyledText>
-            </View>
-            <View style={styles.metric}>
-              <StyledText variant="caption" color={colors.secondary[500]}>
-                RS Change
-              </StyledText>
-              <PercentageText
-                value={item.rs_change}
-                showArrow={false}
-                showSign={true}
-              />
-            </View>
-            <View style={styles.metric}>
-              <StyledText variant="caption" color={colors.secondary[500]}>
-                3M Return
-              </StyledText>
-              <PercentageText
-                value={item.returns.r_3m * 100}
-                showArrow={false}
-                showSign={true}
-              />
-            </View>
-          </View>
-
-          {sparkData && sparkData.length >= 2 && (
-            <View style={styles.sparklineContainer}>
-              <StockChart
-                bars={sparkData}
-                height={SPARKLINE_H}
-                compact
-              />
-            </View>
-          )}
-        </View>
-
-        <View style={styles.percentileBarBg}>
-          <View
-            style={[
-              styles.percentileBarFill,
-              { width: `${Math.min(item.rs_percentile, 100)}%` },
-            ]}
-          />
-        </View>
-      </Card>
+      />
     );
   };
 
@@ -242,7 +251,7 @@ export default function Index() {
       )}
 
       {/* Error */}
-      {error && activeTab === activeTab && (
+      {error && (
         <View style={styles.errorBox}>
           <StyledText variant="bodySmall" color={colors.negative}>
             {error}
@@ -251,7 +260,7 @@ export default function Index() {
       )}
 
       {/* No result yet → show scan prompt */}
-      {!currentResult && !isScanning && (
+      {!currentResult && !isScanning && dbLoaded && (
         <View style={styles.emptyState}>
           <StyledText variant="h2" color={colors.primary[400]} style={styles.emptyIcon}>
             ?
@@ -286,19 +295,33 @@ export default function Index() {
               {currentResult.count} stock{currentResult.count !== 1 ? "s" : ""} found
             </StyledText>
             <View style={styles.resultHeaderRight}>
-              <StyledText variant="caption" color={colors.secondary[600]}>
-                {formatTimestamp(currentResult.scanned_at)}
-              </StyledText>
+              <Button
+                title="History"
+                variant="ghost"
+                size="sm"
+                onPress={() =>
+                  router.push({
+                    pathname: "/history" as any,
+                    params: { index: activeTab },
+                  })
+                }
+              />
               <Button
                 title="Rescan"
                 variant="secondary"
                 size="sm"
                 onPress={startScan}
                 disabled={isAnyScanRunning}
-                style={styles.rescanBtn}
               />
             </View>
           </View>
+          <StyledText
+            variant="caption"
+            color={colors.secondary[600]}
+            style={styles.timestampText}
+          >
+            {formatTimestamp(currentResult.scanned_at)}
+          </StyledText>
           <Divider color={colors.primary[800]} marginVertical={0} />
           <FlatList
             data={currentResult.stocks}
@@ -306,7 +329,7 @@ export default function Index() {
             renderItem={renderStockItem}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
-            extraData={chartCache}
+            extraData={[chartCache, comparison]}
           />
         </>
       )}
@@ -319,7 +342,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.primary[950],
   },
-  // Tab bar
   tabBar: {
     flexDirection: "row",
     paddingTop: spacing.sm,
@@ -349,7 +371,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: colors.warning,
   },
-  // Scanning
   scanningSection: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
@@ -362,7 +383,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     paddingHorizontal: spacing["3xl"],
   },
-  // Error
   errorBox: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.md,
@@ -372,7 +392,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.negative,
   },
-  // Empty state
   emptyState: {
     flex: 1,
     alignItems: "center",
@@ -393,21 +412,21 @@ const styles = StyleSheet.create({
   scanBtn: {
     paddingHorizontal: spacing["5xl"],
   },
-  // Results
   resultHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.md,
   },
   resultHeaderRight: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
   },
-  rescanBtn: {
-    paddingHorizontal: spacing.md,
+  timestampText: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   list: {
     padding: spacing.lg,
@@ -416,45 +435,5 @@ const styles = StyleSheet.create({
       web: { paddingBottom: 32 },
       default: { paddingBottom: 40 },
     }),
-  },
-  stockCard: {
-    marginBottom: spacing.sm,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.md,
-  },
-  cardBody: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.md,
-  },
-  metricsCol: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  metric: {
-    alignItems: "center",
-    flex: 1,
-    gap: spacing.xs,
-  },
-  sparklineContainer: {
-    width: SPARKLINE_W,
-    marginLeft: spacing.md,
-  },
-  percentileBarBg: {
-    height: 4,
-    backgroundColor: colors.primary[700],
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  percentileBarFill: {
-    height: 4,
-    backgroundColor: colors.accent_warm[300],
-    borderRadius: borderRadius.full,
   },
 });
