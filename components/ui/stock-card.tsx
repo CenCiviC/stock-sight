@@ -1,7 +1,11 @@
 import { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import type { Stock, OHLCVBar } from "@/lib/scanner";
-import { StyledText, PriceText, PercentageText, Card, StockChart } from "@/components/ui";
+import { StyledText } from "./text";
+import { PriceText } from "./price-text";
+import { PercentageText } from "./percentage-text";
+import { Card } from "./card";
+import { StockChart } from "./stock-chart";
 import { colors } from "@/constants/colors";
 import { spacing, borderRadius } from "@/constants/spacing";
 

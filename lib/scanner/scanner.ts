@@ -40,7 +40,7 @@ export async function loadSpyReturns(
  * Calculate percentile rank for each value in an array.
  * Matches pandas rank(pct=True) * 100.
  */
-function percentileRank(values: number[]): number[] {
+export function percentileRank(values: number[]): number[] {
   const n = values.length;
   if (n === 0) return [];
 

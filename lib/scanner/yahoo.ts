@@ -64,6 +64,7 @@ async function yahooFetch(
 export interface ChartResult {
   bars: OHLCVBar[];
   currentPrice: number;
+  shortName?: string;
 }
 
 export interface FetchChartBatchOptions {
@@ -118,6 +119,7 @@ export async function fetchChart(
   const meta = result.meta ?? {};
   const currentPrice: number =
     meta.regularMarketPrice ?? meta.previousClose ?? 0;
+  const shortName: string | undefined = meta.shortName ?? meta.longName;
 
   const timestamps: number[] = result.timestamp ?? [];
   const quote = result.indicators?.quote?.[0] ?? {};
@@ -158,7 +160,7 @@ export async function fetchChart(
     });
   }
 
-  return { bars, currentPrice };
+  return { bars, currentPrice, shortName };
 }
 
 /**

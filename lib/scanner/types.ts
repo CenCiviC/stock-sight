@@ -87,3 +87,27 @@ export interface CompanyProfile {
   industry: string;
   summary: string;
 }
+
+export interface RankedStock {
+  rank: number;
+  symbol: string;
+  name: string;
+  close: number;
+  rs_percentile: number;
+  rs_percentile_5days_ago: number;
+  rs_change: number;
+  sector: string;
+  returns: { r_12m: number; r_6m: number; r_3m: number; r_1m: number };
+}
+
+export interface SectorCount {
+  sector: string;
+  count: number;
+}
+
+export interface RsRankingResult {
+  count: number;
+  scanned_at: string;
+  stocks: RankedStock[];
+  sectors: SectorCount[];
+}

@@ -49,6 +49,7 @@ export default function StockDetail() {
   const [finError, setFinError] = useState<string | null>(null);
 
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
+  const [companyName, setCompanyName] = useState<string>("");
 
   const loadChart = useCallback(
     async (p: PeriodKey) => {
@@ -59,6 +60,9 @@ export default function StockDetail() {
         const days = PERIODS.find((pp) => pp.key === p)?.days ?? 180;
         const result = await fetchChart(symbol, days);
         setBars(result.bars);
+        if (result.shortName && !companyName) {
+          setCompanyName(result.shortName);
+        }
       } catch (e) {
         setChartError(e instanceof Error ? e.message : "Failed to load chart");
       } finally {
@@ -116,8 +120,8 @@ export default function StockDetail() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <StyledText variant="h1" color={colors.accent_light[400]}>
-          {stock.symbol}
+        <StyledText variant="h2" color={colors.accent_light[400]}>
+          {companyName || stock.symbol}
         </StyledText>
         <PriceText value={stock.close} size="lg" style={styles.headerPrice} />
         {profile && (
