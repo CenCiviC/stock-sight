@@ -15,8 +15,10 @@ import {
   JetBrainsMono_600SemiBold,
 } from "@expo-google-fonts/jetbrains-mono";
 import * as SplashScreen from "expo-splash-screen";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { colors } from "@/constants/colors";
 import { DB_NAME, initDb } from "@/lib/db";
+import { queryClient } from "@/lib/queries";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,34 +44,36 @@ export default function RootLayout() {
   }
 
   return (
-    <SQLiteProvider databaseName={DB_NAME} onInit={initDb}>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.primary[900] },
-          headerTintColor: colors.accent_light[400],
-          headerTitleStyle: { fontWeight: "bold", fontFamily: "Inter-Bold" },
-          contentStyle: { backgroundColor: colors.primary[950] },
-          headerShadowVisible: false,
-        }}
-      >
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="history"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="stock/[symbol]"
-          options={({ route }) => ({
-            title:
-              (route.params as { symbol?: string })?.symbol ?? "Stock Detail",
-            presentation: "modal",
-          })}
-        />
-      </Stack>
-    </SQLiteProvider>
+    <QueryClientProvider client={queryClient}>
+      <SQLiteProvider databaseName={DB_NAME} onInit={initDb}>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.primary[900] },
+            headerTintColor: colors.accent_light[400],
+            headerTitleStyle: { fontWeight: "bold", fontFamily: "Inter-Bold" },
+            contentStyle: { backgroundColor: colors.primary[950] },
+            headerShadowVisible: false,
+          }}
+        >
+          <Stack.Screen
+            name="index"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="history"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="stock/[symbol]"
+            options={({ route }) => ({
+              title:
+                (route.params as { symbol?: string })?.symbol ?? "Stock Detail",
+              presentation: "modal",
+            })}
+          />
+        </Stack>
+      </SQLiteProvider>
+    </QueryClientProvider>
   );
 }

@@ -9,10 +9,10 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
-import type { OHLCVBar, QuarterlyFinancial, Stock, CompanyProfile } from "@/lib/scanner";
-import { fetchChart, fetchFinancials, fetchCompanyProfile } from "@/lib/scanner";
+import type { Stock } from "@/lib/scanner";
+import { useChartQuery, useFinancialsQuery, useCompanyProfileQuery } from "@/lib/queries";
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 const PERIODS = [
@@ -38,61 +38,32 @@ export default function StockDetail() {
   }
 
   const [period, setPeriod] = useState<PeriodKey>("6M");
-  const [bars, setBars] = useState<OHLCVBar[] | null>(null);
-  const [chartLoading, setChartLoading] = useState(false);
-  const [chartError, setChartError] = useState<string | null>(null);
+  const chartDays = PERIODS.find((p) => p.key === period)?.days ?? 180;
 
-  const [financials, setFinancials] = useState<QuarterlyFinancial[] | null>(
-    null,
-  );
-  const [finLoading, setFinLoading] = useState(false);
-  const [finError, setFinError] = useState<string | null>(null);
+  const {
+    data: chartResult,
+    isLoading: chartLoading,
+    error: chartErrorObj,
+  } = useChartQuery({ symbol: symbol ?? "", days: chartDays });
+  const {
+    data: financials,
+    isLoading: finLoading,
+    error: finErrorObj,
+  } = useFinancialsQuery({ symbol: symbol ?? "" });
+  const { data: profile } = useCompanyProfileQuery({ symbol: symbol ?? "" });
 
-  const [profile, setProfile] = useState<CompanyProfile | null>(null);
-  const [companyName, setCompanyName] = useState<string>("");
-
-  const loadChart = useCallback(
-    async (p: PeriodKey) => {
-      if (!symbol) return;
-      setChartLoading(true);
-      setChartError(null);
-      try {
-        const days = PERIODS.find((pp) => pp.key === p)?.days ?? 180;
-        const result = await fetchChart(symbol, days);
-        setBars(result.bars);
-        if (result.shortName && !companyName) {
-          setCompanyName(result.shortName);
-        }
-      } catch (e) {
-        setChartError(e instanceof Error ? e.message : "Failed to load chart");
-      } finally {
-        setChartLoading(false);
-      }
-    },
-    [symbol],
-  );
-
-  useEffect(() => {
-    loadChart(period);
-  }, [period, loadChart]);
-
-  useEffect(() => {
-    if (!symbol) return;
-    setFinLoading(true);
-    setFinError(null);
-    fetchFinancials(symbol)
-      .then(setFinancials)
-      .catch((e) =>
-        setFinError(
-          e instanceof Error ? e.message : "Failed to load financials",
-        ),
-      )
-      .finally(() => setFinLoading(false));
-
-    fetchCompanyProfile(symbol)
-      .then(setProfile)
-      .catch(() => {}); // silently ignore — non-critical
-  }, [symbol]);
+  const bars = chartResult?.bars ?? null;
+  const companyName = chartResult?.shortName ?? "";
+  const chartError = chartErrorObj
+    ? chartErrorObj instanceof Error
+      ? chartErrorObj.message
+      : "Failed to load chart"
+    : null;
+  const finError = finErrorObj
+    ? finErrorObj instanceof Error
+      ? finErrorObj.message
+      : "Failed to load financials"
+    : null;
 
   if (!stock) {
     return (

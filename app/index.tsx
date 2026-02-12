@@ -14,7 +14,9 @@ import type {
   RankedStock,
   RsRankingResult,
   SectorCount,
+  ChartResult,
 } from "@/lib/scanner";
+import { queryClient, queryKeys } from "@/lib/queries";
 import { saveScan, getLatestScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings } from "@/lib/db";
 import type { ComparisonResult, RankChange } from "@/lib/db";
 import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, SectorChart, RankingCard } from "@/components/ui";
@@ -53,9 +55,9 @@ export default function Index() {
   const [dbLoaded, setDbLoaded] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Chart cache: symbol → OHLCV bars (1M)
-  const [chartCache, setChartCache] = useState<Record<string, OHLCVBar[]>>({});
+  // Chart preload tracking
   const chartLoadingRef = useRef(false);
+  const [chartCacheVersion, setChartCacheVersion] = useState(0);
 
   const isRsTop = activeView === "rs_top";
   const activeTab = isRsTop ? null : (activeView as IndexType);
@@ -196,21 +198,20 @@ export default function Index() {
     abortRef.current?.abort();
   }, []);
 
-  // Load 1M chart data for VCP scan results
+  // Load 1M chart data for VCP scan results → store in React Query cache
   useEffect(() => {
     if (!currentResult || currentResult.stocks.length === 0) return;
     if (chartLoadingRef.current) return;
 
     const symbols = currentResult.stocks
       .map((s) => s.symbol)
-      .filter((sym) => !chartCache[sym]);
+      .filter((sym) => !queryClient.getQueryData(queryKeys.chart(sym, 30)));
 
     if (symbols.length === 0) return;
 
     chartLoadingRef.current = true;
 
     (async () => {
-      const newCache: Record<string, OHLCVBar[]> = {};
       const concurrency = 5;
 
       for (let i = 0; i < symbols.length; i += concurrency) {
@@ -218,7 +219,7 @@ export default function Index() {
         const promises = batch.map(async (sym) => {
           try {
             const result = await fetchChart(sym, 30);
-            newCache[sym] = result.bars;
+            queryClient.setQueryData(queryKeys.chart(sym, 30), result);
           } catch {
             // skip failed
           }
@@ -226,10 +227,23 @@ export default function Index() {
         await Promise.all(promises);
       }
 
-      setChartCache((prev) => ({ ...prev, ...newCache }));
+      setChartCacheVersion((v) => v + 1);
       chartLoadingRef.current = false;
     })();
   }, [currentResult]);
+
+  // Derive chartCache from React Query cache
+  const chartCache = useMemo(() => {
+    const cache: Record<string, OHLCVBar[]> = {};
+    if (currentResult) {
+      for (const s of currentResult.stocks) {
+        const data = queryClient.getQueryData<ChartResult>(queryKeys.chart(s.symbol, 30));
+        if (data) cache[s.symbol] = data.bars;
+      }
+    }
+    return cache;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentResult, chartCacheVersion]);
 
   // Precompute VCP comparison lookups
   const comparison = activeTab ? comparisons[activeTab] : undefined;
