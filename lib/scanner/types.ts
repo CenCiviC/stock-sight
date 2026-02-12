@@ -81,3 +81,9 @@ export interface QuarterlyFinancial {
   revenue: number;     // Total revenue
   netIncome: number;   // Net income
 }
+
+export interface CompanyProfile {
+  sector: string;
+  industry: string;
+  summary: string;
+}

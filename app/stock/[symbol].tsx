@@ -9,8 +9,8 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
-import type { OHLCVBar, QuarterlyFinancial, Stock } from "@/lib/scanner";
-import { fetchChart, fetchFinancials } from "@/lib/scanner";
+import type { OHLCVBar, QuarterlyFinancial, Stock, CompanyProfile } from "@/lib/scanner";
+import { fetchChart, fetchFinancials, fetchCompanyProfile } from "@/lib/scanner";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -48,6 +48,8 @@ export default function StockDetail() {
   const [finLoading, setFinLoading] = useState(false);
   const [finError, setFinError] = useState<string | null>(null);
 
+  const [profile, setProfile] = useState<CompanyProfile | null>(null);
+
   const loadChart = useCallback(
     async (p: PeriodKey) => {
       if (!symbol) return;
@@ -82,6 +84,10 @@ export default function StockDetail() {
         ),
       )
       .finally(() => setFinLoading(false));
+
+    fetchCompanyProfile(symbol)
+      .then(setProfile)
+      .catch(() => {}); // silently ignore — non-critical
   }, [symbol]);
 
   if (!stock) {
@@ -114,7 +120,37 @@ export default function StockDetail() {
           {stock.symbol}
         </StyledText>
         <PriceText value={stock.close} size="lg" style={styles.headerPrice} />
+        {profile && (
+          <View style={styles.profileTags}>
+            {!!profile.sector && (
+              <View style={styles.profileTag}>
+                <StyledText variant="caption" color={colors.secondary[400]}>
+                  {profile.sector}
+                </StyledText>
+              </View>
+            )}
+            {!!profile.industry && (
+              <View style={styles.profileTag}>
+                <StyledText variant="caption" color={colors.secondary[400]}>
+                  {profile.industry}
+                </StyledText>
+              </View>
+            )}
+          </View>
+        )}
       </View>
+
+      {/* Company Summary */}
+      {profile?.summary ? (
+        <StyledText
+          variant="caption"
+          color={colors.secondary[600]}
+          numberOfLines={3}
+          style={styles.summaryText}
+        >
+          {profile.summary}
+        </StyledText>
+      ) : null}
 
       {/* Chart */}
       <Card style={styles.card}>
@@ -344,6 +380,23 @@ const styles = StyleSheet.create({
   },
   headerPrice: {
     marginTop: spacing.xs,
+  },
+  profileTags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  profileTag: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    backgroundColor: colors.primary[800],
+    borderRadius: borderRadius.sm,
+  },
+  summaryText: {
+    marginBottom: spacing.lg,
+    lineHeight: 18,
   },
   card: {
     marginBottom: spacing.lg,

@@ -1,5 +1,5 @@
 export { runScan } from "./scanner";
-export { fetchChart, fetchFinancials } from "./yahoo";
+export { fetchChart, fetchFinancials, fetchCompanyProfile } from "./yahoo";
 export type {
   IndexType,
   Stock,
@@ -8,4 +8,5 @@ export type {
   ScanOptions,
   OHLCVBar,
   QuarterlyFinancial,
+  CompanyProfile,
 } from "./types";

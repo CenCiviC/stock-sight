@@ -7990,6 +7990,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-pager-view@npm:6.9.1":
+  version: 6.9.1
+  resolution: "react-native-pager-view@npm:6.9.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/c5229d230734ad9dad0b1e296168f0eebc5cff1b4b63201266ee7d5ecadc2e9c584b426b4ef146718c2e581dfcf63914174133b3ed1657294ccd437c22dbbc05
+  languageName: node
+  linkType: hard
+
 "react-native-reanimated@npm:~4.1.1":
   version: 4.1.6
   resolution: "react-native-reanimated@npm:4.1.6"
@@ -8943,6 +8953,7 @@ __metadata:
     react-dom: "npm:19.1.0"
     react-native: "npm:0.81.5"
     react-native-gesture-handler: "npm:~2.28.0"
+    react-native-pager-view: "npm:6.9.1"
     react-native-reanimated: "npm:~4.1.1"
     react-native-safe-area-context: "npm:~5.6.0"
     react-native-screens: "npm:~4.16.0"

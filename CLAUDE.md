@@ -88,6 +88,11 @@ npx tsc --noEmit    # 타입 체크
 yarn lint           # ESLint
 ```
 
+## Git Rules
+
+- **커밋은 반드시 사용자의 명시적 허락을 받은 후에만 실행**
+- push, force push 등 원격 조작도 사용자 허락 필수
+
 ## Git Commit Convention
 
 [Conventional Commits](https://www.conventionalcommits.org/) 형식 사용:

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, FlatList, Platform, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -229,6 +230,18 @@ export default function Index() {
             </Pressable>
           );
         })}
+        <Pressable
+          style={styles.historyBtn}
+          onPress={() =>
+            router.push({
+              pathname: "/history" as any,
+              params: { index: activeTab },
+            })
+          }
+          hitSlop={8}
+        >
+          <Ionicons name="time-outline" size={20} color={colors.secondary[500]} />
+        </Pressable>
       </View>
       <Divider color={colors.primary[800]} marginVertical={0} />
 
@@ -294,26 +307,13 @@ export default function Index() {
             <StyledText variant="bodyLarge" weight="semibold">
               {currentResult.count} stock{currentResult.count !== 1 ? "s" : ""} found
             </StyledText>
-            <View style={styles.resultHeaderRight}>
-              <Button
-                title="History"
-                variant="ghost"
-                size="sm"
-                onPress={() =>
-                  router.push({
-                    pathname: "/history" as any,
-                    params: { index: activeTab },
-                  })
-                }
-              />
-              <Button
-                title="Rescan"
-                variant="secondary"
-                size="sm"
-                onPress={startScan}
-                disabled={isAnyScanRunning}
-              />
-            </View>
+            <Button
+              title="Rescan"
+              variant="secondary"
+              size="sm"
+              onPress={startScan}
+              disabled={isAnyScanRunning}
+            />
           </View>
           <StyledText
             variant="caption"
@@ -419,10 +419,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  resultHeaderRight: {
-    flexDirection: "row",
+  historyBtn: {
+    justifyContent: "center",
     alignItems: "center",
-    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
   timestampText: {
     paddingHorizontal: spacing.lg,

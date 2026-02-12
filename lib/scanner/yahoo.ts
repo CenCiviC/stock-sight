@@ -1,5 +1,65 @@
-import type { OHLCVBar, QuarterlyFinancial } from "./types";
+import { Platform } from "react-native";
+
+import type { OHLCVBar, QuarterlyFinancial, CompanyProfile } from "./types";
 import { proxyUrl } from "./proxy";
+
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/124.0.0.0 Safari/537.36";
+
+// Native cookie jar for Yahoo domains (web uses metro proxy's jar)
+let nativeCookieJar = "";
+
+function mergeCookies(
+  existing: string,
+  setCookie: string | null
+): string {
+  if (!setCookie) return existing;
+  const map = new Map<string, string>();
+  if (existing) {
+    for (const c of existing.split("; ")) {
+      const eq = c.indexOf("=");
+      if (eq > 0) map.set(c.slice(0, eq), c);
+    }
+  }
+  for (const raw of setCookie.split(/,(?=\s*\w+=)/)) {
+    const val = raw.split(";")[0].trim();
+    const eq = val.indexOf("=");
+    if (eq > 0) map.set(val.slice(0, eq), val);
+  }
+  return Array.from(map.values()).join("; ");
+}
+
+/**
+ * Fetch wrapper: adds browser User-Agent and manages cookies on native.
+ * On web, delegates to plain fetch (metro proxy handles UA/cookies).
+ */
+async function yahooFetch(
+  url: string,
+  init?: RequestInit
+): Promise<Response> {
+  if (Platform.OS === "web") {
+    return fetch(url, init);
+  }
+
+  const headers: Record<string, string> = {
+    "User-Agent": BROWSER_UA,
+    Accept: "application/json,text/html,*/*",
+  };
+  if (nativeCookieJar) {
+    headers["Cookie"] = nativeCookieJar;
+  }
+
+  const resp = await fetch(url, { ...init, headers });
+
+  const sc = resp.headers.get("set-cookie");
+  if (sc) {
+    nativeCookieJar = mergeCookies(nativeCookieJar, sc);
+  }
+
+  return resp;
+}
 
 export interface ChartResult {
   bars: OHLCVBar[];
@@ -43,7 +103,7 @@ export async function fetchChart(
     `?range=${range}&interval=1d`;
   const url = proxyUrl(rawUrl);
 
-  const resp = await fetch(url, { signal });
+  const resp = await yahooFetch(url, { signal });
 
   if (!resp.ok) {
     throw new Error(`Yahoo Finance HTTP ${resp.status} for ${symbol}`);
@@ -178,25 +238,37 @@ async function getYahooCrumb(signal?: AbortSignal): Promise<string> {
     return crumbCache.crumb;
   }
 
-  // Step 1: Hit fc.yahoo.com to establish session cookies (proxy stores them)
-  await fetch(proxyUrl("https://fc.yahoo.com/"), { signal }).catch(() => {});
+  const maxRetries = 2;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // Step 1: Hit fc.yahoo.com to establish session cookies (proxy stores them)
+    await yahooFetch(proxyUrl("https://fc.yahoo.com/"), { signal }).catch(() => {});
 
-  // Step 2: Get crumb using the stored cookies
-  const resp = await fetch(
-    proxyUrl("https://query2.finance.yahoo.com/v1/test/getcrumb"),
-    { signal }
-  );
-  if (!resp.ok) {
-    throw new Error(`Failed to get Yahoo crumb: HTTP ${resp.status}`);
+    // Step 2: Get crumb using the stored cookies
+    const resp = await yahooFetch(
+      proxyUrl("https://query2.finance.yahoo.com/v1/test/getcrumb"),
+      { signal }
+    );
+
+    if (resp.status === 429 && attempt < maxRetries) {
+      nativeCookieJar = "";
+      await sleep(1000 * (attempt + 1));
+      continue;
+    }
+
+    if (!resp.ok) {
+      throw new Error(`Failed to get Yahoo crumb: HTTP ${resp.status}`);
+    }
+
+    const crumb = await resp.text();
+    if (!crumb || crumb.length > 50) {
+      throw new Error("Invalid Yahoo crumb received");
+    }
+
+    crumbCache = { crumb, ts: Date.now() };
+    return crumb;
   }
 
-  const crumb = await resp.text();
-  if (!crumb || crumb.length > 50) {
-    throw new Error("Invalid Yahoo crumb received");
-  }
-
-  crumbCache = { crumb, ts: Date.now() };
-  return crumb;
+  throw new Error("Failed to get Yahoo crumb after retries");
 }
 
 /**
@@ -215,13 +287,13 @@ export async function fetchFinancials(
         `?modules=incomeStatementHistoryQuarterly&crumb=${encodeURIComponent(c)}`
     );
 
-  let resp = await fetch(buildUrl(crumb), { signal });
+  let resp = await yahooFetch(buildUrl(crumb), { signal });
 
   // If 401, refresh crumb and retry once
   if (resp.status === 401) {
     crumbCache = null;
     crumb = await getYahooCrumb(signal);
-    resp = await fetch(buildUrl(crumb), { signal });
+    resp = await yahooFetch(buildUrl(crumb), { signal });
   }
 
   if (!resp.ok) {
@@ -261,4 +333,45 @@ export async function fetchFinancials(
     .slice(-5); // most recent 5 quarters
 
   return quarters;
+}
+
+/**
+ * Fetch company profile (sector, industry, summary) from Yahoo Finance v10 API.
+ */
+export async function fetchCompanyProfile(
+  symbol: string,
+  signal?: AbortSignal
+): Promise<CompanyProfile> {
+  let crumb = await getYahooCrumb(signal);
+
+  const buildUrl = (c: string) =>
+    proxyUrl(
+      `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}` +
+        `?modules=assetProfile&crumb=${encodeURIComponent(c)}`
+    );
+
+  let resp = await yahooFetch(buildUrl(crumb), { signal });
+
+  if (resp.status === 401) {
+    crumbCache = null;
+    crumb = await getYahooCrumb(signal);
+    resp = await yahooFetch(buildUrl(crumb), { signal });
+  }
+
+  if (!resp.ok) {
+    throw new Error(`Yahoo Finance HTTP ${resp.status} for ${symbol}`);
+  }
+
+  const json = await resp.json();
+  const profile = json?.quoteSummary?.result?.[0]?.assetProfile;
+
+  if (!profile) {
+    throw new Error(`No profile data for ${symbol}`);
+  }
+
+  return {
+    sector: profile.sector ?? "",
+    industry: profile.industry ?? "",
+    summary: profile.longBusinessSummary ?? "",
+  };
 }

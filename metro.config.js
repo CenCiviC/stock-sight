@@ -4,6 +4,8 @@ const http = require("http");
 
 const config = getDefaultConfig(__dirname);
 
+config.resolver.assetExts.push('wasm');
+
 // Proxy middleware to bypass CORS on web
 const PROXY_ROUTES = {
   "/proxy/yahoo/": "https://query1.finance.yahoo.com/",
@@ -26,6 +28,9 @@ config.server = {
   ...config.server,
   enhanceMiddleware: (middleware) => {
     return (req, res, next) => {
+      res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+
       for (const [prefix, target] of Object.entries(PROXY_ROUTES)) {
         if (req.url.startsWith(prefix)) {
           const targetPath = req.url.slice(prefix.length);
