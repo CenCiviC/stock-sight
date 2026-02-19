@@ -105,7 +105,7 @@ export function computeSymbolData(
   const cond_within_52w_high_range =
     isFinite(currentPrice) &&
     isFinite(high_52w) &&
-    currentPrice >= high_52w * 0.7;
+    currentPrice >= high_52w * 0.6;
 
   // cond_5: Outperform SPY on 3m and 6m returns
   const cond_outperform_index =
@@ -246,7 +246,7 @@ export function checkPullbackWithinRange(bars: OHLCVBar[]): boolean {
 
   if (isFinite(recentHigh) && isFinite(currentLow) && recentHigh > 0) {
     const pullbackPct = (recentHigh - currentLow) / recentHigh;
-    return pullbackPct <= 0.35;
+    return pullbackPct <= 0.4;
   }
 
   return false;
