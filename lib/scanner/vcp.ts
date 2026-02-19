@@ -40,6 +40,14 @@ export function computeSymbolData(
     return null;
   }
 
+  // Filter: 50-day average volume must be >= 1M
+  const recent50 = bars.slice(-50);
+  const avgVolume50d =
+    recent50.reduce((sum, b) => sum + b.volume, 0) / recent50.length;
+  if (avgVolume50d < 1_000_000) {
+    return null;
+  }
+
   // Moving averages
   const ma50Arr = rollingSMA(closes, 50);
   const ma150Arr = rollingSMA(closes, 150);
@@ -152,42 +160,64 @@ export function computeSymbolData(
 }
 
 /**
- * Check if ATR or StdDev is decreasing over the last 21 trading days.
- * Port of vcp.py _check_volatility_decreasing.
+ * Check if ATR% or StdDev% is decreasing.
+ * Compares recent 10-day average vs prior 10-day average (20-day window split).
+ * ATR and StdDev are normalized by close price to avoid price-level distortion.
  */
 export function checkVolatilityDecreasing(bars: OHLCVBar[]): boolean {
   if (bars.length < 41) {
     return false;
   }
 
-  // ATR(20) - current vs 21 days ago
-  const atrArr = calculateATR(bars, 20);
-  const atrCurrent = atrArr[atrArr.length - 1];
-  const atr21dAgo =
-    atrArr.length >= 21 ? atrArr[atrArr.length - 21] : null;
-
-  // StdDev(20) of closes - current vs 21 days ago
   const closes = bars.map((b) => b.close);
+  const atrArr = calculateATR(bars, 20);
   const stdArr = rollingStd(closes, 20);
-  const stdCurrent = stdArr[stdArr.length - 1];
-  const std21dAgo =
-    stdArr.length >= 21 ? stdArr[stdArr.length - 21] : null;
+
+  // Need at least 20 values to split into two 10-day windows
+  if (atrArr.length < 20 || stdArr.length < 20) {
+    return false;
+  }
+
+  // ATR% = ATR / Close, averaged over recent 10 days vs prior 10 days
+  const atrRecent10 = atrArr.slice(-10);
+  const atrPrior10 = atrArr.slice(-20, -10);
+  const closesRecent10 = closes.slice(-10);
+  const closesPrior10 = closes.slice(-20, -10);
+
+  const avgAtrPctRecent = safeAvg(
+    atrRecent10.map((v, i) => (closesRecent10[i] > 0 ? v / closesRecent10[i] : NaN))
+  );
+  const avgAtrPctPrior = safeAvg(
+    atrPrior10.map((v, i) => (closesPrior10[i] > 0 ? v / closesPrior10[i] : NaN))
+  );
+
+  // StdDev% = StdDev / Close, averaged over recent 10 days vs prior 10 days
+  const stdRecent10 = stdArr.slice(-10);
+  const stdPrior10 = stdArr.slice(-20, -10);
+
+  const avgStdPctRecent = safeAvg(
+    stdRecent10.map((v, i) => (closesRecent10[i] > 0 ? v / closesRecent10[i] : NaN))
+  );
+  const avgStdPctPrior = safeAvg(
+    stdPrior10.map((v, i) => (closesPrior10[i] > 0 ? v / closesPrior10[i] : NaN))
+  );
 
   const atrDecreasing =
-    atrCurrent != null &&
-    atr21dAgo != null &&
-    isFinite(atrCurrent) &&
-    isFinite(atr21dAgo) &&
-    atrCurrent < atr21dAgo;
+    isFinite(avgAtrPctRecent) && isFinite(avgAtrPctPrior) &&
+    avgAtrPctRecent < avgAtrPctPrior;
 
   const stdDecreasing =
-    stdCurrent != null &&
-    std21dAgo != null &&
-    isFinite(stdCurrent) &&
-    isFinite(std21dAgo) &&
-    stdCurrent < std21dAgo;
+    isFinite(avgStdPctRecent) && isFinite(avgStdPctPrior) &&
+    avgStdPctRecent < avgStdPctPrior;
 
   return atrDecreasing || stdDecreasing;
+}
+
+/** Average of finite values only. Returns NaN if no valid values. */
+function safeAvg(values: number[]): number {
+  const valid = values.filter(isFinite);
+  if (valid.length === 0) return NaN;
+  return valid.reduce((a, b) => a + b, 0) / valid.length;
 }
 
 /**
@@ -257,20 +287,10 @@ export function checkVolumeDecreaseOnPullback(bars: OHLCVBar[]): boolean {
     return false;
   }
 
-  // Average volume after the high
-  const remainingDays = recent40.length - highPosition - 1;
-  let volumeAfter: number;
-  if (remainingDays >= 10) {
-    const afterBars = recent40.slice(highPosition + 1, highPosition + 11);
-    volumeAfter =
-      afterBars.reduce((sum, b) => sum + b.volume, 0) / afterBars.length;
-  } else if (remainingDays > 0) {
-    const afterBars = recent40.slice(highPosition + 1);
-    volumeAfter =
-      afterBars.reduce((sum, b) => sum + b.volume, 0) / afterBars.length;
-  } else {
-    return false;
-  }
+  // Average volume of the most recent 10 days (current pullback period)
+  const recent10 = recent40.slice(-10);
+  const volumeAfter =
+    recent10.reduce((sum, b) => sum + b.volume, 0) / recent10.length;
 
   return (
     isFinite(volumeBefore) &&
