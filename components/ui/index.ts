@@ -12,3 +12,4 @@ export { FinancialsChart } from './financials-chart';
 export { StockCard } from './stock-card';
 export { SectorChart } from './sector-chart';
 export { RankingCard } from './ranking-card';
+export { FavoriteCard } from './favorite-card';

@@ -17,13 +17,13 @@ import type {
   ChartResult,
 } from "@/lib/scanner";
 import { queryClient, queryKeys } from "@/lib/queries";
-import { saveScan, getLatestScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings } from "@/lib/db";
-import type { ComparisonResult, RankChange } from "@/lib/db";
-import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, SectorChart, RankingCard } from "@/components/ui";
+import { saveScan, getLatestScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "@/lib/db";
+import type { ComparisonResult, RankChange, FavoriteRecord } from "@/lib/db";
+import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { spacing, borderRadius } from "@/constants/spacing";
 
-type ActiveView = "rs_top" | IndexType;
+type ActiveView = "rs_top" | IndexType | "favorites";
 
 const VCP_TABS: { key: IndexType; label: string }[] = [
   { key: "nasdaq", label: "NASDAQ" },
@@ -49,6 +49,12 @@ export default function Index() {
   const [rsPrevSectors, setRsPrevSectors] = useState<SectorCount[]>([]);
   const [rsScanning, setRsScanning] = useState(false);
 
+  // --- Favorites state ---
+  const [favorites, setFavorites] = useState<FavoriteRecord[]>([]);
+  const [favoritedSymbols, setFavoritedSymbols] = useState<Set<string>>(new Set());
+  const [favCurrentPrices, setFavCurrentPrices] = useState<Record<string, number>>({});
+  const [favPricesLoading, setFavPricesLoading] = useState(false);
+
   // --- Shared state ---
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
@@ -60,9 +66,10 @@ export default function Index() {
   const [chartCacheVersion, setChartCacheVersion] = useState(0);
 
   const isRsTop = activeView === "rs_top";
-  const activeTab = isRsTop ? null : (activeView as IndexType);
+  const isFavorites = activeView === "favorites";
+  const activeTab = (isRsTop || isFavorites) ? null : (activeView as IndexType);
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
-  const isScanning = isRsTop ? rsScanning : scanningIndex === activeTab;
+  const isScanning = isRsTop ? rsScanning : (!isFavorites && scanningIndex === activeTab);
   const isAnyScanRunning = scanningIndex !== null || rsScanning;
 
   // Load latest data from DB on mount
@@ -81,6 +88,12 @@ export default function Index() {
         }
       }
       setResults(loaded);
+
+      // Load favorites
+      const favs = await getAllFavorites(db);
+      setFavorites(favs);
+      const favSyms = await getFavoritedSymbols(db);
+      setFavoritedSymbols(favSyms);
 
       // Load RS ranking
       const rsRecord = await getLatestRsRanking(db);
@@ -198,6 +211,65 @@ export default function Index() {
     abortRef.current?.abort();
   }, []);
 
+  // Toggle favorite for a stock
+  const toggleFavorite = useCallback(
+    async (stock: Stock, sourceIndex: string) => {
+      if (favoritedSymbols.has(stock.symbol)) {
+        await removeFavorite(db, stock.symbol);
+        setFavoritedSymbols((prev) => {
+          const next = new Set(prev);
+          next.delete(stock.symbol);
+          return next;
+        });
+        setFavorites((prev) => prev.filter((f) => f.symbol !== stock.symbol));
+      } else {
+        await addFavorite(db, stock, sourceIndex);
+        setFavoritedSymbols((prev) => new Set(prev).add(stock.symbol));
+        const updated = await getAllFavorites(db);
+        setFavorites(updated);
+      }
+    },
+    [db, favoritedSymbols]
+  );
+
+  // Fetch current prices when favorites tab is active
+  useEffect(() => {
+    if (!isFavorites || favorites.length === 0) return;
+
+    let cancelled = false;
+    setFavPricesLoading(true);
+
+    (async () => {
+      const concurrency = 5;
+      const symbols = favorites.map((f) => f.symbol);
+
+      for (let i = 0; i < symbols.length; i += concurrency) {
+        if (cancelled) break;
+        const batch = symbols.slice(i, i + concurrency);
+        const results = await Promise.allSettled(
+          batch.map((sym) => fetchChart(sym, 7))
+        );
+
+        if (cancelled) break;
+        setFavCurrentPrices((prev) => {
+          const next = { ...prev };
+          results.forEach((result, idx) => {
+            if (result.status === "fulfilled") {
+              next[batch[idx]] = result.value.currentPrice;
+            }
+          });
+          return next;
+        });
+      }
+
+      if (!cancelled) setFavPricesLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isFavorites, favorites]);
+
   // Load 1M chart data for VCP scan results → store in React Query cache
   useEffect(() => {
     if (!currentResult || currentResult.stocks.length === 0) return;
@@ -284,6 +356,8 @@ export default function Index() {
         stock={item}
         chartBars={chartCache[item.symbol]}
         badge={badge}
+        isFavorited={favoritedSymbols.has(item.symbol)}
+        onToggleFavorite={() => toggleFavorite(item, activeTab!)}
         onPress={() =>
           router.push({
             pathname: "/stock/[symbol]",
@@ -372,6 +446,26 @@ export default function Index() {
               </Pressable>
             );
           })}
+
+          {/* Favorites tab */}
+          <Pressable
+            style={[styles.tab, isFavorites && styles.tabActive]}
+            onPress={() => setActiveView("favorites")}
+          >
+            <Ionicons
+              name={isFavorites ? "star" : "star-outline"}
+              size={14}
+              color={isFavorites ? colors.accent_warm[300] : colors.secondary[600]}
+            />
+            <StyledText
+              variant="bodySmall"
+              weight={isFavorites ? "bold" : "medium"}
+              color={isFavorites ? colors.accent_warm[300] : colors.secondary[600]}
+            >
+              Favorites
+            </StyledText>
+            {favorites.length > 0 && <View style={styles.tabDot} />}
+          </Pressable>
         </ScrollView>
 
         <Pressable
@@ -482,8 +576,62 @@ export default function Index() {
         </>
       )}
 
+      {/* === Favorites View === */}
+      {isFavorites && !isScanning && (
+        <>
+          {favorites.length === 0 && dbLoaded && (
+            <View style={styles.emptyState}>
+              <Ionicons name="star-outline" size={48} color={colors.primary[400]} />
+              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+                No favorites yet
+              </StyledText>
+              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
+                Tap the star icon on any stock card to save it here
+              </StyledText>
+            </View>
+          )}
+
+          {favorites.length > 0 && (
+            <FlatList
+              data={favorites}
+              keyExtractor={(item) => item.symbol}
+              renderItem={({ item }) => (
+                <FavoriteCard
+                  favorite={item}
+                  currentPrice={favCurrentPrices[item.symbol] ?? null}
+                  isLoadingPrice={favPricesLoading && !(item.symbol in favCurrentPrices)}
+                  onRemove={() => toggleFavorite(
+                    { symbol: item.symbol, close: item.close, rs_percentile: item.rs_percentile, rs_percentile_5days_ago: 0, rs_change: item.rs_change, returns: item.returns },
+                    item.source_index
+                  )}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/stock/[symbol]",
+                      params: {
+                        symbol: item.symbol,
+                        data: JSON.stringify({
+                          symbol: item.symbol,
+                          close: item.close,
+                          rs_percentile: item.rs_percentile,
+                          rs_percentile_5days_ago: 0,
+                          rs_change: item.rs_change,
+                          returns: item.returns,
+                        }),
+                      },
+                    })
+                  }
+                />
+              )}
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              extraData={[favCurrentPrices, favPricesLoading]}
+            />
+          )}
+        </>
+      )}
+
       {/* === VCP View === */}
-      {!isRsTop && (
+      {!isRsTop && !isFavorites && (
         <>
           {/* No result → show scan prompt */}
           {!currentResult && !isScanning && dbLoaded && (

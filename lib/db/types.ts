@@ -38,6 +38,19 @@ export interface RsRankingRecord {
   stocks: import("@/lib/scanner").RankedStock[];
 }
 
+/** Favorite stock record from DB */
+export interface FavoriteRecord {
+  id: number;
+  symbol: string;
+  close: number;
+  rs_percentile: number;
+  rs_change: number;
+  returns: { r_12m: number; r_6m: number; r_3m: number; r_1m: number };
+  failed_conditions: string[];
+  source_index: string;
+  favorited_at: string;
+}
+
 /** Rank change between two ranking snapshots */
 export interface RankChange {
   symbol: string;

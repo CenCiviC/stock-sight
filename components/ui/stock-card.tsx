@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { Stock, OHLCVBar } from "@/lib/scanner";
 import { StyledText } from "./text";
 import { PriceText } from "./price-text";
@@ -17,9 +18,11 @@ interface StockCardProps {
   chartBars?: OHLCVBar[];
   badge?: ReactNode;
   onPress?: () => void;
+  isFavorited?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export function StockCard({ stock, chartBars, badge, onPress }: StockCardProps) {
+export function StockCard({ stock, chartBars, badge, onPress, isFavorited, onToggleFavorite }: StockCardProps) {
   return (
     <Card onPress={onPress} style={styles.stockCard}>
       <View style={styles.cardHeader}>
@@ -29,7 +32,18 @@ export function StockCard({ stock, chartBars, badge, onPress }: StockCardProps) 
           </StyledText>
           {badge}
         </View>
-        <PriceText value={stock.close} />
+        <View style={styles.headerRight}>
+          <PriceText value={stock.close} />
+          {onToggleFavorite && (
+            <Pressable onPress={onToggleFavorite} hitSlop={8} style={styles.starBtn}>
+              <Ionicons
+                name={isFavorited ? "star" : "star-outline"}
+                size={20}
+                color={isFavorited ? colors.accent_warm[300] : colors.secondary[600]}
+              />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <View style={styles.cardBody}>
@@ -92,6 +106,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.md,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  starBtn: {
+    padding: spacing.xs,
   },
   symbolRow: {
     flexDirection: "row",

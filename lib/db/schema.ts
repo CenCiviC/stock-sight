@@ -1,5 +1,5 @@
 export const DB_NAME = "stock_sight.db";
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const MIGRATIONS: string[] = [
   `PRAGMA foreign_keys = ON;
@@ -58,4 +58,20 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_rs_ranking_stocks_ranking_id ON rs_ranking_stocks(ranking_id);`,
 
   `ALTER TABLE rs_ranking_stocks ADD COLUMN name TEXT NOT NULL DEFAULT '';`,
+
+  `CREATE TABLE IF NOT EXISTS favorites (
+    id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+    symbol                  TEXT    NOT NULL UNIQUE,
+    close                   REAL    NOT NULL,
+    rs_percentile           REAL    NOT NULL,
+    rs_percentile_5days_ago REAL    NOT NULL,
+    rs_change               REAL    NOT NULL,
+    r_12m                   REAL    NOT NULL,
+    r_6m                    REAL    NOT NULL,
+    r_3m                    REAL    NOT NULL,
+    r_1m                    REAL    NOT NULL,
+    failed_conditions       TEXT    NOT NULL DEFAULT '',
+    source_index            TEXT    NOT NULL,
+    favorited_at            TEXT    NOT NULL DEFAULT (datetime('now'))
+  );`,
 ];
