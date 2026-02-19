@@ -6,7 +6,7 @@ import { proxyUrl } from "./proxy";
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
-  "Chrome/124.0.0.0 Safari/537.36";
+  "Chrome/131.0.0.0 Safari/537.36";
 
 // Native cookie jar for Yahoo domains (web uses metro proxy's jar)
 let nativeCookieJar = "";
@@ -51,9 +51,18 @@ async function yahooFetch(
     headers["Cookie"] = nativeCookieJar;
   }
 
-  const resp = await fetch(url, { ...init, headers });
+  const resp = await fetch(url, { ...init, headers, credentials: "include" });
 
-  const sc = resp.headers.get("set-cookie");
+  // Try to capture cookies from response.
+  // React Native iOS may not expose set-cookie via .get(), try forEach as fallback.
+  let sc = resp.headers.get("set-cookie");
+  if (!sc) {
+    const parts: string[] = [];
+    resp.headers.forEach((value, key) => {
+      if (key.toLowerCase() === "set-cookie") parts.push(value);
+    });
+    if (parts.length > 0) sc = parts.join(", ");
+  }
   if (sc) {
     nativeCookieJar = mergeCookies(nativeCookieJar, sc);
   }
@@ -240,10 +249,18 @@ async function getYahooCrumb(signal?: AbortSignal): Promise<string> {
     return crumbCache.crumb;
   }
 
+  // On native, try finance.yahoo.com as fallback cookie source
+  // (fc.yahoo.com may not set cookies reliably on iOS)
+  const cookieInitUrls =
+    Platform.OS === "web"
+      ? [proxyUrl("https://fc.yahoo.com/")]
+      : ["https://fc.yahoo.com/", "https://finance.yahoo.com/"];
+
   const maxRetries = 2;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    // Step 1: Hit fc.yahoo.com to establish session cookies (proxy stores them)
-    await yahooFetch(proxyUrl("https://fc.yahoo.com/"), { signal }).catch(() => {});
+    // Step 1: Hit Yahoo to establish session cookies
+    const initUrl = cookieInitUrls[Math.min(attempt, cookieInitUrls.length - 1)];
+    await yahooFetch(initUrl, { signal }).catch(() => {});
 
     // Step 2: Get crumb using the stored cookies
     const resp = await yahooFetch(
@@ -251,8 +268,9 @@ async function getYahooCrumb(signal?: AbortSignal): Promise<string> {
       { signal }
     );
 
-    if (resp.status === 429 && attempt < maxRetries) {
+    if ((resp.status === 429 || resp.status === 401) && attempt < maxRetries) {
       nativeCookieJar = "";
+      crumbCache = null;
       await sleep(1000 * (attempt + 1));
       continue;
     }
