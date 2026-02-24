@@ -38,6 +38,7 @@ export default function StockDetail() {
   }
 
   const [period, setPeriod] = useState<PeriodKey>("6M");
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const chartDays = PERIODS.find((p) => p.key === period)?.days ?? 180;
 
   const {
@@ -117,14 +118,24 @@ export default function StockDetail() {
 
       {/* Company Summary */}
       {profile?.summary ? (
-        <StyledText
-          variant="caption"
-          color={colors.secondary[600]}
-          numberOfLines={3}
-          style={styles.summaryText}
-        >
-          {profile.summary}
-        </StyledText>
+        <View style={styles.summaryContainer}>
+          <StyledText
+            variant="caption"
+            color={colors.secondary[600]}
+            numberOfLines={summaryExpanded ? undefined : 3}
+            style={styles.summaryText}
+          >
+            {profile.summary}
+          </StyledText>
+          <Pressable
+            onPress={() => setSummaryExpanded((prev) => !prev)}
+            hitSlop={8}
+          >
+            <StyledText variant="caption" color={colors.accent_warm[300]}>
+              {summaryExpanded ? "Close" : "More"}
+            </StyledText>
+          </Pressable>
+        </View>
       ) : null}
 
       {/* Chart */}
@@ -369,9 +380,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[800],
     borderRadius: borderRadius.sm,
   },
-  summaryText: {
+  summaryContainer: {
     marginBottom: spacing.lg,
+  },
+  summaryText: {
     lineHeight: 18,
+    marginBottom: spacing.xs,
   },
   card: {
     marginBottom: spacing.lg,
