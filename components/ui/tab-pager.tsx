@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState, Children } from "react";
+import { Children, forwardRef, useImperativeHandle, useState } from "react";
 import { View, type StyleProp, type ViewStyle } from "react-native";
 
 export interface TabPagerRef {
@@ -24,10 +24,8 @@ export const TabPager = forwardRef<TabPagerRef, TabPagerProps>(
       },
     }));
 
-    return (
-      <View style={[{ flex: 1 }, style]}>
-        {childArray[activePage]}
-      </View>
-    );
-  }
+    return <View style={[{ flex: 1 }, style]}>{childArray[activePage]}</View>;
+  },
 );
+
+TabPager.displayName = "TabPager";

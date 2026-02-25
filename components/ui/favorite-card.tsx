@@ -7,7 +7,7 @@ import { PriceText } from "./price-text";
 import { PercentageText } from "./percentage-text";
 import { Badge } from "./badge";
 import { colors } from "@/constants/colors";
-import { spacing, borderRadius } from "@/constants/spacing";
+import { spacing } from "@/constants/spacing";
 
 interface FavoriteCardProps {
   favorite: FavoriteRecord;
@@ -22,6 +22,23 @@ const SOURCE_LABELS: Record<string, string> = {
   russell_1000: "Russell",
   sp500: "S&P 500",
 };
+
+function formatDaysAgo(dateStr: string): string {
+  const saved = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - saved.getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (days === 0) return "Today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  return `${m}/${day}`;
+}
 
 export function FavoriteCard({
   favorite,
@@ -89,19 +106,15 @@ export function FavoriteCard({
         </View>
       </View>
 
-      {/* RS percentile bar */}
-      <View style={styles.rsRow}>
+      {/* Saved date row */}
+      <View style={styles.dateRow}>
+        <Ionicons name="calendar-outline" size={12} color={colors.secondary[500]} />
         <StyledText variant="caption" color={colors.secondary[500]}>
-          RS: {favorite.rs_percentile.toFixed(1)}
+          {formatDate(favorite.favorited_at)}
         </StyledText>
-      </View>
-      <View style={styles.barBg}>
-        <View
-          style={[
-            styles.barFill,
-            { width: `${Math.min(favorite.rs_percentile, 100)}%` },
-          ]}
-        />
+        <StyledText variant="caption" color={colors.secondary[600]}>
+          · {formatDaysAgo(favorite.favorited_at)}
+        </StyledText>
       </View>
     </Card>
   );
@@ -128,25 +141,16 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   priceCol: {
     alignItems: "center",
     flex: 1,
     gap: spacing.xs,
   },
-  rsRow: {
-    marginBottom: spacing.xs,
-  },
-  barBg: {
-    height: 4,
-    backgroundColor: colors.primary[700],
-    borderRadius: borderRadius.full,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: 4,
-    backgroundColor: colors.accent_warm[300],
-    borderRadius: borderRadius.full,
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
 });

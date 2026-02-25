@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import { View, type StyleProp, type ViewStyle } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import PagerView from "react-native-pager-view";
 
 export interface TabPagerRef {
@@ -31,5 +31,7 @@ export const TabPager = forwardRef<TabPagerRef, TabPagerProps>(
         {children}
       </PagerView>
     );
-  }
+  },
 );
+
+TabPager.displayName = "TabPagerNative";
