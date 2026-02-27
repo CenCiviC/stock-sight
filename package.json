@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:eas": "eas build --platform ios --profile preview",
+    "build:eas": "eas build --platform ios --profile production",
     "publish:eas": "eas submit --platform ios --latest --non-interactive"
   },
   "dependencies": {
