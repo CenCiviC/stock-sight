@@ -17,7 +17,7 @@ import type {
   ChartResult,
 } from "@/lib/scanner";
 import { queryClient, queryKeys } from "@/lib/queries";
-import { saveScan, getLatestScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "@/lib/db";
+import { saveScan, getLatestScan, getPreviousScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "@/lib/db";
 import type { ComparisonResult, RankChange, FavoriteRecord } from "@/lib/db";
 import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
 import { colors } from "@/constants/colors";
@@ -76,6 +76,7 @@ export default function Index() {
   useEffect(() => {
     (async () => {
       const loaded: Partial<Record<IndexType, ScanResult>> = {};
+      const loadedComparisons: Partial<Record<IndexType, ComparisonResult>> = {};
       for (const tab of VCP_TABS) {
         const record = await getLatestScan(db, tab.key);
         if (record) {
@@ -85,9 +86,14 @@ export default function Index() {
             scanned_at: record.scanned_at,
             stocks: record.stocks,
           };
+          const prev = await getPreviousScan(db, tab.key);
+          if (prev) {
+            loadedComparisons[tab.key] = compareScanResults(record.stocks, prev.stocks);
+          }
         }
       }
       setResults(loaded);
+      setComparisons(loadedComparisons);
 
       // Load favorites
       const favs = await getAllFavorites(db);

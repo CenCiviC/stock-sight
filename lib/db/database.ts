@@ -133,6 +133,20 @@ export async function getLatestScan(
   return getScanById(db, scan.id);
 }
 
+/** Get the second most recent scan for a given index (for comparison on mount) */
+export async function getPreviousScan(
+  db: SQLiteDatabase,
+  indexType: IndexType
+): Promise<ScanRecord | null> {
+  const scan = await db.getFirstAsync<ScanSummary>(
+    `SELECT id, index_type, count, scanned_at, created_at
+     FROM scans WHERE index_type = ? ORDER BY scanned_at DESC LIMIT 1 OFFSET 1`,
+    indexType
+  );
+  if (!scan) return null;
+  return getScanById(db, scan.id);
+}
+
 /** Delete a single scan (CASCADE removes its stocks) */
 export async function deleteScan(
   db: SQLiteDatabase,

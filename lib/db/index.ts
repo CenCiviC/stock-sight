@@ -1,4 +1,4 @@
-export { initDb, saveScan, getScans, getScanById, getLatestScan, deleteScan, deleteAllScans } from "./database";
+export { initDb, saveScan, getScans, getScanById, getLatestScan, getPreviousScan, deleteScan, deleteAllScans } from "./database";
 export { compareScanResults } from "./comparison";
 export { saveRsRanking, getLatestRsRanking, compareRankings } from "./rs-ranking";
 export { addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "./favorites";
