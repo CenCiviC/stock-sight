@@ -66,21 +66,6 @@ export default function StockDetail() {
       : "Failed to load financials"
     : null;
 
-  if (!stock) {
-    return (
-      <View style={styles.container}>
-        <StyledText
-          variant="body"
-          color={colors.negative}
-          align="center"
-          style={styles.errorText}
-        >
-          No data available for {symbol}
-        </StyledText>
-      </View>
-    );
-  }
-
   const returnPeriods: { label: string; key: keyof Stock["returns"] }[] = [
     { label: "12 Month", key: "r_12m" },
     { label: "6 Month", key: "r_6m" },
@@ -93,9 +78,13 @@ export default function StockDetail() {
       {/* Header */}
       <View style={styles.header}>
         <StyledText variant="h2" color={colors.accent_light[400]}>
-          {companyName || stock.symbol}
+          {companyName || symbol}
         </StyledText>
-        <PriceText value={stock.close} size="lg" style={styles.headerPrice} />
+        {stock ? (
+          <PriceText value={stock.close} size="lg" style={styles.headerPrice} />
+        ) : chartResult ? (
+          <PriceText value={chartResult.currentPrice} size="lg" style={styles.headerPrice} />
+        ) : null}
         {profile && (
           <View style={styles.profileTags}>
             {!!profile.sector && (
@@ -180,130 +169,134 @@ export default function StockDetail() {
         )}
 
         {bars && !chartLoading && !chartError && (
-          <StockChart bars={bars} height={300} />
+          <StockChart bars={bars} height={300} maPeriods={[50, 200]} />
         )}
       </Card>
 
       {/* Relative Strength Card */}
-      <Card style={styles.card}>
-        <StyledText
-          variant="label"
-          color={colors.secondary[500]}
-          style={styles.cardTitle}
-        >
-          RELATIVE STRENGTH
-        </StyledText>
+      {stock && (
+        <Card style={styles.card}>
+          <StyledText
+            variant="label"
+            color={colors.secondary[500]}
+            style={styles.cardTitle}
+          >
+            RELATIVE STRENGTH
+          </StyledText>
 
-        <View style={styles.rsRow}>
-          <View style={styles.rsItem}>
-            <StyledText variant="caption" color={colors.secondary[600]}>
-              Current
-            </StyledText>
-            <StyledText variant="h2" color={colors.accent_warm[300]}>
-              {stock.rs_percentile.toFixed(1)}
-            </StyledText>
-          </View>
-          <View style={styles.rsItem}>
-            <StyledText variant="caption" color={colors.secondary[600]}>
-              5 Days Ago
-            </StyledText>
-            <StyledText variant="h2" color={colors.accent_light[400]}>
-              {stock.rs_percentile_5days_ago.toFixed(1)}
-            </StyledText>
-          </View>
-          <View style={styles.rsItem}>
-            <StyledText variant="caption" color={colors.secondary[600]}>
-              Change
-            </StyledText>
-            <PercentageText value={stock.rs_change} showArrow={true} />
-          </View>
-        </View>
-
-        <Divider />
-
-        {/* Percentile visualization */}
-        <View style={styles.percentileContainer}>
-          <View style={styles.percentileBarBg}>
-            <View
-              style={[
-                styles.percentileBarFill,
-                { width: `${Math.min(stock.rs_percentile, 100)}%` },
-              ]}
-            />
-            <View
-              style={[
-                styles.percentileMarker,
-                {
-                  left: `${Math.min(stock.rs_percentile_5days_ago, 100)}%`,
-                },
-              ]}
-            />
-          </View>
-          <View style={styles.percentileLabels}>
-            {[0, 25, 50, 75, 100].map((n) => (
-              <StyledText
-                key={n}
-                variant="caption"
-                color={colors.secondary[700]}
-              >
-                {n}
+          <View style={styles.rsRow}>
+            <View style={styles.rsItem}>
+              <StyledText variant="caption" color={colors.secondary[600]}>
+                Current
               </StyledText>
-            ))}
+              <StyledText variant="h2" color={colors.accent_warm[300]}>
+                {stock.rs_percentile.toFixed(1)}
+              </StyledText>
+            </View>
+            <View style={styles.rsItem}>
+              <StyledText variant="caption" color={colors.secondary[600]}>
+                5 Days Ago
+              </StyledText>
+              <StyledText variant="h2" color={colors.accent_light[400]}>
+                {stock.rs_percentile_5days_ago.toFixed(1)}
+              </StyledText>
+            </View>
+            <View style={styles.rsItem}>
+              <StyledText variant="caption" color={colors.secondary[600]}>
+                Change
+              </StyledText>
+              <PercentageText value={stock.rs_change} showArrow={true} />
+            </View>
           </View>
-        </View>
-      </Card>
+
+          <Divider />
+
+          {/* Percentile visualization */}
+          <View style={styles.percentileContainer}>
+            <View style={styles.percentileBarBg}>
+              <View
+                style={[
+                  styles.percentileBarFill,
+                  { width: `${Math.min(stock.rs_percentile, 100)}%` },
+                ]}
+              />
+              <View
+                style={[
+                  styles.percentileMarker,
+                  {
+                    left: `${Math.min(stock.rs_percentile_5days_ago, 100)}%`,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.percentileLabels}>
+              {[0, 25, 50, 75, 100].map((n) => (
+                <StyledText
+                  key={n}
+                  variant="caption"
+                  color={colors.secondary[700]}
+                >
+                  {n}
+                </StyledText>
+              ))}
+            </View>
+          </View>
+        </Card>
+      )}
 
       {/* Returns Card */}
-      <Card style={styles.card}>
-        <StyledText
-          variant="label"
-          color={colors.secondary[500]}
-          style={styles.cardTitle}
-        >
-          RETURNS
-        </StyledText>
+      {stock && (
+        <Card style={styles.card}>
+          <StyledText
+            variant="label"
+            color={colors.secondary[500]}
+            style={styles.cardTitle}
+          >
+            RETURNS
+          </StyledText>
 
-        {returnPeriods.map(({ label, key }, idx) => {
-          const value = stock.returns[key];
-          const pct = value * 100;
-          const barWidth = Math.min(Math.abs(pct), 100);
-          const barColor = value >= 0 ? colors.positive : colors.negative;
+          {returnPeriods.map(({ label, key }, idx) => {
+            const value = stock.returns[key];
+            const pct = value * 100;
+            const barWidth = Math.min(Math.abs(pct), 100);
+            const barColor = value >= 0 ? colors.positive : colors.negative;
 
-          return (
-            <View key={key}>
-              <View style={styles.returnRow}>
-                <StyledText
-                  variant="bodySmall"
-                  color={colors.secondary[400]}
-                  style={styles.returnLabel}
-                >
-                  {label}
-                </StyledText>
-                <View style={styles.returnBarContainer}>
-                  <View
-                    style={[
-                      styles.returnBar,
-                      { width: `${barWidth}%`, backgroundColor: barColor },
-                    ]}
+            return (
+              <View key={key}>
+                <View style={styles.returnRow}>
+                  <StyledText
+                    variant="bodySmall"
+                    color={colors.secondary[400]}
+                    style={styles.returnLabel}
+                  >
+                    {label}
+                  </StyledText>
+                  <View style={styles.returnBarContainer}>
+                    <View
+                      style={[
+                        styles.returnBar,
+                        { width: `${barWidth}%`, backgroundColor: barColor },
+                      ]}
+                    />
+                  </View>
+                  <PercentageText
+                    value={pct}
+                    showArrow={false}
+                    showSign={true}
+                    style={styles.returnValue}
                   />
                 </View>
-                <PercentageText
-                  value={pct}
-                  showArrow={false}
-                  showSign={true}
-                  style={styles.returnValue}
-                />
+                {idx < returnPeriods.length - 1 && (
+                  <Divider
+                    color={colors.primary[700]}
+                    marginVertical={spacing.sm}
+                  />
+                )}
               </View>
-              {idx < returnPeriods.length - 1 && (
-                <Divider
-                  color={colors.primary[700]}
-                  marginVertical={spacing.sm}
-                />
-              )}
-            </View>
-          );
-        })}
-      </Card>
+            );
+          })}
+        </Card>
+      )}
 
       {/* Financials Card */}
       <Card style={styles.card}>

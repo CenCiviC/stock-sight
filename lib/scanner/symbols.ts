@@ -53,6 +53,48 @@ async function fetchNasdaqSymbols(limit: number = 5000): Promise<string[]> {
 }
 
 /**
+ * Fetch NASDAQ symbols sorted by market cap (descending).
+ * Returns symbols in market-cap order (largest first).
+ */
+export async function fetchNasdaqSymbolsByMarketCap(
+  limit: number = 5000
+): Promise<string[]> {
+  const rawUrl =
+    `https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=${limit}&sortcolumn=marketcap&sortorder=desc`;
+
+  try {
+    const resp = await fetch(proxyUrl(rawUrl), {
+      headers: {
+        Accept: "application/json, text/plain, */*",
+      },
+    });
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+
+    const json = await resp.json();
+    const rows: Array<{ symbol?: string; marketCap?: string }> =
+      json?.data?.table?.rows ?? [];
+
+    // Keep insertion order (already sorted by market cap from API)
+    const seen = new Set<string>();
+    const symbols: string[] = [];
+    for (const row of rows) {
+      const sym = (row.symbol ?? "").replace(/\./g, "-").trim().toUpperCase();
+      if (sym && !seen.has(sym)) {
+        seen.add(sym);
+        symbols.push(sym);
+      }
+    }
+
+    return symbols;
+  } catch (e) {
+    console.warn("[symbols] Failed to fetch NASDAQ symbols by market cap:", e);
+    return [];
+  }
+}
+
+/**
  * Fetch Russell 1000 symbols from iShares IWB ETF holdings CSV.
  * Falls back to an empty array on failure.
  */

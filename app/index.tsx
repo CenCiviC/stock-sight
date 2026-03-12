@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { runScan, runRsScan, fetchChart } from "@/lib/scanner";
+import { runScan, runRsScan, fetchChart, fetchNasdaqSymbolsByMarketCap, rollingSMA } from "@/lib/scanner";
 import type {
   Stock,
   ScanResult,
@@ -19,17 +19,25 @@ import type {
 import { queryClient, queryKeys } from "@/lib/queries";
 import { saveScan, getLatestScan, getPreviousScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "@/lib/db";
 import type { ComparisonResult, RankChange, FavoriteRecord } from "@/lib/db";
-import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
+import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, StockChart, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { spacing, borderRadius } from "@/constants/spacing";
 
-type ActiveView = "rs_top" | IndexType | "favorites";
+type ActiveView = "rs_top" | "nasdaq" | "charts" | "favorites";
 
 const VCP_TABS: { key: IndexType; label: string }[] = [
   { key: "nasdaq", label: "NASDAQ" },
-  { key: "russell_1000", label: "Russell 1000" },
-  { key: "sp500", label: "S&P 500" },
 ];
+
+type ChartGridItem = {
+  symbol: string;
+  bars: OHLCVBar[];
+};
+
+const CHART_GRID_COLS = 2;
+const CHART_CELL_H = 140;
+// Row height for getItemLayout: cell height + vertical margin (xs * 2)
+const CHART_ROW_H = CHART_CELL_H + 8;
 
 export default function Index() {
   const router = useRouter();
@@ -55,6 +63,13 @@ export default function Index() {
   const [favCurrentPrices, setFavCurrentPrices] = useState<Record<string, number>>({});
   const [favPricesLoading, setFavPricesLoading] = useState(false);
 
+  // --- Chart Grid state ---
+  const [chartGridItems, setChartGridItems] = useState<ChartGridItem[]>([]);
+  const [chartGridLoading, setChartGridLoading] = useState(false);
+  const [chartGridTotal, setChartGridTotal] = useState(0);
+  const [chartGridLoaded, setChartGridLoaded] = useState(0);
+  const chartGridAbortRef = useRef<AbortController | null>(null);
+
   // --- Shared state ---
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ScanProgress | null>(null);
@@ -67,9 +82,10 @@ export default function Index() {
 
   const isRsTop = activeView === "rs_top";
   const isFavorites = activeView === "favorites";
-  const activeTab = (isRsTop || isFavorites) ? null : (activeView as IndexType);
+  const isCharts = activeView === "charts";
+  const activeTab = (isRsTop || isFavorites || isCharts) ? null : (activeView as IndexType);
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
-  const isScanning = isRsTop ? rsScanning : (!isFavorites && scanningIndex === activeTab);
+  const isScanning = isRsTop ? rsScanning : (!isFavorites && !isCharts && scanningIndex === activeTab);
   const isAnyScanRunning = scanningIndex !== null || rsScanning;
 
   // Load latest data from DB on mount
@@ -215,7 +231,71 @@ export default function Index() {
 
   const cancelScan = useCallback(() => {
     abortRef.current?.abort();
+    chartGridAbortRef.current?.abort();
   }, []);
+
+  // Load chart grid: fetch NASDAQ by market cap, filter by SMA200
+  const loadChartGrid = useCallback(async () => {
+    if (chartGridLoading) return;
+
+    setChartGridLoading(true);
+    setChartGridItems([]);
+    setChartGridLoaded(0);
+    setError(null);
+
+    const controller = new AbortController();
+    chartGridAbortRef.current = controller;
+
+    try {
+      const symbols = await fetchNasdaqSymbolsByMarketCap();
+      if (controller.signal.aborted) return;
+
+      setChartGridTotal(symbols.length);
+
+      const concurrency = 5;
+      for (let i = 0; i < symbols.length; i += concurrency) {
+        if (controller.signal.aborted) break;
+
+        const batch = symbols.slice(i, i + concurrency);
+        const results = await Promise.allSettled(
+          batch.map((sym) => fetchChart(sym, 400, controller.signal))
+        );
+
+        if (controller.signal.aborted) break;
+
+        const newItems: ChartGridItem[] = [];
+        for (let j = 0; j < results.length; j++) {
+          const result = results[j];
+          if (result.status !== "fulfilled") continue;
+
+          const { bars } = result.value;
+          if (bars.length < 2) continue;
+
+          const closes = bars.map((b) => b.close);
+          const sma200 = rollingSMA(closes, 200);
+          const lastSma = sma200[sma200.length - 1];
+          const lastClose = closes[closes.length - 1];
+
+          // Show if: no SMA200 data (too new) OR close > SMA200
+          if (lastSma === null || lastClose > lastSma) {
+            newItems.push({ symbol: batch[j], bars });
+          }
+        }
+
+        if (newItems.length > 0) {
+          setChartGridItems((prev) => [...prev, ...newItems]);
+        }
+        setChartGridLoaded((prev) => prev + batch.length);
+      }
+    } catch (e) {
+      if ((e as Error).message !== "Scan aborted" && !(e as Error).message?.includes("abort")) {
+        setError(e instanceof Error ? e.message : "Failed to load charts");
+      }
+    } finally {
+      setChartGridLoading(false);
+      chartGridAbortRef.current = null;
+    }
+  }, [chartGridLoading]);
 
   // Toggle favorite for a stock
   const toggleFavorite = useCallback(
@@ -342,6 +422,32 @@ export default function Index() {
     }
   };
 
+  const MA_200 = useMemo(() => [200], []);
+
+  const renderChartGridItem = useCallback(({ item }: { item: ChartGridItem }) => (
+    <Pressable
+      style={styles.chartGridCell}
+      onPress={() =>
+        router.push({
+          pathname: "/stock/[symbol]",
+          params: { symbol: item.symbol },
+        })
+      }
+    >
+      <StyledText
+        variant="caption"
+        weight="bold"
+        color={colors.accent_light[400]}
+        style={styles.chartGridSymbol}
+      >
+        {item.symbol}
+      </StyledText>
+      <View style={styles.chartGridChartWrap}>
+        <StockChart bars={item.bars} height={CHART_CELL_H - 24} compact maPeriods={MA_200} />
+      </View>
+    </Pressable>
+  ), [router, MA_200]);
+
   const renderStockItem = ({ item }: { item: Stock }) => {
     let badge = null;
     if (comparison) {
@@ -426,7 +532,7 @@ export default function Index() {
             ) : null}
           </Pressable>
 
-          {/* VCP tabs */}
+          {/* NASDAQ VCP tab */}
           {VCP_TABS.map((tab) => {
             const isActive = activeView === tab.key;
             const hasResult = !!results[tab.key];
@@ -435,7 +541,7 @@ export default function Index() {
               <Pressable
                 key={tab.key}
                 style={[styles.tab, isActive && styles.tabActive]}
-                onPress={() => setActiveView(tab.key)}
+                onPress={() => setActiveView(tab.key as ActiveView)}
               >
                 <StyledText
                   variant="bodySmall"
@@ -452,6 +558,30 @@ export default function Index() {
               </Pressable>
             );
           })}
+
+          {/* Charts tab */}
+          <Pressable
+            style={[styles.tab, isCharts && styles.tabActive]}
+            onPress={() => setActiveView("charts")}
+          >
+            <Ionicons
+              name="grid-outline"
+              size={14}
+              color={isCharts ? colors.accent_warm[300] : colors.secondary[600]}
+            />
+            <StyledText
+              variant="bodySmall"
+              weight={isCharts ? "bold" : "medium"}
+              color={isCharts ? colors.accent_warm[300] : colors.secondary[600]}
+            >
+              Charts
+            </StyledText>
+            {chartGridLoading ? (
+              <View style={styles.tabDotScanning} />
+            ) : chartGridItems.length > 0 ? (
+              <View style={styles.tabDot} />
+            ) : null}
+          </Pressable>
 
           {/* Favorites tab */}
           <Pressable
@@ -636,8 +766,75 @@ export default function Index() {
         </>
       )}
 
+      {/* === Charts Grid View === */}
+      {isCharts && (
+        <>
+          {chartGridItems.length === 0 && !chartGridLoading && (
+            <View style={styles.emptyState}>
+              <Ionicons name="grid-outline" size={48} color={colors.primary[400]} />
+              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+                NASDAQ Chart Grid
+              </StyledText>
+              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
+                Load NASDAQ stocks by market cap, filtered above SMA 200
+              </StyledText>
+              <Button
+                title="Load Charts"
+                variant="primary"
+                size="lg"
+                onPress={loadChartGrid}
+                style={styles.scanBtn}
+              />
+            </View>
+          )}
+
+          {chartGridLoading && (
+            <View style={styles.scanningSection}>
+              <ProgressBar
+                progress={chartGridTotal > 0 ? chartGridLoaded / chartGridTotal : 0}
+                label={`Loading charts... ${chartGridLoaded}/${chartGridTotal}`}
+                style={styles.progressBar}
+              />
+              <Button
+                title="Cancel"
+                variant="secondary"
+                size="sm"
+                onPress={cancelScan}
+                style={styles.cancelBtn}
+              />
+            </View>
+          )}
+
+          {chartGridItems.length > 0 && (
+            <FlatList
+              data={chartGridItems}
+              keyExtractor={(item) => item.symbol}
+              numColumns={CHART_GRID_COLS}
+              renderItem={renderChartGridItem}
+              contentContainerStyle={styles.chartGridList}
+              showsVerticalScrollIndicator={false}
+              ListHeaderComponent={
+                !chartGridLoading ? (
+                  <View style={styles.chartGridHeader}>
+                    <StyledText variant="caption" color={colors.secondary[600]}>
+                      {chartGridItems.length} stocks above SMA 200
+                    </StyledText>
+                    <Button
+                      title="Reload"
+                      variant="secondary"
+                      size="sm"
+                      onPress={loadChartGrid}
+                    />
+                  </View>
+                ) : null
+              }
+            />
+          )}
+        </>
+      )}
+
       {/* === VCP View === */}
-      {!isRsTop && !isFavorites && (
+      {!isRsTop && !isFavorites && !isCharts && (
         <>
           {/* No result → show scan prompt */}
           {!currentResult && !isScanning && dbLoaded && (
@@ -820,5 +1017,36 @@ const styles = StyleSheet.create({
       web: { paddingBottom: 32 },
       default: { paddingBottom: 40 },
     }),
+  },
+  chartGridList: {
+    padding: spacing.sm,
+    ...Platform.select({
+      web: { paddingBottom: 32 },
+      default: { paddingBottom: 40 },
+    }),
+  },
+  chartGridHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  chartGridCell: {
+    flex: 1,
+    height: CHART_CELL_H,
+    margin: spacing.xs,
+    backgroundColor: colors.primary[800],
+    borderRadius: borderRadius.md,
+    overflow: "hidden",
+  },
+  chartGridSymbol: {
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.xs,
+    paddingBottom: 2,
+  },
+  chartGridChartWrap: {
+    flex: 1,
+    overflow: "hidden",
   },
 });

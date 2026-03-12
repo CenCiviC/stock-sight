@@ -1,6 +1,7 @@
 import { colors } from "@/constants/colors";
 import { borderRadius } from "@/constants/spacing";
 import type { OHLCVBar } from "@/lib/scanner";
+import { rollingSMA } from "@/lib/scanner";
 import { useMemo, useRef } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -10,6 +11,43 @@ interface StockChartProps {
   height?: number;
   /** Compact mode: hides axes, grid, crosshair. For inline/card display. */
   compact?: boolean;
+  /** Moving average periods to display (e.g. [50, 200]) */
+  maPeriods?: number[];
+}
+
+const MA_COLORS: Record<number, string> = {
+  10: "#e6e600",
+  20: "#ff9800",
+  50: "#2196f3",
+  150: "#9c27b0",
+  200: "#f44336",
+};
+
+function getMAColor(period: number): string {
+  return MA_COLORS[period] ?? "#888888";
+}
+
+type MALineData = { period: number; color: string; data: { time: string; value: number }[] };
+
+function computeMALines(bars: OHLCVBar[], periods: number[]): MALineData[] {
+  const closes = bars.map((b) => b.close);
+  const lines: MALineData[] = [];
+
+  for (const period of periods) {
+    const sma = rollingSMA(closes, period);
+    const data: { time: string; value: number }[] = [];
+    for (let i = 0; i < bars.length; i++) {
+      const v = sma[i];
+      if (v !== null) {
+        data.push({ time: bars[i].date, value: v });
+      }
+    }
+    if (data.length > 0) {
+      lines.push({ period, color: getMAColor(period), data });
+    }
+  }
+
+  return lines;
 }
 
 /**
@@ -19,6 +57,7 @@ export function StockChart({
   bars,
   height = 320,
   compact = false,
+  maPeriods = [],
 }: StockChartProps) {
   const webViewRef = useRef<WebView>(null);
 
@@ -40,10 +79,12 @@ export function StockChart({
           : "rgba(248, 113, 113, 0.3)",
     }));
 
+    const maLines = maPeriods.length > 0 ? computeMALines(bars, maPeriods) : [];
+
     return compact
-      ? buildCompactChartHtml(candleData, volumeData, height)
-      : buildChartHtml(candleData, volumeData, height);
-  }, [bars, height, compact]);
+      ? buildCompactChartHtml(candleData, volumeData, height, maLines)
+      : buildChartHtml(candleData, volumeData, height, maLines);
+  }, [bars, height, compact, maPeriods]);
 
   if (Platform.OS === "web") {
     return (
@@ -86,10 +127,26 @@ type CandleItem = {
 };
 type VolumeItem = { time: string; value: number; color: string };
 
+function buildMAScript(maLines: MALineData[]): string {
+  if (maLines.length === 0) return "";
+
+  return maLines.map((line) => `
+      var ma${line.period} = chart.addLineSeries({
+        color: '${line.color}',
+        lineWidth: 1,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        crosshairMarkerVisible: false,
+      });
+      ma${line.period}.setData(${JSON.stringify(line.data)});
+  `).join("\n");
+}
+
 function buildChartHtml(
   candleData: CandleItem[],
   volumeData: VolumeItem[],
   height: number,
+  maLines: MALineData[] = [],
 ): string {
   return `<!DOCTYPE html>
 <html>
@@ -177,6 +234,8 @@ function buildChartHtml(
       candleSeries.setData(${JSON.stringify(candleData)});
       volumeSeries.setData(${JSON.stringify(volumeData)});
 
+      ${buildMAScript(maLines)}
+
       chart.timeScale().fitContent();
 
       window.addEventListener('resize', function() {
@@ -196,6 +255,7 @@ function buildCompactChartHtml(
   candleData: CandleItem[],
   volumeData: VolumeItem[],
   height: number,
+  maLines: MALineData[] = [],
 ): string {
   return `<!DOCTYPE html>
 <html>
@@ -270,6 +330,8 @@ function buildCompactChartHtml(
 
       candleSeries.setData(${JSON.stringify(candleData)});
       volumeSeries.setData(${JSON.stringify(volumeData)});
+
+      ${buildMAScript(maLines)}
 
       chart.timeScale().fitContent();
     })();
