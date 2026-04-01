@@ -51,6 +51,15 @@ export interface FavoriteRecord {
   favorited_at: string;
 }
 
+/** Chart grid record from DB */
+export interface ChartGridRecord {
+  id: number;
+  count: number;
+  scanned_at: string;
+  created_at: string;
+  items: { symbol: string; bars: import("@/lib/scanner").OHLCVBar[] }[];
+}
+
 /** Rank change between two ranking snapshots */
 export interface RankChange {
   symbol: string;

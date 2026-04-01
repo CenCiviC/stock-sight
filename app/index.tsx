@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { runScan, runRsScan, fetchChart, fetchNasdaqSymbolsByMarketCap, rollingSMA } from "@/lib/scanner";
+import { runScan, runRsScan, fetchChart, fetchChartBatch, fetchNasdaqSymbolsByMarketCap, rollingSMA } from "@/lib/scanner";
 import type {
   Stock,
   ScanResult,
@@ -17,7 +17,7 @@ import type {
   ChartResult,
 } from "@/lib/scanner";
 import { queryClient, queryKeys } from "@/lib/queries";
-import { saveScan, getLatestScan, getPreviousScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols } from "@/lib/db";
+import { saveScan, getLatestScan, getPreviousScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols, saveChartGrid, getLatestChartGrid } from "@/lib/db";
 import type { ComparisonResult, RankChange, FavoriteRecord } from "@/lib/db";
 import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, StockChart, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
 import { colors } from "@/constants/colors";
@@ -116,6 +116,12 @@ export default function Index() {
       setFavorites(favs);
       const favSyms = await getFavoritedSymbols(db);
       setFavoritedSymbols(favSyms);
+
+      // Load chart grid
+      const chartGridRecord = await getLatestChartGrid(db);
+      if (chartGridRecord) {
+        setChartGridItems(chartGridRecord.items);
+      }
 
       // Load RS ranking
       const rsRecord = await getLatestRsRanking(db);
@@ -252,41 +258,32 @@ export default function Index() {
 
       setChartGridTotal(symbols.length);
 
-      const concurrency = 5;
-      for (let i = 0; i < symbols.length; i += concurrency) {
-        if (controller.signal.aborted) break;
+      const chartResults = await fetchChartBatch(symbols, {
+        days: 400,
+        concurrency: 3,
+        delayMs: 100,
+        signal: controller.signal,
+        onProgress: (loaded) => setChartGridLoaded(loaded),
+      });
 
-        const batch = symbols.slice(i, i + concurrency);
-        const results = await Promise.allSettled(
-          batch.map((sym) => fetchChart(sym, 400, controller.signal))
-        );
+      if (controller.signal.aborted) return;
 
-        if (controller.signal.aborted) break;
+      const newItems: ChartGridItem[] = [];
+      for (const [symbol, { bars }] of chartResults) {
+        if (bars.length < 2) continue;
 
-        const newItems: ChartGridItem[] = [];
-        for (let j = 0; j < results.length; j++) {
-          const result = results[j];
-          if (result.status !== "fulfilled") continue;
+        const closes = bars.map((b) => b.close);
+        const sma200 = rollingSMA(closes, 200);
+        const lastSma = sma200[sma200.length - 1];
+        const lastClose = closes[closes.length - 1];
 
-          const { bars } = result.value;
-          if (bars.length < 2) continue;
-
-          const closes = bars.map((b) => b.close);
-          const sma200 = rollingSMA(closes, 200);
-          const lastSma = sma200[sma200.length - 1];
-          const lastClose = closes[closes.length - 1];
-
-          // Show if: no SMA200 data (too new) OR close > SMA200
-          if (lastSma === null || lastClose > lastSma) {
-            newItems.push({ symbol: batch[j], bars });
-          }
+        if (lastSma === null || lastClose > lastSma) {
+          newItems.push({ symbol, bars });
         }
-
-        if (newItems.length > 0) {
-          setChartGridItems((prev) => [...prev, ...newItems]);
-        }
-        setChartGridLoaded((prev) => prev + batch.length);
       }
+
+      setChartGridItems(newItems);
+      await saveChartGrid(db, newItems);
     } catch (e) {
       if ((e as Error).message !== "Scan aborted" && !(e as Error).message?.includes("abort")) {
         setError(e instanceof Error ? e.message : "Failed to load charts");
@@ -295,7 +292,7 @@ export default function Index() {
       setChartGridLoading(false);
       chartGridAbortRef.current = null;
     }
-  }, [chartGridLoading]);
+  }, [chartGridLoading, db]);
 
   // Toggle favorite for a stock
   const toggleFavorite = useCallback(
@@ -813,6 +810,14 @@ export default function Index() {
               renderItem={renderChartGridItem}
               contentContainerStyle={styles.chartGridList}
               showsVerticalScrollIndicator={false}
+              windowSize={3}
+              maxToRenderPerBatch={4}
+              initialNumToRender={6}
+              getItemLayout={(_data, index) => ({
+                length: CHART_ROW_H,
+                offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                index,
+              })}
               ListHeaderComponent={
                 !chartGridLoading ? (
                   <View style={styles.chartGridHeader}>

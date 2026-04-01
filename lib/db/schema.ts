@@ -1,5 +1,5 @@
 export const DB_NAME = "stock_sight.db";
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const MIGRATIONS: string[] = [
   `PRAGMA foreign_keys = ON;
@@ -74,4 +74,20 @@ export const MIGRATIONS: string[] = [
     source_index            TEXT    NOT NULL,
     favorited_at            TEXT    NOT NULL DEFAULT (datetime('now'))
   );`,
+
+  `CREATE TABLE IF NOT EXISTS chart_grids (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    count      INTEGER NOT NULL,
+    scanned_at TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS chart_grid_stocks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    grid_id    INTEGER NOT NULL REFERENCES chart_grids(id) ON DELETE CASCADE,
+    symbol     TEXT    NOT NULL,
+    bars       TEXT    NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_chart_grid_stocks_grid_id ON chart_grid_stocks(grid_id);`,
 ];
