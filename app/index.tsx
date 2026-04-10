@@ -1,27 +1,66 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite";
-import { runScan, runRsScan, fetchChart, fetchChartBatch, fetchNasdaqSymbolsByMarketCap, rollingSMA } from "@/lib/scanner";
+import {
+  Badge,
+  Button,
+  Divider,
+  FavoriteCard,
+  ProgressBar,
+  RankingCard,
+  SectorChart,
+  StockCard,
+  StockChart,
+  StyledText,
+} from "@/components/ui";
+import { colors } from "@/constants/colors";
+import { borderRadius, spacing } from "@/constants/spacing";
+import type { ComparisonResult, FavoriteRecord, RankChange } from "@/lib/db";
+import {
+  addFavorite,
+  compareRankings,
+  compareScanResults,
+  getAllFavorites,
+  getFavoritedSymbols,
+  getLatestChartGrid,
+  getLatestRsRanking,
+  getLatestScan,
+  getPreviousScan,
+  removeFavorite,
+  saveChartGrid,
+  saveRsRanking,
+  saveScan,
+} from "@/lib/db";
+import { queryClient, queryKeys } from "@/lib/queries";
 import type {
-  Stock,
-  ScanResult,
-  ScanProgress,
+  ChartResult,
   IndexType,
   OHLCVBar,
   RankedStock,
   RsRankingResult,
+  ScanProgress,
+  ScanResult,
   SectorCount,
-  ChartResult,
+  Stock,
 } from "@/lib/scanner";
-import { queryClient, queryKeys } from "@/lib/queries";
-import { saveScan, getLatestScan, getPreviousScan, compareScanResults, saveRsRanking, getLatestRsRanking, compareRankings, addFavorite, removeFavorite, getAllFavorites, getFavoritedSymbols, saveChartGrid, getLatestChartGrid } from "@/lib/db";
-import type { ComparisonResult, RankChange, FavoriteRecord } from "@/lib/db";
-import { StyledText, Button, ProgressBar, Divider, Badge, StockCard, StockChart, SectorChart, RankingCard, FavoriteCard } from "@/components/ui";
-import { colors } from "@/constants/colors";
-import { spacing, borderRadius } from "@/constants/spacing";
+import {
+  fetchChart,
+  fetchChartBatch,
+  fetchNasdaqSymbolsByMarketCap,
+  rollingSMA,
+  runRsScan,
+  runScan,
+} from "@/lib/scanner";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FlatList,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ActiveView = "rs_top" | "nasdaq" | "charts" | "favorites";
 
@@ -47,21 +86,34 @@ export default function Index() {
   const [activeView, setActiveView] = useState<ActiveView>("rs_top");
 
   // --- VCP scan state ---
-  const [results, setResults] = useState<Partial<Record<IndexType, ScanResult>>>({});
-  const [comparisons, setComparisons] = useState<Partial<Record<IndexType, ComparisonResult>>>({});
+  const [results, setResults] = useState<
+    Partial<Record<IndexType, ScanResult>>
+  >({});
+  const [comparisons, setComparisons] = useState<
+    Partial<Record<IndexType, ComparisonResult>>
+  >({});
   const [scanningIndex, setScanningIndex] = useState<IndexType | null>(null);
 
   // --- RS ranking state ---
   const [rsResult, setRsResult] = useState<RsRankingResult | null>(null);
-  const [rsRankChanges, setRsRankChanges] = useState<Map<string, RankChange>>(new Map());
+  const [rsRankChanges, setRsRankChanges] = useState<Map<string, RankChange>>(
+    new Map(),
+  );
   const [rsPrevSectors, setRsPrevSectors] = useState<SectorCount[]>([]);
   const [rsScanning, setRsScanning] = useState(false);
 
   // --- Favorites state ---
   const [favorites, setFavorites] = useState<FavoriteRecord[]>([]);
-  const [favoritedSymbols, setFavoritedSymbols] = useState<Set<string>>(new Set());
-  const [favCurrentPrices, setFavCurrentPrices] = useState<Record<string, number>>({});
+  const [favoritedSymbols, setFavoritedSymbols] = useState<Set<string>>(
+    new Set(),
+  );
+  const [favCurrentPrices, setFavCurrentPrices] = useState<
+    Record<string, number>
+  >({});
   const [favPricesLoading, setFavPricesLoading] = useState(false);
+  const [favViewMode, setFavViewMode] = useState<"cards" | "charts">("cards");
+  const [favCharts, setFavCharts] = useState<Record<string, OHLCVBar[]>>({});
+  const [favChartsLoading, setFavChartsLoading] = useState(false);
 
   // --- Chart Grid state ---
   const [chartGridItems, setChartGridItems] = useState<ChartGridItem[]>([]);
@@ -83,16 +135,20 @@ export default function Index() {
   const isRsTop = activeView === "rs_top";
   const isFavorites = activeView === "favorites";
   const isCharts = activeView === "charts";
-  const activeTab = (isRsTop || isFavorites || isCharts) ? null : (activeView as IndexType);
+  const activeTab =
+    isRsTop || isFavorites || isCharts ? null : (activeView as IndexType);
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
-  const isScanning = isRsTop ? rsScanning : (!isFavorites && !isCharts && scanningIndex === activeTab);
+  const isScanning = isRsTop
+    ? rsScanning
+    : !isFavorites && !isCharts && scanningIndex === activeTab;
   const isAnyScanRunning = scanningIndex !== null || rsScanning;
 
   // Load latest data from DB on mount
   useEffect(() => {
     (async () => {
       const loaded: Partial<Record<IndexType, ScanResult>> = {};
-      const loadedComparisons: Partial<Record<IndexType, ComparisonResult>> = {};
+      const loadedComparisons: Partial<Record<IndexType, ComparisonResult>> =
+        {};
       for (const tab of VCP_TABS) {
         const record = await getLatestScan(db, tab.key);
         if (record) {
@@ -104,7 +160,10 @@ export default function Index() {
           };
           const prev = await getPreviousScan(db, tab.key);
           if (prev) {
-            loadedComparisons[tab.key] = compareScanResults(record.stocks, prev.stocks);
+            loadedComparisons[tab.key] = compareScanResults(
+              record.stocks,
+              prev.stocks,
+            );
           }
         }
       }
@@ -129,7 +188,10 @@ export default function Index() {
         // Reconstruct sectors from stocks
         const sectorCounts = new Map<string, number>();
         for (const stock of rsRecord.stocks) {
-          sectorCounts.set(stock.sector, (sectorCounts.get(stock.sector) ?? 0) + 1);
+          sectorCounts.set(
+            stock.sector,
+            (sectorCounts.get(stock.sector) ?? 0) + 1,
+          );
         }
         const sectors: SectorCount[] = Array.from(sectorCounts.entries())
           .map(([sector, count]) => ({ sector, count }))
@@ -172,7 +234,10 @@ export default function Index() {
       setResults((prev) => ({ ...prev, [target]: scanResult }));
 
       if (previousScan) {
-        const comparison = compareScanResults(scanResult.stocks, previousScan.stocks);
+        const comparison = compareScanResults(
+          scanResult.stocks,
+          previousScan.stocks,
+        );
         setComparisons((prev) => ({ ...prev, [target]: comparison }));
       } else {
         setComparisons((prev) => {
@@ -285,7 +350,10 @@ export default function Index() {
       setChartGridItems(newItems);
       await saveChartGrid(db, newItems);
     } catch (e) {
-      if ((e as Error).message !== "Scan aborted" && !(e as Error).message?.includes("abort")) {
+      if (
+        (e as Error).message !== "Scan aborted" &&
+        !(e as Error).message?.includes("abort")
+      ) {
         setError(e instanceof Error ? e.message : "Failed to load charts");
       }
     } finally {
@@ -312,7 +380,7 @@ export default function Index() {
         setFavorites(updated);
       }
     },
-    [db, favoritedSymbols]
+    [db, favoritedSymbols],
   );
 
   // Fetch current prices when favorites tab is active
@@ -330,7 +398,7 @@ export default function Index() {
         if (cancelled) break;
         const batch = symbols.slice(i, i + concurrency);
         const results = await Promise.allSettled(
-          batch.map((sym) => fetchChart(sym, 7))
+          batch.map((sym) => fetchChart(sym, 7)),
         );
 
         if (cancelled) break;
@@ -352,6 +420,47 @@ export default function Index() {
       cancelled = true;
     };
   }, [isFavorites, favorites]);
+
+  // Fetch chart bars for favorites when chart view mode is active
+  useEffect(() => {
+    if (!isFavorites || favViewMode !== "charts" || favorites.length === 0)
+      return;
+
+    const missing = favorites
+      .map((f) => f.symbol)
+      .filter((sym) => !favCharts[sym]);
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    setFavChartsLoading(true);
+
+    (async () => {
+      const concurrency = 3;
+      for (let i = 0; i < missing.length; i += concurrency) {
+        if (cancelled) break;
+        const batch = missing.slice(i, i + concurrency);
+        const results = await Promise.allSettled(
+          batch.map((sym) => fetchChart(sym, 400)),
+        );
+        if (cancelled) break;
+        setFavCharts((prev) => {
+          const next = { ...prev };
+          results.forEach((result, idx) => {
+            if (result.status === "fulfilled") {
+              next[batch[idx]] = result.value.bars;
+            }
+          });
+          return next;
+        });
+      }
+      if (!cancelled) setFavChartsLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFavorites, favViewMode, favorites]);
 
   // Load 1M chart data for VCP scan results → store in React Query cache
   useEffect(() => {
@@ -392,7 +501,9 @@ export default function Index() {
     const cache: Record<string, OHLCVBar[]> = {};
     if (currentResult) {
       for (const s of currentResult.stocks) {
-        const data = queryClient.getQueryData<ChartResult>(queryKeys.chart(s.symbol, 30));
+        const data = queryClient.getQueryData<ChartResult>(
+          queryKeys.chart(s.symbol, 30),
+        );
         if (data) cache[s.symbol] = data.bars;
       }
     }
@@ -404,11 +515,11 @@ export default function Index() {
   const comparison = activeTab ? comparisons[activeTab] : undefined;
   const newSymbolSet = useMemo(
     () => new Set(comparison?.new_entries.map((s) => s.symbol) ?? []),
-    [comparison]
+    [comparison],
   );
   const commonMap = useMemo(
     () => new Map(comparison?.common.map((c) => [c.symbol, c]) ?? []),
-    [comparison]
+    [comparison],
   );
 
   const formatTimestamp = (ts: string) => {
@@ -421,29 +532,129 @@ export default function Index() {
 
   const MA_200 = useMemo(() => [200], []);
 
-  const renderChartGridItem = useCallback(({ item }: { item: ChartGridItem }) => (
-    <Pressable
-      style={styles.chartGridCell}
-      onPress={() =>
-        router.push({
-          pathname: "/stock/[symbol]",
-          params: { symbol: item.symbol },
-        })
-      }
-    >
-      <StyledText
-        variant="caption"
-        weight="bold"
-        color={colors.accent_light[400]}
-        style={styles.chartGridSymbol}
-      >
-        {item.symbol}
-      </StyledText>
-      <View style={styles.chartGridChartWrap}>
-        <StockChart bars={item.bars} height={CHART_CELL_H - 24} compact maPeriods={MA_200} />
-      </View>
-    </Pressable>
-  ), [router, MA_200]);
+  const toggleChartFavorite = useCallback(
+    async (item: ChartGridItem) => {
+      const closes = item.bars.map((b) => b.close);
+      const lastClose = closes[closes.length - 1] ?? 0;
+      const stock: Stock = {
+        symbol: item.symbol,
+        close: lastClose,
+        rs_percentile: 0,
+        rs_percentile_5days_ago: 0,
+        rs_change: 0,
+        returns: { r_12m: 0, r_6m: 0, r_3m: 0, r_1m: 0 },
+      };
+      await toggleFavorite(stock, "charts");
+    },
+    [toggleFavorite],
+  );
+
+  const renderChartGridItem = useCallback(
+    ({ item }: { item: ChartGridItem }) => {
+      const isFav = favoritedSymbols.has(item.symbol);
+      return (
+        <Pressable
+          style={styles.chartGridCell}
+          onPress={() =>
+            router.push({
+              pathname: "/stock/[symbol]",
+              params: { symbol: item.symbol },
+            })
+          }
+        >
+          <View style={styles.chartGridCellHeader}>
+            <StyledText
+              variant="caption"
+              weight="bold"
+              color={colors.accent_light[400]}
+            >
+              {item.symbol}
+            </StyledText>
+            <Pressable
+              onPress={() => toggleChartFavorite(item)}
+              hitSlop={8}
+            >
+              <Ionicons
+                name={isFav ? "star" : "star-outline"}
+                size={14}
+                color={
+                  isFav ? colors.accent_warm[300] : colors.secondary[600]
+                }
+              />
+            </Pressable>
+          </View>
+          <View style={styles.chartGridChartWrap}>
+            <StockChart
+              bars={item.bars}
+              height={CHART_CELL_H - 24}
+              compact
+              maPeriods={MA_200}
+            />
+          </View>
+        </Pressable>
+      );
+    },
+    [router, MA_200, favoritedSymbols, toggleChartFavorite],
+  );
+
+  const renderFavChartItem = useCallback(
+    ({ item }: { item: FavoriteRecord }) => {
+      const bars = favCharts[item.symbol];
+      if (!bars || bars.length === 0) return null;
+      return (
+        <Pressable
+          style={styles.chartGridCell}
+          onPress={() =>
+            router.push({
+              pathname: "/stock/[symbol]",
+              params: { symbol: item.symbol },
+            })
+          }
+        >
+          <View style={styles.chartGridCellHeader}>
+            <StyledText
+              variant="caption"
+              weight="bold"
+              color={colors.accent_light[400]}
+            >
+              {item.symbol}
+            </StyledText>
+            <Pressable
+              onPress={() =>
+                toggleFavorite(
+                  {
+                    symbol: item.symbol,
+                    close: item.close,
+                    rs_percentile: item.rs_percentile,
+                    rs_percentile_5days_ago: 0,
+                    rs_change: item.rs_change,
+                    returns: item.returns,
+                  },
+                  item.source_index,
+                )
+              }
+              hitSlop={8}
+            >
+              <Ionicons
+                name="star"
+                size={14}
+                color={colors.accent_warm[300]}
+              />
+            </Pressable>
+          </View>
+          <View style={styles.chartGridChartWrap}>
+            <StockChart
+              bars={bars}
+              height={CHART_CELL_H - 24}
+              compact
+              maPeriods={MA_200}
+            />
+          </View>
+        </Pressable>
+      );
+    },
+    [favCharts, router, MA_200, toggleFavorite],
+  );
 
   const renderStockItem = ({ item }: { item: Stock }) => {
     let badge = null;
@@ -453,9 +664,19 @@ export default function Index() {
       } else {
         const common = commonMap.get(item.symbol);
         if (common && common.rs_delta > 0) {
-          badge = <Badge label={`RS +${common.rs_delta.toFixed(1)}`} variant="success" />;
+          badge = (
+            <Badge
+              label={`RS +${common.rs_delta.toFixed(1)}`}
+              variant="success"
+            />
+          );
         } else if (common && common.rs_delta < 0) {
-          badge = <Badge label={`RS ${common.rs_delta.toFixed(1)}`} variant="danger" />;
+          badge = (
+            <Badge
+              label={`RS ${common.rs_delta.toFixed(1)}`}
+              variant="danger"
+            />
+          );
         }
       }
     }
@@ -509,7 +730,12 @@ export default function Index() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Tab Header */}
       <View style={styles.tabRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabBar} contentContainerStyle={styles.tabBarContent}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabBar}
+          contentContainerStyle={styles.tabBarContent}
+        >
           {/* RS Top tab */}
           <Pressable
             style={[styles.tab, isRsTop && styles.tabActive]}
@@ -543,7 +769,9 @@ export default function Index() {
                 <StyledText
                   variant="bodySmall"
                   weight={isActive ? "bold" : "medium"}
-                  color={isActive ? colors.accent_warm[300] : colors.secondary[600]}
+                  color={
+                    isActive ? colors.accent_warm[300] : colors.secondary[600]
+                  }
                 >
                   {tab.label}
                 </StyledText>
@@ -588,12 +816,16 @@ export default function Index() {
             <Ionicons
               name={isFavorites ? "star" : "star-outline"}
               size={14}
-              color={isFavorites ? colors.accent_warm[300] : colors.secondary[600]}
+              color={
+                isFavorites ? colors.accent_warm[300] : colors.secondary[600]
+              }
             />
             <StyledText
               variant="bodySmall"
               weight={isFavorites ? "bold" : "medium"}
-              color={isFavorites ? colors.accent_warm[300] : colors.secondary[600]}
+              color={
+                isFavorites ? colors.accent_warm[300] : colors.secondary[600]
+              }
             >
               Favorites
             </StyledText>
@@ -611,7 +843,11 @@ export default function Index() {
           }
           hitSlop={8}
         >
-          <Ionicons name="time-outline" size={20} color={colors.secondary[500]} />
+          <Ionicons
+            name="time-outline"
+            size={20}
+            color={colors.secondary[500]}
+          />
         </Pressable>
       </View>
       <Divider color={colors.primary[800]} marginVertical={0} />
@@ -649,13 +885,25 @@ export default function Index() {
           {/* No result → show scan prompt */}
           {!rsResult && dbLoaded && (
             <View style={styles.emptyState}>
-              <StyledText variant="h2" color={colors.primary[400]} style={styles.emptyIcon}>
+              <StyledText
+                variant="h2"
+                color={colors.primary[400]}
+                style={styles.emptyIcon}
+              >
                 ?
               </StyledText>
-              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
                 No RS rankings yet
               </StyledText>
-              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
                 Scan S&P 500 to rank top 100 stocks by Relative Strength
               </StyledText>
               {isAnyScanRunning ? (
@@ -687,7 +935,10 @@ export default function Index() {
                 ListHeaderComponent={
                   <>
                     <View style={styles.rsListHeader}>
-                      <StyledText variant="caption" color={colors.secondary[600]}>
+                      <StyledText
+                        variant="caption"
+                        color={colors.secondary[600]}
+                      >
                         {formatTimestamp(rsResult.scanned_at)}
                       </StyledText>
                       <Button
@@ -699,7 +950,13 @@ export default function Index() {
                       />
                     </View>
                     {rsResult.sectors.length > 0 && (
-                      <SectorChart sectors={rsResult.sectors} prevSectors={rsPrevSectors.length > 0 ? rsPrevSectors : undefined} total={rsResult.count} />
+                      <SectorChart
+                        sectors={rsResult.sectors}
+                        prevSectors={
+                          rsPrevSectors.length > 0 ? rsPrevSectors : undefined
+                        }
+                        total={rsResult.count}
+                      />
                     )}
                   </>
                 }
@@ -714,51 +971,148 @@ export default function Index() {
         <>
           {favorites.length === 0 && dbLoaded && (
             <View style={styles.emptyState}>
-              <Ionicons name="star-outline" size={48} color={colors.primary[400]} />
-              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+              <Ionicons
+                name="star-outline"
+                size={48}
+                color={colors.primary[400]}
+              />
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
                 No favorites yet
               </StyledText>
-              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
                 Tap the star icon on any stock card to save it here
               </StyledText>
             </View>
           )}
 
           {favorites.length > 0 && (
-            <FlatList
-              data={favorites}
-              keyExtractor={(item) => item.symbol}
-              renderItem={({ item }) => (
-                <FavoriteCard
-                  favorite={item}
-                  currentPrice={favCurrentPrices[item.symbol] ?? null}
-                  isLoadingPrice={favPricesLoading && !(item.symbol in favCurrentPrices)}
-                  onRemove={() => toggleFavorite(
-                    { symbol: item.symbol, close: item.close, rs_percentile: item.rs_percentile, rs_percentile_5days_ago: 0, rs_change: item.rs_change, returns: item.returns },
-                    item.source_index
+            <>
+              <View style={styles.favViewToggle}>
+                <Pressable
+                  style={[
+                    styles.favToggleBtn,
+                    favViewMode === "cards" && styles.favToggleBtnActive,
+                  ]}
+                  onPress={() => setFavViewMode("cards")}
+                >
+                  <Ionicons
+                    name="list"
+                    size={16}
+                    color={
+                      favViewMode === "cards"
+                        ? colors.accent_warm[300]
+                        : colors.secondary[500]
+                    }
+                  />
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.favToggleBtn,
+                    favViewMode === "charts" && styles.favToggleBtnActive,
+                  ]}
+                  onPress={() => setFavViewMode("charts")}
+                >
+                  <Ionicons
+                    name="grid"
+                    size={16}
+                    color={
+                      favViewMode === "charts"
+                        ? colors.accent_warm[300]
+                        : colors.secondary[500]
+                    }
+                  />
+                </Pressable>
+              </View>
+
+              {favViewMode === "cards" && (
+                <FlatList
+                  data={favorites}
+                  keyExtractor={(item) => item.symbol}
+                  renderItem={({ item }) => (
+                    <FavoriteCard
+                      favorite={item}
+                      currentPrice={favCurrentPrices[item.symbol] ?? null}
+                      isLoadingPrice={
+                        favPricesLoading && !(item.symbol in favCurrentPrices)
+                      }
+                      onRemove={() =>
+                        toggleFavorite(
+                          {
+                            symbol: item.symbol,
+                            close: item.close,
+                            rs_percentile: item.rs_percentile,
+                            rs_percentile_5days_ago: 0,
+                            rs_change: item.rs_change,
+                            returns: item.returns,
+                          },
+                          item.source_index,
+                        )
+                      }
+                      onPress={() =>
+                        router.push({
+                          pathname: "/stock/[symbol]",
+                          params: {
+                            symbol: item.symbol,
+                            data: JSON.stringify({
+                              symbol: item.symbol,
+                              close: item.close,
+                              rs_percentile: item.rs_percentile,
+                              rs_percentile_5days_ago: 0,
+                              rs_change: item.rs_change,
+                              returns: item.returns,
+                            }),
+                          },
+                        })
+                      }
+                    />
                   )}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/stock/[symbol]",
-                      params: {
-                        symbol: item.symbol,
-                        data: JSON.stringify({
-                          symbol: item.symbol,
-                          close: item.close,
-                          rs_percentile: item.rs_percentile,
-                          rs_percentile_5days_ago: 0,
-                          rs_change: item.rs_change,
-                          returns: item.returns,
-                        }),
-                      },
-                    })
-                  }
+                  contentContainerStyle={styles.list}
+                  showsVerticalScrollIndicator={false}
+                  extraData={[favCurrentPrices, favPricesLoading]}
                 />
               )}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              extraData={[favCurrentPrices, favPricesLoading]}
-            />
+
+              {favViewMode === "charts" && (
+                <>
+                  {favChartsLoading && (
+                    <View style={styles.favChartsLoadingRow}>
+                      <StyledText
+                        variant="caption"
+                        color={colors.secondary[500]}
+                      >
+                        Loading charts...
+                      </StyledText>
+                    </View>
+                  )}
+                  <FlatList
+                    data={favorites}
+                    keyExtractor={(item) => item.symbol}
+                    numColumns={CHART_GRID_COLS}
+                    renderItem={renderFavChartItem}
+                    contentContainerStyle={styles.chartGridList}
+                    showsVerticalScrollIndicator={false}
+                    windowSize={3}
+                    maxToRenderPerBatch={4}
+                    initialNumToRender={6}
+                    getItemLayout={(_data, index) => ({
+                      length: CHART_ROW_H,
+                      offset:
+                        CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                      index,
+                    })}
+                    extraData={favCharts}
+                  />
+                </>
+              )}
+            </>
           )}
         </>
       )}
@@ -768,11 +1122,23 @@ export default function Index() {
         <>
           {chartGridItems.length === 0 && !chartGridLoading && (
             <View style={styles.emptyState}>
-              <Ionicons name="grid-outline" size={48} color={colors.primary[400]} />
-              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+              <Ionicons
+                name="grid-outline"
+                size={48}
+                color={colors.primary[400]}
+              />
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
                 NASDAQ Chart Grid
               </StyledText>
-              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
                 Load NASDAQ stocks by market cap, filtered above SMA 200
               </StyledText>
               <Button
@@ -788,7 +1154,9 @@ export default function Index() {
           {chartGridLoading && (
             <View style={styles.scanningSection}>
               <ProgressBar
-                progress={chartGridTotal > 0 ? chartGridLoaded / chartGridTotal : 0}
+                progress={
+                  chartGridTotal > 0 ? chartGridLoaded / chartGridTotal : 0
+                }
                 label={`Loading charts... ${chartGridLoaded}/${chartGridTotal}`}
                 style={styles.progressBar}
               />
@@ -803,37 +1171,37 @@ export default function Index() {
           )}
 
           {chartGridItems.length > 0 && (
-            <FlatList
-              data={chartGridItems}
-              keyExtractor={(item) => item.symbol}
-              numColumns={CHART_GRID_COLS}
-              renderItem={renderChartGridItem}
-              contentContainerStyle={styles.chartGridList}
-              showsVerticalScrollIndicator={false}
-              windowSize={3}
-              maxToRenderPerBatch={4}
-              initialNumToRender={6}
-              getItemLayout={(_data, index) => ({
-                length: CHART_ROW_H,
-                offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
-                index,
-              })}
-              ListHeaderComponent={
-                !chartGridLoading ? (
-                  <View style={styles.chartGridHeader}>
-                    <StyledText variant="caption" color={colors.secondary[600]}>
-                      {chartGridItems.length} stocks above SMA 200
-                    </StyledText>
-                    <Button
-                      title="Reload"
-                      variant="secondary"
-                      size="sm"
-                      onPress={loadChartGrid}
-                    />
-                  </View>
-                ) : null
-              }
-            />
+            <>
+              {!chartGridLoading && (
+                <View style={styles.chartGridHeader}>
+                  <StyledText variant="caption" color={colors.secondary[600]}>
+                    {chartGridItems.length} stocks above SMA 200
+                  </StyledText>
+                  <Button
+                    title="Reload"
+                    variant="secondary"
+                    size="sm"
+                    onPress={loadChartGrid}
+                  />
+                </View>
+              )}
+              <FlatList
+                data={chartGridItems}
+                keyExtractor={(item) => item.symbol}
+                numColumns={CHART_GRID_COLS}
+                renderItem={renderChartGridItem}
+                contentContainerStyle={styles.chartGridList}
+                showsVerticalScrollIndicator={false}
+                windowSize={3}
+                maxToRenderPerBatch={4}
+                initialNumToRender={6}
+                getItemLayout={(_data, index) => ({
+                  length: CHART_ROW_H,
+                  offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                  index,
+                })}
+              />
+            </>
           )}
         </>
       )}
@@ -844,14 +1212,27 @@ export default function Index() {
           {/* No result → show scan prompt */}
           {!currentResult && !isScanning && dbLoaded && (
             <View style={styles.emptyState}>
-              <StyledText variant="h2" color={colors.primary[400]} style={styles.emptyIcon}>
+              <StyledText
+                variant="h2"
+                color={colors.primary[400]}
+                style={styles.emptyIcon}
+              >
                 ?
               </StyledText>
-              <StyledText variant="bodyLarge" color={colors.secondary[400]} style={styles.emptyTitle}>
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
                 No scan results yet
               </StyledText>
-              <StyledText variant="bodySmall" color={colors.secondary[600]} style={styles.emptyDesc}>
-                Scan {VCP_TABS.find((t) => t.key === activeTab)?.label} to find stocks matching VCP conditions
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
+                Scan {VCP_TABS.find((t) => t.key === activeTab)?.label} to find
+                stocks matching VCP conditions
               </StyledText>
               {isAnyScanRunning ? (
                 <StyledText variant="bodySmall" color={colors.secondary[600]}>
@@ -876,7 +1257,8 @@ export default function Index() {
             <>
               <View style={styles.resultHeader}>
                 <StyledText variant="bodyLarge" weight="semibold">
-                  {currentResult.count} stock{currentResult.count !== 1 ? "s" : ""} found
+                  {currentResult.count} stock
+                  {currentResult.count !== 1 ? "s" : ""} found
                 </StyledText>
                 <Button
                   title="Rescan"
@@ -1045,7 +1427,30 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     overflow: "hidden",
   },
-  chartGridSymbol: {
+  favViewToggle: {
+    flexDirection: "row",
+    alignSelf: "flex-end",
+    marginRight: spacing.lg,
+    marginTop: spacing.sm,
+    backgroundColor: colors.primary[800],
+    borderRadius: borderRadius.sm,
+    overflow: "hidden",
+  },
+  favToggleBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  favToggleBtnActive: {
+    backgroundColor: colors.primary[700],
+  },
+  favChartsLoadingRow: {
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+  },
+  chartGridCellHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: spacing.sm,
     paddingTop: spacing.xs,
     paddingBottom: 2,
