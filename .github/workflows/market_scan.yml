@@ -1,0 +1,38 @@
+name: Market Scan — EMA9/SMA50 Crossover
+
+on:
+  # 미국 동부 시간 오후 5시 30분 (UTC 21:30) 평일 실행
+  # EDT (UTC-4): 21:30 UTC = 17:30 ET
+  # EST (UTC-5): 21:30 UTC = 16:30 ET  ← 동절기 마감 직후
+  schedule:
+    - cron: "30 21 * * 1-5"
+
+  # 수동 실행 (Actions 탭 → Run workflow)
+  workflow_dispatch:
+
+jobs:
+  scan:
+    name: Run Stock Scanner
+    runs-on: ubuntu-latest
+    timeout-minutes: 60   # NASDAQ 5000종목 처리에 여유 있게
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: scanner/package.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: scanner
+
+      - name: Run scanner
+        run: npx tsx scanner.ts
+        working-directory: scanner
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
