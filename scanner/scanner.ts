@@ -14,7 +14,8 @@
 // Constants
 // ──────────────────────────────────────────────
 
-const THRESHOLD = 0.95;        // EMA9 >= SMA50 * 0.95
+const THRESHOLD_LOW  = 0.97;   // EMA9 >= SMA50 * 0.97 (SMA50 3% 아래까지)
+const THRESHOLD_HIGH = 1.03;   // EMA9 <= SMA50 * 1.03 (SMA50 3% 위까지)
 const CONCURRENCY = 5;         // parallel Yahoo Finance requests
 const DELAY_MS = 200;          // ms between each batch
 const RETRY_MAX = 3;           // retries on 429 / network error
@@ -33,13 +34,15 @@ interface ScanResult {
   symbol: string;
   close: number;
   ema9: number;
+  prevEma9: number;
   sma50: number;
   ratio: number;
-  prevRatio: number;
 }
 
 function isCrossover(r: ScanResult): boolean {
-  return r.ratio >= THRESHOLD && r.prevRatio < THRESHOLD;
+  // 1) EMA9이 SMA50 ±3% 범위 안 (0.97 ~ 1.03)
+  // 2) 오늘 EMA9 > 전날 EMA9 (EMA9 값 자체가 상승 중)
+  return r.ratio >= THRESHOLD_LOW && r.ratio <= THRESHOLD_HIGH && r.ema9 > r.prevEma9;
 }
 
 // ──────────────────────────────────────────────
@@ -124,6 +127,7 @@ async function fetchNasdaqSymbols(): Promise<string[]> {
     // Normalize: "." → "-" (Yahoo Finance convention for BRK.B etc.)
     const sym = (row.symbol ?? "")
       .replace(/\./g, "-")
+      .replace(/\//g, "-")
       .trim()
       .toUpperCase();
 
@@ -207,9 +211,9 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     symbol,
     close: closes.at(-1)!,
     ema9: todayEMA9,
+    prevEma9: prevEMA9,
     sma50: todaySMA50,
     ratio: todayEMA9 / todaySMA50,
-    prevRatio: prevEMA9 / prevSMA50,
   };
 }
 
@@ -336,7 +340,7 @@ function buildDiscordPayload(
         color: hasHits ? 0xf0b429 : 0x6b7280,
         fields,
         footer: {
-          text: `EMA9 >= SMA50 × ${THRESHOLD} (전일 미충족 → 당일 충족) | NASDAQ ~5000종목`,
+          text: `SMA50 ±3% (${THRESHOLD_LOW}~${THRESHOLD_HIGH}) & EMA9 상승 중 | NASDAQ ~5000종목`,
         },
       },
     ],
