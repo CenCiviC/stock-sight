@@ -30,6 +30,8 @@ const BROWSER_UA =
 // Types
 // ──────────────────────────────────────────────
 
+const OUTSIDE_RANGE_DAYS = 10; // 진입 전 연속 범위 밖 확인 일수
+
 interface ScanResult {
   symbol: string;
   close: number;
@@ -37,12 +39,19 @@ interface ScanResult {
   prevEma9: number;
   sma50: number;
   ratio: number;
+  allPrevOutside: boolean; // 직전 10일 모두 범위(0.97) 밖이었는지
 }
 
 function isCrossover(r: ScanResult): boolean {
-  // 1) EMA9이 SMA50 ±3% 범위 안 (0.97 ~ 1.03)
-  // 2) 오늘 EMA9 > 전날 EMA9 (EMA9 값 자체가 상승 중)
-  return r.ratio >= THRESHOLD_LOW && r.ratio <= THRESHOLD_HIGH && r.ema9 > r.prevEma9;
+  // 1) 직전 10일 전부 ratio < 0.97 (범위 밖이었음)
+  // 2) 당일: 0.97 <= ratio <= 1.03 (오늘 처음 범위 진입)
+  // 3) 오늘 EMA9 > 전날 EMA9 (상승 중)
+  return (
+    r.allPrevOutside &&
+    r.ratio >= THRESHOLD_LOW &&
+    r.ratio <= THRESHOLD_HIGH &&
+    r.ema9 > r.prevEma9
+  );
 }
 
 // ──────────────────────────────────────────────
@@ -207,6 +216,19 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     return null;
   }
 
+  // 직전 OUTSIDE_RANGE_DAYS일이 모두 THRESHOLD_LOW 미만이었는지 확인
+  // ema9/sma50 배열에서 [-N-1 .. -2] 구간 (오늘 제외한 과거 N일)
+  const prevRatios: number[] = [];
+  for (let i = OUTSIDE_RANGE_DAYS + 1; i >= 2; i--) {
+    const e = ema9.at(-i);
+    const s = sma50.at(-i);
+    if (e == null || s == null || s === 0) continue;
+    prevRatios.push(e / s);
+  }
+  const allPrevOutside =
+    prevRatios.length === OUTSIDE_RANGE_DAYS &&
+    prevRatios.every((r) => r < THRESHOLD_LOW);
+
   return {
     symbol,
     close: closes.at(-1)!,
@@ -214,6 +236,7 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     prevEma9: prevEMA9,
     sma50: todaySMA50,
     ratio: todayEMA9 / todaySMA50,
+    allPrevOutside,
   };
 }
 
