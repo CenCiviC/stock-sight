@@ -73,9 +73,20 @@ async function main() {
       const ema9 = calcEMA(closes, 9);
       const sma50 = calcSMA(closes, 50);
       const todayRatio = ema9.at(-1)! / (sma50.at(-1) ?? 1);
-      const prevRatio = ema9.at(-2)! / (sma50.at(-2) ?? 1);
       const prevEma9 = ema9.at(-2)!;
-      const hit = todayRatio >= THRESHOLD_LOW && todayRatio <= THRESHOLD_HIGH && ema9.at(-1)! > prevEma9;
+      const prevRatios: number[] = [];
+      for (let i = 11; i >= 2; i--) {
+        const e = ema9.at(-i);
+        const s = sma50.at(-i);
+        if (e != null && s != null && s !== 0) prevRatios.push(e / s);
+      }
+      const allPrevOutside =
+        prevRatios.length === 10 && prevRatios.every((r) => r < THRESHOLD_LOW);
+      const hit =
+        allPrevOutside &&
+        todayRatio >= THRESHOLD_LOW &&
+        todayRatio <= THRESHOLD_HIGH &&
+        ema9.at(-1)! > prevEma9;
 
       console.log(
         `   [${sym.padEnd(6)}] Close=$${closes.at(-1)!.toFixed(2).padStart(8)} | ` +
