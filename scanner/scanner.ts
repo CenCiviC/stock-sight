@@ -30,7 +30,7 @@ const BROWSER_UA =
 // Types
 // ──────────────────────────────────────────────
 
-const OUTSIDE_RANGE_DAYS = 10; // 진입 전 연속 범위 밖 확인 일수
+const OUTSIDE_RANGE_MIN_DAYS = 10; // 진입 전 최소 연속 범위 밖 일수
 
 interface ScanResult {
   symbol: string;
@@ -39,15 +39,15 @@ interface ScanResult {
   prevEma9: number;
   sma50: number;
   ratio: number;
-  allPrevOutside: boolean; // 직전 10일 모두 범위(0.97) 밖이었는지
+  daysOutside: number; // 오늘 진입 전 연속으로 범위 밖에 있던 일수
 }
 
 function isCrossover(r: ScanResult): boolean {
-  // 1) 직전 10일 전부 ratio < 0.97 (범위 밖이었음)
+  // 1) 직전 최소 10일 연속 ratio < 0.97 (범위 밖이었음)
   // 2) 당일: 0.97 <= ratio <= 1.03 (오늘 처음 범위 진입)
   // 3) 오늘 EMA9 > 전날 EMA9 (상승 중)
   return (
-    r.allPrevOutside &&
+    r.daysOutside >= OUTSIDE_RANGE_MIN_DAYS &&
     r.ratio >= THRESHOLD_LOW &&
     r.ratio <= THRESHOLD_HIGH &&
     r.ema9 > r.prevEma9
@@ -216,18 +216,18 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     return null;
   }
 
-  // 직전 OUTSIDE_RANGE_DAYS일이 모두 THRESHOLD_LOW 미만이었는지 확인
-  // ema9/sma50 배열에서 [-N-1 .. -2] 구간 (오늘 제외한 과거 N일)
-  const prevRatios: number[] = [];
-  for (let i = OUTSIDE_RANGE_DAYS + 1; i >= 2; i--) {
-    const e = ema9.at(-i);
+  // 어제부터 거슬러 올라가며 연속으로 ratio < THRESHOLD_LOW인 일수 카운트
+  let daysOutside = 0;
+  for (let i = 2; i < ema9.length; i++) {
+    const e = ema9.at(-i)!;
     const s = sma50.at(-i);
-    if (e == null || s == null || s === 0) continue;
-    prevRatios.push(e / s);
+    if (s == null || s === 0) break;
+    if (e / s < THRESHOLD_LOW) {
+      daysOutside++;
+    } else {
+      break; // 연속 streak 끊김
+    }
   }
-  const allPrevOutside =
-    prevRatios.length === OUTSIDE_RANGE_DAYS &&
-    prevRatios.every((r) => r < THRESHOLD_LOW);
 
   return {
     symbol,
@@ -236,7 +236,7 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     prevEma9: prevEMA9,
     sma50: todaySMA50,
     ratio: todayEMA9 / todaySMA50,
-    allPrevOutside,
+    daysOutside,
   };
 }
 
@@ -296,7 +296,8 @@ function resultLine(r: ScanResult): string {
     `Close: \`$${r.close.toFixed(2)}\` | ` +
     `EMA9: \`${r.ema9.toFixed(2)}\` | ` +
     `SMA50: \`${r.sma50.toFixed(2)}\` | ` +
-    `Ratio: \`${r.ratio.toFixed(3)}\``
+    `Ratio: \`${r.ratio.toFixed(3)}\` | ` +
+    `범위 밖: \`${r.daysOutside}일\``
   );
 }
 
@@ -417,8 +418,8 @@ async function main(): Promise<void> {
     }
   });
 
-  // 3. Filter to crossover symbols only
-  const crossed = results.filter(isCrossover);
+  // 3. Filter to crossover symbols only, sort by daysOutside desc (가장 오랫동안 밖에 있던 것 먼저)
+  const crossed = results.filter(isCrossover).sort((a, b) => b.daysOutside - a.daysOutside);
 
   console.log(
     `Scan complete — total: ${symbols.length}, ` +

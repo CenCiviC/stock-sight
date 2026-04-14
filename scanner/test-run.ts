@@ -74,16 +74,15 @@ async function main() {
       const sma50 = calcSMA(closes, 50);
       const todayRatio = ema9.at(-1)! / (sma50.at(-1) ?? 1);
       const prevEma9 = ema9.at(-2)!;
-      const prevRatios: number[] = [];
-      for (let i = 11; i >= 2; i--) {
-        const e = ema9.at(-i);
+      let daysOutside = 0;
+      for (let i = 2; i < ema9.length; i++) {
+        const e = ema9.at(-i)!;
         const s = sma50.at(-i);
-        if (e != null && s != null && s !== 0) prevRatios.push(e / s);
+        if (s == null || s === 0) break;
+        if (e / s < THRESHOLD_LOW) { daysOutside++; } else { break; }
       }
-      const allPrevOutside =
-        prevRatios.length === 10 && prevRatios.every((r) => r < THRESHOLD_LOW);
       const hit =
-        allPrevOutside &&
+        daysOutside >= 10 &&
         todayRatio >= THRESHOLD_LOW &&
         todayRatio <= THRESHOLD_HIGH &&
         ema9.at(-1)! > prevEma9;
@@ -92,7 +91,7 @@ async function main() {
         `   [${sym.padEnd(6)}] Close=$${closes.at(-1)!.toFixed(2).padStart(8)} | ` +
         `EMA9=${ema9.at(-1)!.toFixed(2).padStart(8)} | ` +
         `SMA50=${(sma50.at(-1) ?? 0).toFixed(2).padStart(8)} | ` +
-        `ratio=${todayRatio.toFixed(3)} | ${hit ? "🟢 CROSSED" : "—"}`
+        `ratio=${todayRatio.toFixed(3)} | days=${String(daysOutside).padStart(3)} | ${hit ? "🟢 CROSSED" : "—"}`
       );
       if (hit) crossed.push(sym);
     } catch (e) {
