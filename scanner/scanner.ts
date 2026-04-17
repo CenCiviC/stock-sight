@@ -16,6 +16,7 @@
 
 const THRESHOLD_LOW  = 0.97;   // EMA9 >= SMA50 * 0.97 (SMA50 3% 아래까지)
 const THRESHOLD_HIGH = 1.03;   // EMA9 <= SMA50 * 1.03 (SMA50 3% 위까지)
+const MIN_PRICE = 5;           // 최소 종가 필터 ($5 미만 제외)
 const CONCURRENCY = 5;         // parallel Yahoo Finance requests
 const DELAY_MS = 200;          // ms between each batch
 const RETRY_MAX = 3;           // retries on 429 / network error
@@ -419,7 +420,10 @@ async function main(): Promise<void> {
   });
 
   // 3. Filter to crossover symbols only, sort by daysOutside desc (가장 오랫동안 밖에 있던 것 먼저)
-  const crossed = results.filter(isCrossover).sort((a, b) => b.daysOutside - a.daysOutside);
+  const crossed = results
+    .filter(isCrossover)
+    .filter((r) => r.close >= MIN_PRICE)
+    .sort((a, b) => b.daysOutside - a.daysOutside);
 
   console.log(
     `Scan complete — total: ${symbols.length}, ` +
