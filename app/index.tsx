@@ -58,6 +58,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -84,6 +85,17 @@ export default function Index() {
   const db = useSQLiteContext();
 
   const [activeView, setActiveView] = useState<ActiveView>("rs_top");
+  const [searchInput, setSearchInput] = useState("");
+
+  const handleSearch = () => {
+    const trimmed = searchInput.trim().toUpperCase();
+    if (!trimmed) return;
+    setSearchInput("");
+    router.push({
+      pathname: "/stock/[symbol]",
+      params: { symbol: trimmed },
+    });
+  };
 
   // --- VCP scan state ---
   const [results, setResults] = useState<
@@ -728,6 +740,27 @@ export default function Index() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Search bar */}
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={16} color={colors.secondary[500]} />
+        <TextInput
+          value={searchInput}
+          onChangeText={setSearchInput}
+          onSubmitEditing={handleSearch}
+          placeholder="Search ticker (e.g., AAPL)"
+          placeholderTextColor={colors.secondary[700]}
+          style={styles.searchInput}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          returnKeyType="go"
+        />
+        {searchInput.length > 0 && (
+          <Pressable onPress={() => setSearchInput("")} hitSlop={8}>
+            <Ionicons name="close-circle" size={16} color={colors.secondary[500]} />
+          </Pressable>
+        )}
+      </View>
+
       {/* Tab Header */}
       <View style={styles.tabRow}>
         <ScrollView
@@ -1296,6 +1329,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.primary[950],
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primary[800],
+    borderRadius: borderRadius.sm,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.accent_light[400],
+    fontFamily: "Inter",
+    fontSize: 14,
+    padding: 0,
   },
   tabRow: {
     flexDirection: "row",

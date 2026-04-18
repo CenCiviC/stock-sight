@@ -9,11 +9,14 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
+import { addFavorite, getFavoritedSymbols, removeFavorite } from "@/lib/db";
+import { useChartQuery, useCompanyProfileQuery, useFinancialsQuery } from "@/lib/queries";
 import type { Stock } from "@/lib/scanner";
-import { useChartQuery, useFinancialsQuery, useCompanyProfileQuery } from "@/lib/queries";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
 const PERIODS = [
   { key: "3M", days: 30 },
@@ -29,6 +32,8 @@ export default function StockDetail() {
     symbol: string;
     data: string;
   }>();
+  const router = useRouter();
+  const db = useSQLiteContext();
 
   let stock: Stock | null = null;
   try {
@@ -39,6 +44,8 @@ export default function StockDetail() {
 
   const [period, setPeriod] = useState<PeriodKey>("6M");
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [isFavorited, setIsFavorited] = useState(false);
   const chartDays = PERIODS.find((p) => p.key === period)?.days ?? 180;
 
   const {
@@ -52,6 +59,50 @@ export default function StockDetail() {
     error: finErrorObj,
   } = useFinancialsQuery({ symbol: symbol ?? "" });
   const { data: profile } = useCompanyProfileQuery({ symbol: symbol ?? "" });
+
+  useEffect(() => {
+    if (!symbol) return;
+    let cancelled = false;
+    (async () => {
+      const syms = await getFavoritedSymbols(db);
+      if (!cancelled) setIsFavorited(syms.has(symbol));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [db, symbol]);
+
+  const handleSearch = () => {
+    const trimmed = searchInput.trim().toUpperCase();
+    if (!trimmed || trimmed === symbol) {
+      setSearchInput("");
+      return;
+    }
+    setSearchInput("");
+    router.replace({
+      pathname: "/stock/[symbol]",
+      params: { symbol: trimmed },
+    });
+  };
+
+  const toggleFavorite = async () => {
+    if (!symbol) return;
+    if (isFavorited) {
+      await removeFavorite(db, symbol);
+      setIsFavorited(false);
+    } else {
+      const stockData: Stock = stock ?? {
+        symbol,
+        close: chartResult?.currentPrice ?? 0,
+        rs_percentile: 0,
+        rs_percentile_5days_ago: 0,
+        rs_change: 0,
+        returns: { r_12m: 0, r_6m: 0, r_3m: 0, r_1m: 0 },
+      };
+      await addFavorite(db, stockData, stock ? "scan" : "search");
+      setIsFavorited(true);
+    }
+  };
 
   const bars = chartResult?.bars ?? null;
   const companyName = chartResult?.shortName ?? "";
@@ -75,11 +126,41 @@ export default function StockDetail() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Search bar */}
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={16} color={colors.secondary[500]} />
+        <TextInput
+          value={searchInput}
+          onChangeText={setSearchInput}
+          onSubmitEditing={handleSearch}
+          placeholder="Search ticker (e.g., AAPL)"
+          placeholderTextColor={colors.secondary[700]}
+          style={styles.searchInput}
+          autoCapitalize="characters"
+          autoCorrect={false}
+          returnKeyType="go"
+        />
+        {searchInput.length > 0 && (
+          <Pressable onPress={() => setSearchInput("")} hitSlop={8}>
+            <Ionicons name="close-circle" size={16} color={colors.secondary[500]} />
+          </Pressable>
+        )}
+      </View>
+
       {/* Header */}
       <View style={styles.header}>
-        <StyledText variant="h2" color={colors.accent_light[400]}>
-          {companyName || symbol}
-        </StyledText>
+        <View style={styles.titleRow}>
+          <StyledText variant="h2" color={colors.accent_light[400]}>
+            {companyName || symbol}
+          </StyledText>
+          <Pressable onPress={toggleFavorite} hitSlop={8} style={styles.starBtn}>
+            <Ionicons
+              name={isFavorited ? "star" : "star-outline"}
+              size={24}
+              color={isFavorited ? colors.accent_warm[300] : colors.secondary[600]}
+            />
+          </Pressable>
+        </View>
         {stock ? (
           <PriceText value={stock.close} size="lg" style={styles.headerPrice} />
         ) : chartResult ? (
@@ -352,10 +433,35 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: spacing["5xl"],
   },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.primary[800],
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.lg,
+  },
+  searchInput: {
+    flex: 1,
+    color: colors.accent_light[400],
+    fontFamily: "Inter",
+    fontSize: 14,
+    padding: 0,
+  },
   header: {
     alignItems: "center",
     marginBottom: spacing["2xl"],
     paddingTop: spacing.sm,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  starBtn: {
+    padding: spacing.xs,
   },
   headerPrice: {
     marginTop: spacing.xs,
