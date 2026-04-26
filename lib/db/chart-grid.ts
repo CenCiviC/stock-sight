@@ -5,7 +5,7 @@ import type { ChartGridRecord } from "./types";
 /** Save chart grid result and keep only the latest 1 record */
 export async function saveChartGrid(
   db: SQLiteDatabase,
-  items: { symbol: string; bars: OHLCVBar[] }[]
+  items: { symbol: string; bars: OHLCVBar[]; market_cap_rank: number }[]
 ): Promise<number> {
   const scannedAt = new Date().toISOString();
 
@@ -18,10 +18,11 @@ export async function saveChartGrid(
 
   for (const item of items) {
     await db.runAsync(
-      `INSERT INTO chart_grid_stocks (grid_id, symbol, bars) VALUES (?, ?, ?)`,
+      `INSERT INTO chart_grid_stocks (grid_id, symbol, bars, market_cap_rank) VALUES (?, ?, ?, ?)`,
       gridId,
       item.symbol,
-      JSON.stringify(item.bars)
+      JSON.stringify(item.bars),
+      item.market_cap_rank
     );
   }
 
@@ -50,14 +51,16 @@ export async function getLatestChartGrid(
   const stockRows = await db.getAllAsync<{
     symbol: string;
     bars: string;
+    market_cap_rank: number;
   }>(
-    `SELECT symbol, bars FROM chart_grid_stocks WHERE grid_id = ?`,
+    `SELECT symbol, bars, market_cap_rank FROM chart_grid_stocks WHERE grid_id = ? ORDER BY market_cap_rank ASC`,
     row.id
   );
 
   const items = stockRows.map((r) => ({
     symbol: r.symbol,
     bars: JSON.parse(r.bars) as OHLCVBar[],
+    market_cap_rank: r.market_cap_rank,
   }));
 
   return { ...row, items };

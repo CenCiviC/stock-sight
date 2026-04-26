@@ -57,7 +57,11 @@ export interface ChartGridRecord {
   count: number;
   scanned_at: string;
   created_at: string;
-  items: { symbol: string; bars: import("@/lib/scanner").OHLCVBar[] }[];
+  items: {
+    symbol: string;
+    bars: import("@/lib/scanner").OHLCVBar[];
+    market_cap_rank: number;
+  }[];
 }
 
 /** Rank change between two ranking snapshots */

@@ -72,6 +72,7 @@ const VCP_TABS: { key: IndexType; label: string }[] = [
 type ChartGridItem = {
   symbol: string;
   bars: OHLCVBar[];
+  market_cap_rank: number;
 };
 
 const CHART_GRID_COLS = 2;
@@ -132,6 +133,7 @@ export default function Index() {
   const [chartGridLoading, setChartGridLoading] = useState(false);
   const [chartGridTotal, setChartGridTotal] = useState(0);
   const [chartGridLoaded, setChartGridLoaded] = useState(0);
+  const [visibleTopRank, setVisibleTopRank] = useState<number | null>(null);
   const chartGridAbortRef = useRef<AbortController | null>(null);
 
   // --- Shared state ---
@@ -345,6 +347,9 @@ export default function Index() {
 
       if (controller.signal.aborted) return;
 
+      const rankBySymbol = new Map<string, number>();
+      symbols.forEach((sym, i) => rankBySymbol.set(sym, i + 1));
+
       const newItems: ChartGridItem[] = [];
       for (const [symbol, { bars }] of chartResults) {
         if (bars.length < 2) continue;
@@ -355,9 +360,15 @@ export default function Index() {
         const lastClose = closes[closes.length - 1];
 
         if (lastSma === null || lastClose > lastSma) {
-          newItems.push({ symbol, bars });
+          newItems.push({
+            symbol,
+            bars,
+            market_cap_rank: rankBySymbol.get(symbol) ?? 0,
+          });
         }
       }
+
+      newItems.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
 
       setChartGridItems(newItems);
       await saveChartGrid(db, newItems);
@@ -544,6 +555,33 @@ export default function Index() {
 
   const MA_200 = useMemo(() => [200], []);
 
+  useEffect(() => {
+    if (chartGridItems.length === 0) {
+      setVisibleTopRank(null);
+    } else {
+      setVisibleTopRank((prev) => prev ?? chartGridItems[0].market_cap_rank);
+    }
+  }, [chartGridItems]);
+
+  const chartViewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
+  const onChartViewableItemsChanged = useRef(
+    ({
+      viewableItems,
+    }: {
+      viewableItems: { item: ChartGridItem }[];
+    }) => {
+      if (viewableItems.length === 0) return;
+      let min = Infinity;
+      for (const v of viewableItems) {
+        if (v.item.market_cap_rank < min) min = v.item.market_cap_rank;
+      }
+      if (min !== Infinity) setVisibleTopRank(min);
+    },
+  ).current;
+
   const toggleChartFavorite = useCallback(
     async (item: ChartGridItem) => {
       const closes = item.bars.map((b) => b.close);
@@ -575,13 +613,22 @@ export default function Index() {
           }
         >
           <View style={styles.chartGridCellHeader}>
-            <StyledText
-              variant="caption"
-              weight="bold"
-              color={colors.accent_light[400]}
-            >
-              {item.symbol}
-            </StyledText>
+            <View style={styles.chartCellHeaderLeft}>
+              <StyledText
+                variant="caption"
+                weight="medium"
+                color={colors.secondary[500]}
+              >
+                #{item.market_cap_rank}
+              </StyledText>
+              <StyledText
+                variant="caption"
+                weight="bold"
+                color={colors.accent_light[400]}
+              >
+                {item.symbol}
+              </StyledText>
+            </View>
             <Pressable
               onPress={() => toggleChartFavorite(item)}
               hitSlop={8}
@@ -1218,22 +1265,40 @@ export default function Index() {
                   />
                 </View>
               )}
-              <FlatList
-                data={chartGridItems}
-                keyExtractor={(item) => item.symbol}
-                numColumns={CHART_GRID_COLS}
-                renderItem={renderChartGridItem}
-                contentContainerStyle={styles.chartGridList}
-                showsVerticalScrollIndicator={false}
-                windowSize={3}
-                maxToRenderPerBatch={4}
-                initialNumToRender={6}
-                getItemLayout={(_data, index) => ({
-                  length: CHART_ROW_H,
-                  offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
-                  index,
-                })}
-              />
+              <View style={styles.chartGridListWrap}>
+                <FlatList
+                  data={chartGridItems}
+                  keyExtractor={(item) => item.symbol}
+                  numColumns={CHART_GRID_COLS}
+                  renderItem={renderChartGridItem}
+                  contentContainerStyle={styles.chartGridList}
+                  showsVerticalScrollIndicator={false}
+                  windowSize={3}
+                  maxToRenderPerBatch={4}
+                  initialNumToRender={6}
+                  getItemLayout={(_data, index) => ({
+                    length: CHART_ROW_H,
+                    offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                    index,
+                  })}
+                  viewabilityConfig={chartViewabilityConfig}
+                  onViewableItemsChanged={onChartViewableItemsChanged}
+                />
+                {visibleTopRank !== null && (
+                  <View
+                    style={styles.rankIndicator}
+                    pointerEvents="none"
+                  >
+                    <StyledText
+                      variant="caption"
+                      weight="bold"
+                      color={colors.accent_warm[300]}
+                    >
+                      #{visibleTopRank}
+                    </StyledText>
+                  </View>
+                )}
+              </View>
             </>
           )}
         </>
@@ -1456,12 +1521,26 @@ const styles = StyleSheet.create({
       default: { paddingBottom: 40 },
     }),
   },
+  chartGridListWrap: {
+    flex: 1,
+  },
   chartGridList: {
     padding: spacing.sm,
     ...Platform.select({
       web: { paddingBottom: 32 },
       default: { paddingBottom: 40 },
     }),
+  },
+  rankIndicator: {
+    position: "absolute",
+    top: spacing.sm,
+    right: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.primary[900],
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.primary[700],
   },
   chartGridHeader: {
     flexDirection: "row",
@@ -1477,6 +1556,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[800],
     borderRadius: borderRadius.md,
     overflow: "hidden",
+  },
+  chartCellHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   favViewToggle: {
     flexDirection: "row",

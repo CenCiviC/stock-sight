@@ -1,5 +1,5 @@
 export const DB_NAME = "stock_sight.db";
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const MIGRATIONS: string[] = [
   `PRAGMA foreign_keys = ON;
@@ -90,4 +90,6 @@ export const MIGRATIONS: string[] = [
   );
 
   CREATE INDEX IF NOT EXISTS idx_chart_grid_stocks_grid_id ON chart_grid_stocks(grid_id);`,
+
+  `ALTER TABLE chart_grid_stocks ADD COLUMN market_cap_rank INTEGER NOT NULL DEFAULT 0;`,
 ];
