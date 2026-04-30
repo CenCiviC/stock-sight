@@ -3,7 +3,7 @@ export { runRsScan } from "./rs-scanner";
 export { fetchChart, fetchChartBatch, fetchFinancials, fetchCompanyProfile } from "./yahoo";
 export type { ChartResult } from "./yahoo";
 export { fetchNasdaqSymbolsByMarketCap } from "./symbols";
-export { rollingSMA } from "./indicators";
+export { rollingSMA, rollingEMA } from "./indicators";
 export type {
   IndexType,
   Stock,

@@ -553,7 +553,8 @@ export default function Index() {
     }
   };
 
-  const MA_200 = useMemo(() => [200], []);
+  const CHART_SMA = useMemo(() => [50], []);
+  const CHART_EMA = useMemo(() => [9], []);
 
   useEffect(() => {
     if (chartGridItems.length === 0) {
@@ -647,13 +648,14 @@ export default function Index() {
               bars={item.bars}
               height={CHART_CELL_H - 24}
               compact
-              maPeriods={MA_200}
+              maPeriods={CHART_SMA}
+              emaPeriods={CHART_EMA}
             />
           </View>
         </Pressable>
       );
     },
-    [router, MA_200, favoritedSymbols, toggleChartFavorite],
+    [router, CHART_SMA, CHART_EMA, favoritedSymbols, toggleChartFavorite],
   );
 
   const renderFavChartItem = useCallback(
@@ -706,13 +708,14 @@ export default function Index() {
               bars={bars}
               height={CHART_CELL_H - 24}
               compact
-              maPeriods={MA_200}
+              maPeriods={CHART_SMA}
+              emaPeriods={CHART_EMA}
             />
           </View>
         </Pressable>
       );
     },
-    [favCharts, router, MA_200, toggleFavorite],
+    [favCharts, router, CHART_SMA, CHART_EMA, toggleFavorite],
   );
 
   const renderStockItem = ({ item }: { item: Stock }) => {

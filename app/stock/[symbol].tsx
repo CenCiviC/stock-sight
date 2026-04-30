@@ -250,7 +250,7 @@ export default function StockDetail() {
         )}
 
         {bars && !chartLoading && !chartError && (
-          <StockChart bars={bars} height={300} maPeriods={[50, 200]} />
+          <StockChart bars={bars} height={300} maPeriods={[50]} emaPeriods={[9]} />
         )}
       </Card>
 

@@ -1,7 +1,7 @@
 import { colors } from "@/constants/colors";
 import { borderRadius } from "@/constants/spacing";
 import type { OHLCVBar } from "@/lib/scanner";
-import { rollingSMA } from "@/lib/scanner";
+import { rollingEMA, rollingSMA } from "@/lib/scanner";
 import { useMemo, useRef } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
@@ -11,11 +11,13 @@ interface StockChartProps {
   height?: number;
   /** Compact mode: hides axes, grid, crosshair. For inline/card display. */
   compact?: boolean;
-  /** Moving average periods to display (e.g. [50, 200]) */
+  /** SMA periods to display (e.g. [50, 200]) */
   maPeriods?: number[];
+  /** EMA periods to display (e.g. [9]) */
+  emaPeriods?: number[];
 }
 
-const MA_COLORS: Record<number, string> = {
+const SMA_COLORS: Record<number, string> = {
   10: "#e6e600",
   20: "#ff9800",
   50: "#2196f3",
@@ -23,30 +25,44 @@ const MA_COLORS: Record<number, string> = {
   200: "#f44336",
 };
 
-function getMAColor(period: number): string {
-  return MA_COLORS[period] ?? "#888888";
-}
+const EMA_COLORS: Record<number, string> = {
+  9: "#FFD700",
+  21: "#FF9800",
+};
 
 type MALineData = { period: number; color: string; data: { time: string; value: number }[] };
 
-function computeMALines(bars: OHLCVBar[], periods: number[]): MALineData[] {
+function computeSMALines(bars: OHLCVBar[], periods: number[]): MALineData[] {
   const closes = bars.map((b) => b.close);
   const lines: MALineData[] = [];
-
   for (const period of periods) {
     const sma = rollingSMA(closes, period);
     const data: { time: string; value: number }[] = [];
     for (let i = 0; i < bars.length; i++) {
       const v = sma[i];
-      if (v !== null) {
-        data.push({ time: bars[i].date, value: v });
-      }
+      if (v !== null) data.push({ time: bars[i].date, value: v });
     }
     if (data.length > 0) {
-      lines.push({ period, color: getMAColor(period), data });
+      lines.push({ period, color: SMA_COLORS[period] ?? "#888888", data });
     }
   }
+  return lines;
+}
 
+function computeEMALines(bars: OHLCVBar[], periods: number[]): MALineData[] {
+  const closes = bars.map((b) => b.close);
+  const lines: MALineData[] = [];
+  for (const period of periods) {
+    const ema = rollingEMA(closes, period);
+    const data: { time: string; value: number }[] = [];
+    for (let i = 0; i < bars.length; i++) {
+      const v = ema[i];
+      if (v !== null) data.push({ time: bars[i].date, value: v });
+    }
+    if (data.length > 0) {
+      lines.push({ period, color: EMA_COLORS[period] ?? "#FFEB3B", data });
+    }
+  }
   return lines;
 }
 
@@ -58,6 +74,7 @@ export function StockChart({
   height = 320,
   compact = false,
   maPeriods = [],
+  emaPeriods = [],
 }: StockChartProps) {
   const webViewRef = useRef<WebView>(null);
 
@@ -79,12 +96,15 @@ export function StockChart({
           : "rgba(248, 113, 113, 0.3)",
     }));
 
-    const maLines = maPeriods.length > 0 ? computeMALines(bars, maPeriods) : [];
+    const allLines = [
+      ...computeSMALines(bars, maPeriods),
+      ...computeEMALines(bars, emaPeriods),
+    ];
 
     return compact
-      ? buildCompactChartHtml(candleData, volumeData, height, maLines)
-      : buildChartHtml(candleData, volumeData, height, maLines);
-  }, [bars, height, compact, maPeriods]);
+      ? buildCompactChartHtml(candleData, volumeData, height, allLines)
+      : buildChartHtml(candleData, volumeData, height, allLines);
+  }, [bars, height, compact, maPeriods, emaPeriods]);
 
   if (Platform.OS === "web") {
     return (

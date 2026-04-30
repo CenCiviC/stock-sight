@@ -52,6 +52,34 @@ export function rollingSMA(
 }
 
 /**
+ * Exponential Moving Average. Seeds with the SMA of the first `period` values,
+ * then applies the standard EMA multiplier k = 2 / (period + 1).
+ * Returns null for positions before the seed window is complete.
+ */
+export function rollingEMA(
+  values: number[],
+  period: number
+): (number | null)[] {
+  const result: (number | null)[] = new Array(values.length).fill(null);
+
+  if (period <= 0 || values.length < period) return result;
+
+  const k = 2 / (period + 1);
+
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += values[i];
+  let ema = sum / period;
+  result[period - 1] = ema;
+
+  for (let i = period; i < values.length; i++) {
+    ema = values[i] * k + ema * (1 - k);
+    result[i] = ema;
+  }
+
+  return result;
+}
+
+/**
  * Rolling Standard Deviation (population=false, ddof=1 to match pandas default).
  * Returns null for positions where there is insufficient data (< period values).
  * Equivalent to pandas Series.rolling(window=period).std()
