@@ -6,21 +6,28 @@
  * and sends a Discord alert for symbols where EMA9 crosses above SMA50.
  *
  * Crossover condition:
- *   previous day: EMA9 < SMA50 * THRESHOLD
- *   current day:  EMA9 >= SMA50 * THRESHOLD
+ *   previous days (10+ consecutive): EMA9 / SMA50 < 1.0
+ *   current day:                     EMA9 / SMA50 >= 0.95
+ *                                    AND Close >= SMA200 * 0.95
  */
+
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 // ──────────────────────────────────────────────
 // Constants
 // ──────────────────────────────────────────────
 
-const THRESHOLD_LOW  = 0.97;   // EMA9 >= SMA50 * 0.97 (SMA50 3% 아래까지)
-const THRESHOLD_HIGH = 1.03;   // EMA9 <= SMA50 * 1.03 (SMA50 3% 위까지)
+const ENTRY_RATIO_THRESHOLD = 0.95;   // 당일 EMA9/SMA50 >= 0.95 (SMA50 95% 이상)
+const OUTSIDE_RATIO_THRESHOLD = 1.0;  // daysOutside 카운팅 (EMA9 < SMA50)
+const SMA200_THRESHOLD = 0.95;        // 당일 Close >= SMA200 * 0.95
 const MIN_PRICE = 5;           // 최소 종가 필터 ($5 미만 제외)
+const MIN_AVG_VOLUME = 500_000; // 최근 10일 평균 거래량 (>=500K)
+const VOLUME_LOOKBACK = 10;     // 거래량 평균 기간
 const CONCURRENCY = 5;         // parallel Yahoo Finance requests
 const DELAY_MS = 200;          // ms between each batch
 const RETRY_MAX = 3;           // retries on 429 / network error
-const MIN_BARS = 52;           // minimum bars needed (SMA50 + buffer)
+const MIN_BARS = 210;          // minimum bars needed (SMA200 + buffer)
 
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -39,19 +46,24 @@ interface ScanResult {
   ema9: number;
   prevEma9: number;
   sma50: number;
+  sma200: number;
   ratio: number;
   daysOutside: number; // 오늘 진입 전 연속으로 범위 밖에 있던 일수
+  avgVolume10: number; // 최근 10일 평균 거래량
 }
 
 function isCrossover(r: ScanResult): boolean {
-  // 1) 직전 최소 10일 연속 ratio < 0.97 (범위 밖이었음)
-  // 2) 당일: 0.97 <= ratio <= 1.03 (오늘 처음 범위 진입)
+  // 1) 직전 최소 10일 연속 ratio < 1.0 (EMA9가 SMA50 아래에 있었음)
+  // 2) 당일: ratio >= 0.95 (오늘 SMA50의 95% 이상까지 올라옴)
   // 3) 오늘 EMA9 > 전날 EMA9 (상승 중)
+  // 4) 오늘 종가 >= SMA200 * 0.95 (장기 추세선 95% 이상)
+  // 5) 최근 10일 평균 거래량 >= 500K (유동성 필터)
   return (
     r.daysOutside >= OUTSIDE_RANGE_MIN_DAYS &&
-    r.ratio >= THRESHOLD_LOW &&
-    r.ratio <= THRESHOLD_HIGH &&
-    r.ema9 > r.prevEma9
+    r.ratio >= ENTRY_RATIO_THRESHOLD &&
+    r.ema9 > r.prevEma9 &&
+    r.close >= r.sma200 * SMA200_THRESHOLD &&
+    r.avgVolume10 >= MIN_AVG_VOLUME
   );
 }
 
@@ -154,14 +166,19 @@ async function fetchNasdaqSymbols(): Promise<string[]> {
 // Yahoo Finance
 // ──────────────────────────────────────────────
 
+interface DailyBar {
+  close: number;
+  volume: number;
+}
+
 /**
- * Fetch adjusted close prices from Yahoo Finance v8 chart API.
+ * Fetch close prices and volume from Yahoo Finance v8 chart API.
  * Returns null if the symbol has insufficient data or doesn't exist.
  */
-async function fetchCloses(symbol: string): Promise<number[] | null> {
+async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
-    `?range=6mo&interval=1d`;
+    `?range=1y&interval=1d`;
 
   let resp: Response;
   try {
@@ -181,7 +198,12 @@ async function fetchCloses(symbol: string): Promise<number[] | null> {
   type YahooChartJson = {
     chart?: {
       result?: Array<{
-        indicators?: { quote?: Array<{ close?: (number | null)[] }> };
+        indicators?: {
+          quote?: Array<{
+            close?: (number | null)[];
+            volume?: (number | null)[];
+          }>;
+        };
       }>;
     };
   };
@@ -189,12 +211,18 @@ async function fetchCloses(symbol: string): Promise<number[] | null> {
   const result = json?.chart?.result?.[0];
   if (!result) return null;
 
-  const rawCloses: (number | null)[] =
-    result.indicators?.quote?.[0]?.close ?? [];
+  const rawCloses: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
+  const rawVolumes: (number | null)[] = result.indicators?.quote?.[0]?.volume ?? [];
 
-  const closes = rawCloses.filter((c): c is number => c != null);
+  const bars: DailyBar[] = [];
+  for (let i = 0; i < rawCloses.length; i++) {
+    const c = rawCloses[i];
+    const v = rawVolumes[i];
+    if (c == null || !Number.isFinite(c)) continue;
+    bars.push({ close: c, volume: v != null && Number.isFinite(v) ? v : 0 });
+  }
 
-  return closes.length >= MIN_BARS ? closes : null;
+  return bars.length >= MIN_BARS ? bars : null;
 }
 
 // ──────────────────────────────────────────────
@@ -202,33 +230,48 @@ async function fetchCloses(symbol: string): Promise<number[] | null> {
 // ──────────────────────────────────────────────
 
 async function scanSymbol(symbol: string): Promise<ScanResult | null> {
-  const closes = await fetchCloses(symbol);
-  if (!closes) return null;
+  const bars = await fetchBars(symbol);
+  if (!bars) return null;
+
+  const closes = bars.map((b) => b.close);
+  const volumes = bars.map((b) => b.volume);
 
   const ema9 = calcEMA(closes, 9);
   const sma50 = calcSMA(closes, 50);
+  const sma200 = calcSMA(closes, 200);
 
   const todayEMA9 = ema9.at(-1)!;
   const todaySMA50 = sma50.at(-1);
+  const todaySMA200 = sma200.at(-1);
   const prevEMA9 = ema9.at(-2)!;
   const prevSMA50 = sma50.at(-2);
 
   if (todaySMA50 == null || prevSMA50 == null || todaySMA50 === 0 || prevSMA50 === 0) {
     return null;
   }
+  if (todaySMA200 == null || todaySMA200 === 0) {
+    return null;
+  }
 
-  // 어제부터 거슬러 올라가며 연속으로 ratio < THRESHOLD_LOW인 일수 카운트
+  // 어제부터 거슬러 올라가며 연속으로 ratio < 1.0 (SMA50 아래)인 일수 카운트
   let daysOutside = 0;
   for (let i = 2; i < ema9.length; i++) {
     const e = ema9.at(-i)!;
     const s = sma50.at(-i);
     if (s == null || s === 0) break;
-    if (e / s < THRESHOLD_LOW) {
+    if (e / s < OUTSIDE_RATIO_THRESHOLD) {
       daysOutside++;
     } else {
       break; // 연속 streak 끊김
     }
   }
+
+  // 최근 10일 평균 거래량
+  const recentVols = volumes.slice(-VOLUME_LOOKBACK);
+  const avgVolume10 =
+    recentVols.length > 0
+      ? recentVols.reduce((a, b) => a + b, 0) / recentVols.length
+      : 0;
 
   return {
     symbol,
@@ -236,8 +279,10 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     ema9: todayEMA9,
     prevEma9: prevEMA9,
     sma50: todaySMA50,
+    sma200: todaySMA200,
     ratio: todayEMA9 / todaySMA50,
     daysOutside,
+    avgVolume10,
   };
 }
 
@@ -291,13 +336,21 @@ async function runBatch(
 
 const DISCORD_MAX_DESC = 4096;
 
+function formatVolume(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+  return `${v.toFixed(0)}`;
+}
+
 function resultLine(r: ScanResult): string {
   return (
     `🟢 **${r.symbol}** — ` +
     `Close: \`$${r.close.toFixed(2)}\` | ` +
     `EMA9: \`${r.ema9.toFixed(2)}\` | ` +
     `SMA50: \`${r.sma50.toFixed(2)}\` | ` +
+    `SMA200: \`${r.sma200.toFixed(2)}\` | ` +
     `Ratio: \`${r.ratio.toFixed(3)}\` | ` +
+    `Vol(10d): \`${formatVolume(r.avgVolume10)}\` | ` +
     `범위 밖: \`${r.daysOutside}일\``
   );
 }
@@ -365,7 +418,7 @@ function buildDiscordPayload(
         color: hasHits ? 0xf0b429 : 0x6b7280,
         fields,
         footer: {
-          text: `SMA50 ±3% (${THRESHOLD_LOW}~${THRESHOLD_HIGH}) & EMA9 상승 중 | NASDAQ ~5000종목`,
+          text: `SMA50 95% 이상 진입 (10일+ 아래 → 위) & EMA9 상승 & 종가 ≥ SMA200×95% & 10일 평균 거래량 ≥ 500K | NASDAQ ~5000종목`,
         },
       },
     ],
@@ -438,7 +491,45 @@ async function main(): Promise<void> {
   const payload = buildDiscordPayload(crossed, errors, symbols.length);
   console.log("Sending Discord notification...");
   await sendDiscord(webhookUrl, payload);
+
+  // 5. Write JSON for app consumption (data/alerts/latest.json)
+  writeAlertsJson(crossed, symbols.length);
+
   console.log("Done.");
+}
+
+function writeAlertsJson(crossed: ScanResult[], total: number): void {
+  const scanDateET = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date()); // YYYY-MM-DD
+
+  const slim = crossed.map((r) => ({
+    symbol: r.symbol,
+    close: Number(r.close.toFixed(4)),
+    ema9: Number(r.ema9.toFixed(4)),
+    sma50: Number(r.sma50.toFixed(4)),
+    sma200: Number(r.sma200.toFixed(4)),
+    ratio: Number(r.ratio.toFixed(4)),
+    daysOutside: r.daysOutside,
+  }));
+
+  const payload = {
+    scannedAt: new Date().toISOString(),
+    scanDateET,
+    total,
+    count: slim.length,
+    alerts: slim,
+  };
+
+  // scanner.ts 기준 ../data/alerts/latest.json
+  const outDir = resolve(process.cwd(), "..", "data", "alerts");
+  mkdirSync(outDir, { recursive: true });
+  const outPath = resolve(outDir, "latest.json");
+  writeFileSync(outPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  console.log(`Wrote ${outPath} (${slim.length} alerts)`);
 }
 
 main().catch((e) => {

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
+import type { AlertFeed, AlertItem } from "@/lib/alerts";
+import { fetchAlertFeed } from "@/lib/alerts";
 import type { ComparisonResult, FavoriteRecord, RankChange } from "@/lib/db";
 import {
   addFavorite,
@@ -63,7 +65,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type ActiveView = "rs_top" | "nasdaq" | "charts" | "favorites";
+type ActiveView = "rs_top" | "nasdaq" | "charts" | "favorites" | "alerts";
 
 const VCP_TABS: { key: IndexType; label: string }[] = [
   { key: "nasdaq", label: "NASDAQ" },
@@ -128,6 +130,13 @@ export default function Index() {
   const [favCharts, setFavCharts] = useState<Record<string, OHLCVBar[]>>({});
   const [favChartsLoading, setFavChartsLoading] = useState(false);
 
+  // --- Alerts (Today) state ---
+  const [alertFeed, setAlertFeed] = useState<AlertFeed | null>(null);
+  const [alertsLoading, setAlertsLoading] = useState(false);
+  const [alertsError, setAlertsError] = useState<string | null>(null);
+  const [alertCharts, setAlertCharts] = useState<Record<string, OHLCVBar[]>>({});
+  const [alertChartsLoading, setAlertChartsLoading] = useState(false);
+
   // --- Chart Grid state ---
   const [chartGridItems, setChartGridItems] = useState<ChartGridItem[]>([]);
   const [chartGridLoading, setChartGridLoading] = useState(false);
@@ -149,8 +158,11 @@ export default function Index() {
   const isRsTop = activeView === "rs_top";
   const isFavorites = activeView === "favorites";
   const isCharts = activeView === "charts";
+  const isAlerts = activeView === "alerts";
   const activeTab =
-    isRsTop || isFavorites || isCharts ? null : (activeView as IndexType);
+    isRsTop || isFavorites || isCharts || isAlerts
+      ? null
+      : (activeView as IndexType);
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
   const isScanning = isRsTop
     ? rsScanning
@@ -485,6 +497,62 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFavorites, favViewMode, favorites]);
 
+  // Fetch Discord alert feed (called on tab activation + manual refresh)
+  const loadAlertFeed = useCallback(async () => {
+    setAlertsLoading(true);
+    setAlertsError(null);
+    try {
+      const feed = await fetchAlertFeed();
+      setAlertFeed(feed);
+    } catch (e) {
+      setAlertsError(e instanceof Error ? e.message : "Fetch failed");
+    } finally {
+      setAlertsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isAlerts) return;
+    void loadAlertFeed();
+  }, [isAlerts, loadAlertFeed]);
+
+  // Fetch chart bars for alerts (2-grid view)
+  useEffect(() => {
+    if (!isAlerts || !alertFeed || alertFeed.alerts.length === 0) return;
+    const missing = alertFeed.alerts
+      .map((a) => a.symbol)
+      .filter((sym) => !alertCharts[sym]);
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    setAlertChartsLoading(true);
+    (async () => {
+      const concurrency = 3;
+      for (let i = 0; i < missing.length; i += concurrency) {
+        if (cancelled) break;
+        const batch = missing.slice(i, i + concurrency);
+        const results = await Promise.allSettled(
+          batch.map((sym) => fetchChart(sym, 400)),
+        );
+        if (cancelled) break;
+        setAlertCharts((prev) => {
+          const next = { ...prev };
+          results.forEach((result, idx) => {
+            if (result.status === "fulfilled") {
+              next[batch[idx]] = result.value.bars;
+            }
+          });
+          return next;
+        });
+      }
+      if (!cancelled) setAlertChartsLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAlerts, alertFeed]);
+
   // Load 1M chart data for VCP scan results → store in React Query cache
   useEffect(() => {
     if (!currentResult || currentResult.stocks.length === 0) return;
@@ -718,6 +786,63 @@ export default function Index() {
     [favCharts, router, CHART_SMA, CHART_EMA, toggleFavorite],
   );
 
+  const renderAlertChartItem = useCallback(
+    ({ item }: { item: AlertItem }) => {
+      const bars = alertCharts[item.symbol];
+      return (
+        <Pressable
+          style={styles.chartGridCell}
+          onPress={() =>
+            router.push({
+              pathname: "/stock/[symbol]",
+              params: { symbol: item.symbol },
+            })
+          }
+        >
+          <View style={styles.chartGridCellHeader}>
+            <View style={styles.chartCellHeaderLeft}>
+              <StyledText
+                variant="caption"
+                weight="bold"
+                color={colors.accent_light[400]}
+              >
+                {item.symbol}
+              </StyledText>
+              <StyledText
+                variant="caption"
+                weight="medium"
+                color={colors.secondary[500]}
+              >
+                ${item.close.toFixed(2)}
+              </StyledText>
+            </View>
+            <StyledText
+              variant="caption"
+              weight="medium"
+              color={colors.secondary[500]}
+            >
+              {item.daysOutside}d
+            </StyledText>
+          </View>
+          <View style={styles.chartGridChartWrap}>
+            {bars && bars.length > 0 ? (
+              <StockChart
+                bars={bars}
+                height={CHART_CELL_H - 24}
+                compact
+                maPeriods={CHART_SMA}
+                emaPeriods={CHART_EMA}
+              />
+            ) : (
+              <View style={styles.chartGridChartWrap} />
+            )}
+          </View>
+        </Pressable>
+      );
+    },
+    [alertCharts, router, CHART_SMA, CHART_EMA],
+  );
+
   const renderStockItem = ({ item }: { item: Stock }) => {
     let badge = null;
     if (comparison) {
@@ -834,6 +959,30 @@ export default function Index() {
             {rsScanning ? (
               <View style={styles.tabDotScanning} />
             ) : rsResult ? (
+              <View style={styles.tabDot} />
+            ) : null}
+          </Pressable>
+
+          {/* Today (Discord alerts) tab */}
+          <Pressable
+            style={[styles.tab, isAlerts && styles.tabActive]}
+            onPress={() => setActiveView("alerts")}
+          >
+            <Ionicons
+              name="flash-outline"
+              size={14}
+              color={isAlerts ? colors.accent_warm[300] : colors.secondary[600]}
+            />
+            <StyledText
+              variant="bodySmall"
+              weight={isAlerts ? "bold" : "medium"}
+              color={isAlerts ? colors.accent_warm[300] : colors.secondary[600]}
+            >
+              Today
+            </StyledText>
+            {alertsLoading ? (
+              <View style={styles.tabDotScanning} />
+            ) : alertFeed && alertFeed.alerts.length > 0 ? (
               <View style={styles.tabDot} />
             ) : null}
           </Pressable>
@@ -1307,8 +1456,124 @@ export default function Index() {
         </>
       )}
 
+      {/* === Today (Discord Alerts) View === */}
+      {isAlerts && (
+        <>
+          <View style={styles.alertsHeader}>
+            <View style={styles.alertsHeaderLeft}>
+              <StyledText variant="h3" color={colors.accent_warm[300]}>
+                Today 추천
+              </StyledText>
+              {alertFeed?.scanDateET && (
+                <StyledText
+                  variant="caption"
+                  color={colors.secondary[500]}
+                >
+                  {alertFeed.scanDateET} ET · {alertFeed.count}종목
+                </StyledText>
+              )}
+            </View>
+            <Pressable
+              onPress={() => {
+                setAlertCharts({});
+                void loadAlertFeed();
+              }}
+              hitSlop={8}
+              style={styles.alertsRefreshBtn}
+            >
+              <Ionicons
+                name="refresh"
+                size={16}
+                color={colors.secondary[500]}
+              />
+            </Pressable>
+          </View>
+
+          {alertsLoading && !alertFeed && (
+            <View style={styles.emptyState}>
+              <StyledText variant="bodySmall" color={colors.secondary[500]}>
+                Loading alerts...
+              </StyledText>
+            </View>
+          )}
+
+          {alertsError && (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={48}
+                color={colors.negative}
+              />
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[500]}
+                style={styles.emptyDesc}
+              >
+                {alertsError}
+              </StyledText>
+            </View>
+          )}
+
+          {alertFeed && alertFeed.alerts.length === 0 && !alertsLoading && (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="moon-outline"
+                size={48}
+                color={colors.primary[400]}
+              />
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
+                오늘은 추천 종목이 없어요
+              </StyledText>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
+                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
+              </StyledText>
+            </View>
+          )}
+
+          {alertFeed && alertFeed.alerts.length > 0 && (
+            <>
+              {alertChartsLoading && (
+                <View style={styles.favChartsLoadingRow}>
+                  <StyledText
+                    variant="caption"
+                    color={colors.secondary[500]}
+                  >
+                    Loading charts...
+                  </StyledText>
+                </View>
+              )}
+              <FlatList
+                data={alertFeed.alerts}
+                keyExtractor={(item) => item.symbol}
+                numColumns={CHART_GRID_COLS}
+                renderItem={renderAlertChartItem}
+                contentContainerStyle={styles.chartGridList}
+                showsVerticalScrollIndicator={false}
+                windowSize={3}
+                maxToRenderPerBatch={4}
+                initialNumToRender={6}
+                getItemLayout={(_data, index) => ({
+                  length: CHART_ROW_H,
+                  offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                  index,
+                })}
+                extraData={alertCharts}
+              />
+            </>
+          )}
+        </>
+      )}
+
       {/* === VCP View === */}
-      {!isRsTop && !isFavorites && !isCharts && (
+      {!isRsTop && !isFavorites && !isCharts && !isAlerts && (
         <>
           {/* No result → show scan prompt */}
           {!currentResult && !isScanning && dbLoaded && (
@@ -1584,6 +1849,20 @@ const styles = StyleSheet.create({
   favChartsLoadingRow: {
     alignItems: "center",
     paddingVertical: spacing.sm,
+  },
+  alertsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  alertsHeaderLeft: {
+    gap: 2,
+  },
+  alertsRefreshBtn: {
+    padding: spacing.xs,
   },
   chartGridCellHeader: {
     flexDirection: "row",
