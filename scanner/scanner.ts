@@ -2,8 +2,8 @@
 /**
  * US Stock Scanner — EMA9 / SMA50 Crossover Detector
  *
- * Fetches NASDAQ 5000 symbols, calculates EMA9 & SMA50,
- * and sends a Discord alert for symbols where EMA9 crosses above SMA50.
+ * Fetches NASDAQ 5000 symbols, calculates EMA9 & SMA50, and writes
+ * data/alerts/latest.json for the app's Today tab to consume.
  *
  * Crossover condition:
  *   previous days (10+ consecutive): EMA9 / SMA50 < 1.0
@@ -331,124 +331,10 @@ async function runBatch(
 }
 
 // ──────────────────────────────────────────────
-// Discord
-// ──────────────────────────────────────────────
-
-const DISCORD_MAX_DESC = 4096;
-
-function formatVolume(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
-  return `${v.toFixed(0)}`;
-}
-
-function resultLine(r: ScanResult): string {
-  return (
-    `🟢 **${r.symbol}** — ` +
-    `Close: \`$${r.close.toFixed(2)}\` | ` +
-    `EMA9: \`${r.ema9.toFixed(2)}\` | ` +
-    `SMA50: \`${r.sma50.toFixed(2)}\` | ` +
-    `SMA200: \`${r.sma200.toFixed(2)}\` | ` +
-    `Ratio: \`${r.ratio.toFixed(3)}\` | ` +
-    `Vol(10d): \`${formatVolume(r.avgVolume10)}\` | ` +
-    `범위 밖: \`${r.daysOutside}일\``
-  );
-}
-
-function buildDiscordPayload(
-  crossed: ScanResult[],
-  errors: string[],
-  total: number
-): object {
-  const date = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-
-  const hasHits = crossed.length > 0;
-
-  // Build description (respect 4096 char Discord limit)
-  let description: string;
-  if (hasHits) {
-    const lines = crossed.map(resultLine);
-    const joined = lines.join("\n");
-    if (joined.length <= DISCORD_MAX_DESC) {
-      description = joined;
-    } else {
-      // Truncate with note
-      let acc = "";
-      let shown = 0;
-      for (const line of lines) {
-        if ((acc + "\n" + line).length > DISCORD_MAX_DESC - 50) break;
-        acc += (acc ? "\n" : "") + line;
-        shown++;
-      }
-      description = acc + `\n_…외 ${crossed.length - shown}개_`;
-    }
-  } else {
-    description = "오늘은 조건을 충족하는 종목이 없습니다.";
-  }
-
-  const fields: object[] = [
-    { name: "스캔 날짜 (ET)", value: date, inline: true },
-    { name: "감시 종목", value: `${total}개`, inline: true },
-    { name: "돌파 종목", value: `${crossed.length}개`, inline: true },
-  ];
-
-  if (errors.length > 0) {
-    const errStr =
-      errors.length <= 20
-        ? errors.map((s) => `\`${s}\``).join(", ")
-        : errors
-            .slice(0, 20)
-            .map((s) => `\`${s}\``)
-            .join(", ") + ` 외 ${errors.length - 20}개`;
-    fields.push({ name: "⚠️ 스캔 실패", value: errStr, inline: false });
-  }
-
-  return {
-    embeds: [
-      {
-        title: hasHits
-          ? `📈 EMA9 상향 돌파 — ${crossed.length}종목 감지`
-          : "📭 EMA9 상향 돌파 종목 없음",
-        description,
-        color: hasHits ? 0xf0b429 : 0x6b7280,
-        fields,
-        footer: {
-          text: `SMA50 95% 이상 진입 (10일+ 아래 → 위) & EMA9 상승 & 종가 ≥ SMA200×95% & 10일 평균 거래량 ≥ 500K | NASDAQ ~5000종목`,
-        },
-      },
-    ],
-  };
-}
-
-async function sendDiscord(webhookUrl: string, payload: object): Promise<void> {
-  const resp = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(`Discord webhook HTTP ${resp.status}: ${text}`);
-  }
-}
-
-// ──────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const webhookUrl = (process.env["DISCORD_WEBHOOK_URL"] ?? "").trim();
-  if (!webhookUrl) {
-    console.error("Error: DISCORD_WEBHOOK_URL environment variable is not set");
-    process.exit(1);
-  }
-
   // 1. Fetch NASDAQ symbols
   console.log("Fetching NASDAQ symbols...");
   let symbols: string[];
@@ -487,12 +373,7 @@ async function main(): Promise<void> {
     console.log("Crossover symbols:", crossed.map((r) => r.symbol).join(", "));
   }
 
-  // 4. Send Discord notification
-  const payload = buildDiscordPayload(crossed, errors, symbols.length);
-  console.log("Sending Discord notification...");
-  await sendDiscord(webhookUrl, payload);
-
-  // 5. Write JSON for app consumption (data/alerts/latest.json)
+  // 4. Write JSON for app consumption (data/alerts/latest.json)
   writeAlertsJson(crossed, symbols.length);
 
   console.log("Done.");

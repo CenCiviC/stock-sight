@@ -497,7 +497,7 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFavorites, favViewMode, favorites]);
 
-  // Fetch Discord alert feed (called on tab activation + manual refresh)
+  // Fetch alert feed (called on tab activation + manual refresh)
   const loadAlertFeed = useCallback(async () => {
     setAlertsLoading(true);
     setAlertsError(null);
@@ -963,7 +963,7 @@ export default function Index() {
             ) : null}
           </Pressable>
 
-          {/* Today (Discord alerts) tab */}
+          {/* Today (alerts) tab */}
           <Pressable
             style={[styles.tab, isAlerts && styles.tabActive]}
             onPress={() => setActiveView("alerts")}
@@ -1456,7 +1456,7 @@ export default function Index() {
         </>
       )}
 
-      {/* === Today (Discord Alerts) View === */}
+      {/* === Today (Alerts) View === */}
       {isAlerts && (
         <>
           <View style={styles.alertsHeader}>

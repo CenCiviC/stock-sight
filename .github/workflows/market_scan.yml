@@ -37,8 +37,6 @@ jobs:
       - name: Run scanner
         run: npx tsx scanner.ts
         working-directory: scanner
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
       - name: Commit alerts JSON
         run: |

@@ -1,5 +1,5 @@
 /**
- * Quick smoke test — NASDAQ fetch + 10종목 스캔 + 결과 출력 (Discord 전송 없음)
+ * Quick smoke test — NASDAQ fetch + 10종목 스캔 + 결과 출력
  * 실행: npx tsx test-run.ts
  */
 
@@ -53,8 +53,7 @@ async function fetchCloses(symbol: string): Promise<number[] | null> {
 
 async function main() {
   const limit = Number(process.env["LIMIT"] ?? 20);
-  const webhookUrl = (process.env["DISCORD_WEBHOOK_URL"] ?? "").trim();
-  console.log(`=== Smoke Test (${limit}종목, Discord ${webhookUrl ? "ON" : "OFF"}) ===\n`);
+  console.log(`=== Smoke Test (${limit}종목) ===\n`);
 
   // 1. NASDAQ symbols
   console.log(`1) NASDAQ API 조회 (시총 상위 ${limit}개)...`);
@@ -100,26 +99,6 @@ async function main() {
   }
 
   console.log(`\n=== 결과: ${crossed.length}개 돌파 종목 ${crossed.length ? crossed.join(", ") : "(없음)"} ===`);
-
-  if (webhookUrl) {
-    const description = crossed.length
-      ? crossed.map(s => `🟢 **${s}**`).join("\n")
-      : "조건을 충족하는 종목이 없습니다.";
-    const payload = {
-      embeds: [{
-        title: crossed.length ? `📈 EMA9 상향 돌파 — ${crossed.length}종목 감지 (테스트)` : "📭 돌파 종목 없음 (테스트)",
-        description,
-        color: crossed.length ? 0xf0b429 : 0x6b7280,
-        footer: { text: `시총 상위 ${limit}종목 테스트 스캔` },
-      }],
-    };
-    const resp = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    console.log(`Discord 전송: HTTP ${resp.status}`);
-  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

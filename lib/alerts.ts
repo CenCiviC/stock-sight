@@ -1,6 +1,6 @@
 /**
- * Discord alert feed — fetched from public GitHub raw URL.
- * CI(scanner.ts) writes data/alerts/latest.json after each Discord send.
+ * Alert feed — fetched from public GitHub raw URL.
+ * CI(scanner.ts) writes data/alerts/latest.json on each scheduled scan.
  */
 
 export interface AlertItem {
