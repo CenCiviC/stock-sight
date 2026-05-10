@@ -166,7 +166,7 @@ export default function Index() {
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
   const isScanning = isRsTop
     ? rsScanning
-    : !isFavorites && !isCharts && scanningIndex === activeTab;
+    : activeTab !== null && scanningIndex === activeTab;
   const isAnyScanRunning = scanningIndex !== null || rsScanning;
 
   // Load latest data from DB on mount
