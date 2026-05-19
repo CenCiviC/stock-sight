@@ -358,11 +358,11 @@ async function main(): Promise<void> {
     }
   });
 
-  // 3. Filter to crossover symbols only, sort by daysOutside desc (가장 오랫동안 밖에 있던 것 먼저)
+  // 3. Filter to crossover symbols only, sort by daysOutside asc (최신 크로스오버 먼저)
   const crossed = results
     .filter(isCrossover)
     .filter((r) => r.close >= MIN_PRICE)
-    .sort((a, b) => b.daysOutside - a.daysOutside);
+    .sort((a, b) => a.daysOutside - b.daysOutside);
 
   console.log(
     `Scan complete — total: ${symbols.length}, ` +

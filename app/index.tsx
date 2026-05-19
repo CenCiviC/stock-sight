@@ -1551,7 +1551,7 @@ export default function Index() {
                 </View>
               )}
               <FlatList
-                data={alertFeed.alerts}
+                data={[...alertFeed.alerts].sort((a, b) => a.daysOutside - b.daysOutside)}
                 keyExtractor={(item) => item.symbol}
                 numColumns={CHART_GRID_COLS}
                 renderItem={renderAlertChartItem}
