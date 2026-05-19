@@ -41,7 +41,7 @@ jobs:
       - name: Commit alerts JSON
         run: |
           git config user.name  "CenCiviC"
-          git config user.email "kyungbin@deargen.me"
+          git config user.email "rudqls513@gmail.com"
           git add data/alerts/latest.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
