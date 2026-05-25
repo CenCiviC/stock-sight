@@ -1,8 +1,8 @@
 {
-  "scannedAt": "2026-05-22T22:39:21.053Z",
-  "scanDateET": "2026-05-22",
+  "scannedAt": "2026-05-25T22:40:03.303Z",
+  "scanDateET": "2026-05-25",
   "total": 5000,
-  "count": 111,
+  "count": 112,
   "alerts": [
     {
       "symbol": "SPXC",
@@ -470,6 +470,15 @@
       "sma50": 128.0648,
       "sma200": 124.0791,
       "ratio": 0.9722,
+      "daysOutside": 24
+    },
+    {
+      "symbol": "BAP",
+      "close": 334.3,
+      "ema9": 327.4037,
+      "sma50": 330.1296,
+      "sma200": 297.3373,
+      "ratio": 0.9917,
       "daysOutside": 24
     },
     {
