@@ -6,7 +6,7 @@
  * data/alerts/latest.json for the app's Today tab to consume.
  *
  * Crossover condition:
- *   previous days (10+ consecutive): EMA9 / SMA50 < 1.0
+ *   previous days (5+ consecutive):  EMA9 / SMA50 < 1.0
  *   current day:                     EMA9 / SMA50 >= 0.95
  *                                    AND Close >= SMA200 * 0.95
  */
@@ -38,7 +38,7 @@ const BROWSER_UA =
 // Types
 // ──────────────────────────────────────────────
 
-const OUTSIDE_RANGE_MIN_DAYS = 10; // 진입 전 최소 연속 범위 밖 일수
+const OUTSIDE_RANGE_MIN_DAYS = 5; // 진입 전 최소 연속 범위 밖 일수
 
 interface ScanResult {
   symbol: string;
@@ -53,7 +53,7 @@ interface ScanResult {
 }
 
 function isCrossover(r: ScanResult): boolean {
-  // 1) 직전 최소 10일 연속 ratio < 1.0 (EMA9가 SMA50 아래에 있었음)
+  // 1) 직전 최소 5일 연속 ratio < 1.0 (EMA9가 SMA50 아래에 있었음)
   // 2) 당일: ratio >= 0.95 (오늘 SMA50의 95% 이상까지 올라옴)
   // 3) 오늘 EMA9 > 전날 EMA9 (상승 중)
   // 4) 오늘 종가 >= SMA200 * 0.95 (장기 추세선 95% 이상)
