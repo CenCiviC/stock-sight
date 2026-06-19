@@ -1,8 +1,8 @@
 {
-  "scannedAt": "2026-06-18T23:23:06.473Z",
-  "scanDateET": "2026-06-18",
+  "scannedAt": "2026-06-19T22:36:11.159Z",
+  "scanDateET": "2026-06-19",
   "total": 5000,
-  "count": 146,
+  "count": 151,
   "alerts": [
     {
       "symbol": "AVGO",
@@ -599,6 +599,15 @@
       "daysOutside": 14
     },
     {
+      "symbol": "FSS",
+      "close": 118.52,
+      "ema9": 112.4151,
+      "sma50": 113.9096,
+      "sma200": 114.7541,
+      "ratio": 0.9869,
+      "daysOutside": 14
+    },
+    {
       "symbol": "AROC",
       "close": 36.97,
       "ema9": 35.9137,
@@ -698,6 +707,15 @@
       "daysOutside": 18
     },
     {
+      "symbol": "CLH",
+      "close": 288.6,
+      "ema9": 287.0632,
+      "sma50": 295.0374,
+      "sma200": 261.1565,
+      "ratio": 0.973,
+      "daysOutside": 19
+    },
+    {
       "symbol": "ROAD",
       "close": 122.78,
       "ema9": 116.8446,
@@ -749,6 +767,15 @@
       "sma50": 10.5542,
       "sma200": 10.5594,
       "ratio": 0.9808,
+      "daysOutside": 21
+    },
+    {
+      "symbol": "PIPR",
+      "close": 81.8,
+      "ema9": 79.7163,
+      "sma50": 81.9076,
+      "sma200": 83.1662,
+      "ratio": 0.9732,
       "daysOutside": 21
     },
     {
@@ -1148,6 +1175,15 @@
       "daysOutside": 39
     },
     {
+      "symbol": "NIC",
+      "close": 146.85,
+      "ema9": 145.242,
+      "sma50": 145.716,
+      "sma200": 138.3519,
+      "ratio": 0.9967,
+      "daysOutside": 39
+    },
+    {
       "symbol": "SVRA",
       "close": 5.5,
       "ema9": 5.299,
@@ -1253,6 +1289,15 @@
       "sma50": 116.1836,
       "sma200": 113.864,
       "ratio": 0.9734,
+      "daysOutside": 65
+    },
+    {
+      "symbol": "ATR",
+      "close": 120.32,
+      "ema9": 117.9902,
+      "sma50": 120.4114,
+      "sma200": 126.039,
+      "ratio": 0.9799,
       "daysOutside": 65
     },
     {
