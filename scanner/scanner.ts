@@ -1,14 +1,18 @@
 #!/usr/bin/env tsx
 /**
- * US Stock Scanner — EMA9 / SMA50 Crossover Detector
+ * US Stock Scanner — two signals, one pass over NASDAQ 5000 symbols.
  *
- * Fetches NASDAQ 5000 symbols, calculates EMA9 & SMA50, and writes
- * data/alerts/latest.json for the app's Today tab to consume.
+ * Bars are fetched once per symbol and fed to both detectors:
  *
- * Crossover condition:
- *   previous days (5+ consecutive):  EMA9 / SMA50 < 1.0
- *   current day:                     EMA9 / SMA50 >= 0.95
- *                                    AND Close >= SMA200 * 0.95
+ *   1) EMA9 / SMA50  → data/alerts/latest.json   (app's "Today" tab)
+ *        previous days (5+ consecutive):  EMA9 / SMA50 < 1.0
+ *        current day:                     EMA9 / SMA50 >= 0.95
+ *                                         AND Close >= SMA200 * 0.95
+ *
+ *   2) EMA9 / EMA21  → data/alerts/ema921.json   (app's "EMA 9/21" tab)
+ *        Port of TradingView `ta.crossover(ema9, ema21)`:
+ *        yesterday EMA9 <= EMA21  AND  today EMA9 > EMA21
+ *        Liquidity filters only (price / volume) — no trend filter.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -28,6 +32,9 @@ const CONCURRENCY = 5;         // parallel Yahoo Finance requests
 const DELAY_MS = 200;          // ms between each batch
 const RETRY_MAX = 3;           // retries on 429 / network error
 const MIN_BARS = 210;          // minimum bars needed (SMA200 + buffer)
+
+const EMA_FAST = 9;            // EMA 9/21 전략의 단기선
+const EMA_SLOW = 21;           // EMA 9/21 전략의 장기선
 
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -50,6 +57,13 @@ interface ScanResult {
   ratio: number;
   daysOutside: number; // 오늘 진입 전 연속으로 범위 밖에 있던 일수
   avgVolume10: number; // 최근 10일 평균 거래량
+
+  // --- EMA 9/21 전략 (SMA 시딩 EMA, TradingView와 동일) ---
+  emaFast: number;      // EMA9
+  emaSlow: number;      // EMA21
+  ema921Cross: boolean; // 오늘 EMA9이 EMA21을 상향 돌파했는지
+  gapPct: number;       // (EMA9 - EMA21) / EMA21 * 100
+  changePct: number;    // 전일 종가 대비 변화율 (%)
 }
 
 function isCrossover(r: ScanResult): boolean {
@@ -67,6 +81,20 @@ function isCrossover(r: ScanResult): boolean {
   );
 }
 
+/**
+ * EMA 9/21 매수 신호 (TradingView "EMA 9/21 with Target Price [SS]").
+ *
+ * 원본 지표의 신호는 `ta.crossover(ema9, ema21)` 하나뿐이다.
+ * 여기에 유동성 필터(종가/거래량)만 추가하고, 추세 필터(SMA200)는 걸지 않는다.
+ */
+function isEma921Signal(r: ScanResult): boolean {
+  return (
+    r.ema921Cross &&
+    r.close >= MIN_PRICE &&
+    r.avgVolume10 >= MIN_AVG_VOLUME
+  );
+}
+
 // ──────────────────────────────────────────────
 // Indicators
 // ──────────────────────────────────────────────
@@ -79,6 +107,28 @@ function calcEMA(closes: number[], period: number): number[] {
     ema.push(closes[i] * k + ema[i - 1] * (1 - k));
   }
   return ema;
+}
+
+/**
+ * EMA seeded with the SMA of the first `period` closes — matches Pine's `ta.ema`
+ * (and lib/scanner/indicators.ts rollingEMA), unlike calcEMA above which seeds
+ * with closes[0]. Returns null before the seed window completes.
+ */
+function calcEMASeeded(closes: number[], period: number): (number | null)[] {
+  const out: (number | null)[] = new Array(closes.length).fill(null);
+  if (period <= 0 || closes.length < period) return out;
+
+  const k = 2 / (period + 1);
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += closes[i];
+  let ema = sum / period;
+  out[period - 1] = ema;
+
+  for (let i = period; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+    out[i] = ema;
+  }
+  return out;
 }
 
 /** Simple Moving Average — returns null for first (period-1) elements */
@@ -266,6 +316,24 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     }
   }
 
+  // --- EMA 9/21 크로스오버 (Pine ta.crossover 그대로) ---
+  const emaFastArr = calcEMASeeded(closes, EMA_FAST);
+  const emaSlowArr = calcEMASeeded(closes, EMA_SLOW);
+
+  const fastToday = emaFastArr.at(-1);
+  const slowToday = emaSlowArr.at(-1);
+  const fastPrev = emaFastArr.at(-2);
+  const slowPrev = emaSlowArr.at(-2);
+
+  const hasEmaPair =
+    fastToday != null && slowToday != null && fastPrev != null && slowPrev != null;
+
+  // crossover: 어제 fast <= slow, 오늘 fast > slow
+  const ema921Cross =
+    hasEmaPair && fastPrev <= slowPrev && fastToday > slowToday;
+
+  const prevClose = closes.at(-2);
+
   // 최근 10일 평균 거래량
   const recentVols = volumes.slice(-VOLUME_LOOKBACK);
   const avgVolume10 =
@@ -283,6 +351,17 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     ratio: todayEMA9 / todaySMA50,
     daysOutside,
     avgVolume10,
+    emaFast: hasEmaPair ? fastToday : 0,
+    emaSlow: hasEmaPair ? slowToday : 0,
+    ema921Cross,
+    gapPct:
+      hasEmaPair && slowToday !== 0
+        ? ((fastToday - slowToday) / slowToday) * 100
+        : 0,
+    changePct:
+      prevClose != null && prevClose !== 0
+        ? (closes.at(-1)! / prevClose - 1) * 100
+        : 0,
   };
 }
 
@@ -364,29 +443,51 @@ async function main(): Promise<void> {
     .filter((r) => r.close >= MIN_PRICE)
     .sort((a, b) => a.daysOutside - b.daysOutside);
 
+  // 3b. EMA 9/21 골든크로스, 거래량 큰 순으로 정렬
+  const ema921 = results
+    .filter(isEma921Signal)
+    .sort((a, b) => b.avgVolume10 - a.avgVolume10);
+
   console.log(
     `Scan complete — total: ${symbols.length}, ` +
-      `crossovers: ${crossed.length}, errors: ${errors.length}`
+      `crossovers: ${crossed.length}, ema9/21: ${ema921.length}, ` +
+      `errors: ${errors.length}`
   );
 
   if (crossed.length > 0) {
     console.log("Crossover symbols:", crossed.map((r) => r.symbol).join(", "));
   }
+  if (ema921.length > 0) {
+    console.log("EMA 9/21 symbols:", ema921.map((r) => r.symbol).join(", "));
+  }
 
-  // 4. Write JSON for app consumption (data/alerts/latest.json)
+  // 4. Write JSON for app consumption (data/alerts/*.json)
   writeAlertsJson(crossed, symbols.length);
+  writeEma921Json(ema921, symbols.length);
 
   console.log("Done.");
 }
 
-function writeAlertsJson(crossed: ScanResult[], total: number): void {
-  const scanDateET = new Intl.DateTimeFormat("en-CA", {
+/** 미국 동부 기준 스캔 날짜 (YYYY-MM-DD) */
+function scanDateET(): string {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date()); // YYYY-MM-DD
+  }).format(new Date());
+}
 
+/** data/alerts/<filename> 에 payload 기록 (scanner.ts 기준 ../data/alerts) */
+function writeAlertFile(filename: string, payload: unknown, count: number): void {
+  const outDir = resolve(process.cwd(), "..", "data", "alerts");
+  mkdirSync(outDir, { recursive: true });
+  const outPath = resolve(outDir, filename);
+  writeFileSync(outPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  console.log(`Wrote ${outPath} (${count} alerts)`);
+}
+
+function writeAlertsJson(crossed: ScanResult[], total: number): void {
   const slim = crossed.map((r) => ({
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
@@ -397,20 +498,41 @@ function writeAlertsJson(crossed: ScanResult[], total: number): void {
     daysOutside: r.daysOutside,
   }));
 
-  const payload = {
-    scannedAt: new Date().toISOString(),
-    scanDateET,
-    total,
-    count: slim.length,
-    alerts: slim,
-  };
+  writeAlertFile(
+    "latest.json",
+    {
+      scannedAt: new Date().toISOString(),
+      scanDateET: scanDateET(),
+      total,
+      count: slim.length,
+      alerts: slim,
+    },
+    slim.length
+  );
+}
 
-  // scanner.ts 기준 ../data/alerts/latest.json
-  const outDir = resolve(process.cwd(), "..", "data", "alerts");
-  mkdirSync(outDir, { recursive: true });
-  const outPath = resolve(outDir, "latest.json");
-  writeFileSync(outPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
-  console.log(`Wrote ${outPath} (${slim.length} alerts)`);
+function writeEma921Json(crossed: ScanResult[], total: number): void {
+  const slim = crossed.map((r) => ({
+    symbol: r.symbol,
+    close: Number(r.close.toFixed(4)),
+    ema9: Number(r.emaFast.toFixed(4)),
+    ema21: Number(r.emaSlow.toFixed(4)),
+    gapPct: Number(r.gapPct.toFixed(2)),
+    changePct: Number(r.changePct.toFixed(2)),
+    avgVolume10: Math.round(r.avgVolume10),
+  }));
+
+  writeAlertFile(
+    "ema921.json",
+    {
+      scannedAt: new Date().toISOString(),
+      scanDateET: scanDateET(),
+      total,
+      count: slim.length,
+      alerts: slim,
+    },
+    slim.length
+  );
 }
 
 main().catch((e) => {

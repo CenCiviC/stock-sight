@@ -12,8 +12,13 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
-import type { AlertFeed, AlertItem } from "@/lib/alerts";
-import { fetchAlertFeed } from "@/lib/alerts";
+import type {
+  AlertFeed,
+  AlertItem,
+  Ema921Feed,
+  Ema921Item,
+} from "@/lib/alerts";
+import { fetchAlertFeed, fetchEma921Feed } from "@/lib/alerts";
 import type { ComparisonResult, FavoriteRecord, RankChange } from "@/lib/db";
 import {
   addFavorite,
@@ -65,7 +70,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type ActiveView = "rs_top" | "nasdaq" | "charts" | "favorites" | "alerts";
+type ActiveView =
+  | "rs_top"
+  | "nasdaq"
+  | "charts"
+  | "favorites"
+  | "alerts"
+  | "ema921";
 
 const VCP_TABS: { key: IndexType; label: string }[] = [
   { key: "nasdaq", label: "NASDAQ" },
@@ -137,6 +148,15 @@ export default function Index() {
   const [alertCharts, setAlertCharts] = useState<Record<string, OHLCVBar[]>>({});
   const [alertChartsLoading, setAlertChartsLoading] = useState(false);
 
+  // --- EMA 9/21 crossover state ---
+  const [ema921Feed, setEma921Feed] = useState<Ema921Feed | null>(null);
+  const [ema921Loading, setEma921Loading] = useState(false);
+  const [ema921Error, setEma921Error] = useState<string | null>(null);
+  const [ema921Charts, setEma921Charts] = useState<Record<string, OHLCVBar[]>>(
+    {},
+  );
+  const [ema921ChartsLoading, setEma921ChartsLoading] = useState(false);
+
   // --- Chart Grid state ---
   const [chartGridItems, setChartGridItems] = useState<ChartGridItem[]>([]);
   const [chartGridLoading, setChartGridLoading] = useState(false);
@@ -159,8 +179,9 @@ export default function Index() {
   const isFavorites = activeView === "favorites";
   const isCharts = activeView === "charts";
   const isAlerts = activeView === "alerts";
+  const isEma921 = activeView === "ema921";
   const activeTab =
-    isRsTop || isFavorites || isCharts || isAlerts
+    isRsTop || isFavorites || isCharts || isAlerts || isEma921
       ? null
       : (activeView as IndexType);
   const currentResult = activeTab ? (results[activeTab] ?? null) : null;
@@ -553,6 +574,62 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAlerts, alertFeed]);
 
+  // Fetch EMA 9/21 feed (called on tab activation + manual refresh)
+  const loadEma921Feed = useCallback(async () => {
+    setEma921Loading(true);
+    setEma921Error(null);
+    try {
+      const feed = await fetchEma921Feed();
+      setEma921Feed(feed);
+    } catch (e) {
+      setEma921Error(e instanceof Error ? e.message : "Fetch failed");
+    } finally {
+      setEma921Loading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isEma921) return;
+    void loadEma921Feed();
+  }, [isEma921, loadEma921Feed]);
+
+  // Fetch chart bars for EMA 9/21 alerts (2-grid view)
+  useEffect(() => {
+    if (!isEma921 || !ema921Feed || ema921Feed.alerts.length === 0) return;
+    const missing = ema921Feed.alerts
+      .map((a) => a.symbol)
+      .filter((sym) => !ema921Charts[sym]);
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    setEma921ChartsLoading(true);
+    (async () => {
+      const concurrency = 3;
+      for (let i = 0; i < missing.length; i += concurrency) {
+        if (cancelled) break;
+        const batch = missing.slice(i, i + concurrency);
+        const results = await Promise.allSettled(
+          batch.map((sym) => fetchChart(sym, 400)),
+        );
+        if (cancelled) break;
+        setEma921Charts((prev) => {
+          const next = { ...prev };
+          results.forEach((result, idx) => {
+            if (result.status === "fulfilled") {
+              next[batch[idx]] = result.value.bars;
+            }
+          });
+          return next;
+        });
+      }
+      if (!cancelled) setEma921ChartsLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEma921, ema921Feed]);
+
   // Load 1M chart data for VCP scan results → store in React Query cache
   useEffect(() => {
     if (!currentResult || currentResult.stocks.length === 0) return;
@@ -623,6 +700,8 @@ export default function Index() {
 
   const CHART_SMA = useMemo(() => [50], []);
   const CHART_EMA = useMemo(() => [9], []);
+  // EMA 9/21 탭은 전략에 맞춰 두 EMA만 표시 (SMA 없음)
+  const EMA921_EMA = useMemo(() => [9, 21], []);
 
   useEffect(() => {
     if (chartGridItems.length === 0) {
@@ -843,6 +922,65 @@ export default function Index() {
     [alertCharts, router, CHART_SMA, CHART_EMA],
   );
 
+  const renderEma921ChartItem = useCallback(
+    ({ item }: { item: Ema921Item }) => {
+      const bars = ema921Charts[item.symbol];
+      return (
+        <Pressable
+          style={styles.chartGridCell}
+          onPress={() =>
+            router.push({
+              pathname: "/stock/[symbol]",
+              params: { symbol: item.symbol },
+            })
+          }
+        >
+          <View style={styles.chartGridCellHeader}>
+            <View style={styles.chartCellHeaderLeft}>
+              <StyledText
+                variant="caption"
+                weight="bold"
+                color={colors.accent_light[400]}
+              >
+                {item.symbol}
+              </StyledText>
+              <StyledText
+                variant="caption"
+                weight="medium"
+                color={colors.secondary[500]}
+              >
+                ${item.close.toFixed(2)}
+              </StyledText>
+            </View>
+            <StyledText
+              variant="caption"
+              weight="medium"
+              color={
+                item.changePct >= 0 ? colors.positive : colors.negative
+              }
+            >
+              {item.changePct >= 0 ? "+" : ""}
+              {item.changePct.toFixed(1)}%
+            </StyledText>
+          </View>
+          <View style={styles.chartGridChartWrap}>
+            {bars && bars.length > 0 ? (
+              <StockChart
+                bars={bars}
+                height={CHART_CELL_H - 24}
+                compact
+                emaPeriods={EMA921_EMA}
+              />
+            ) : (
+              <View style={styles.chartGridChartWrap} />
+            )}
+          </View>
+        </Pressable>
+      );
+    },
+    [ema921Charts, router, EMA921_EMA],
+  );
+
   const renderStockItem = ({ item }: { item: Stock }) => {
     let badge = null;
     if (comparison) {
@@ -983,6 +1121,30 @@ export default function Index() {
             {alertsLoading ? (
               <View style={styles.tabDotScanning} />
             ) : alertFeed && alertFeed.alerts.length > 0 ? (
+              <View style={styles.tabDot} />
+            ) : null}
+          </Pressable>
+
+          {/* EMA 9/21 crossover tab */}
+          <Pressable
+            style={[styles.tab, isEma921 && styles.tabActive]}
+            onPress={() => setActiveView("ema921")}
+          >
+            <Ionicons
+              name="trending-up-outline"
+              size={14}
+              color={isEma921 ? colors.accent_warm[300] : colors.secondary[600]}
+            />
+            <StyledText
+              variant="bodySmall"
+              weight={isEma921 ? "bold" : "medium"}
+              color={isEma921 ? colors.accent_warm[300] : colors.secondary[600]}
+            >
+              EMA 9/21
+            </StyledText>
+            {ema921Loading ? (
+              <View style={styles.tabDotScanning} />
+            ) : ema921Feed && ema921Feed.alerts.length > 0 ? (
               <View style={styles.tabDot} />
             ) : null}
           </Pressable>
@@ -1572,8 +1734,118 @@ export default function Index() {
         </>
       )}
 
+      {/* === EMA 9/21 Crossover View === */}
+      {isEma921 && (
+        <>
+          <View style={styles.alertsHeader}>
+            <View style={styles.alertsHeaderLeft}>
+              <StyledText variant="h3" color={colors.accent_warm[300]}>
+                EMA 9/21 골든크로스
+              </StyledText>
+              {ema921Feed?.scanDateET && (
+                <StyledText variant="caption" color={colors.secondary[500]}>
+                  {ema921Feed.scanDateET} ET · {ema921Feed.count}종목
+                </StyledText>
+              )}
+            </View>
+            <Pressable
+              onPress={() => {
+                setEma921Charts({});
+                void loadEma921Feed();
+              }}
+              hitSlop={8}
+              style={styles.alertsRefreshBtn}
+            >
+              <Ionicons
+                name="refresh"
+                size={16}
+                color={colors.secondary[500]}
+              />
+            </Pressable>
+          </View>
+
+          {ema921Loading && !ema921Feed && (
+            <View style={styles.emptyState}>
+              <StyledText variant="bodySmall" color={colors.secondary[500]}>
+                Loading alerts...
+              </StyledText>
+            </View>
+          )}
+
+          {ema921Error && (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={48}
+                color={colors.negative}
+              />
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[500]}
+                style={styles.emptyDesc}
+              >
+                {ema921Error}
+              </StyledText>
+            </View>
+          )}
+
+          {ema921Feed && ema921Feed.alerts.length === 0 && !ema921Loading && (
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="moon-outline"
+                size={48}
+                color={colors.primary[400]}
+              />
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
+              >
+                오늘은 골든크로스 종목이 없어요
+              </StyledText>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
+                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
+              </StyledText>
+            </View>
+          )}
+
+          {ema921Feed && ema921Feed.alerts.length > 0 && (
+            <>
+              {ema921ChartsLoading && (
+                <View style={styles.favChartsLoadingRow}>
+                  <StyledText variant="caption" color={colors.secondary[500]}>
+                    Loading charts...
+                  </StyledText>
+                </View>
+              )}
+              <FlatList
+                data={ema921Feed.alerts}
+                keyExtractor={(item) => item.symbol}
+                numColumns={CHART_GRID_COLS}
+                renderItem={renderEma921ChartItem}
+                contentContainerStyle={styles.chartGridList}
+                showsVerticalScrollIndicator={false}
+                windowSize={3}
+                maxToRenderPerBatch={4}
+                initialNumToRender={6}
+                getItemLayout={(_data, index) => ({
+                  length: CHART_ROW_H,
+                  offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                  index,
+                })}
+                extraData={ema921Charts}
+              />
+            </>
+          )}
+        </>
+      )}
+
       {/* === VCP View === */}
-      {!isRsTop && !isFavorites && !isCharts && !isAlerts && (
+      {!isRsTop && !isFavorites && !isCharts && !isAlerts && !isEma921 && (
         <>
           {/* No result → show scan prompt */}
           {!currentResult && !isScanning && dbLoaded && (

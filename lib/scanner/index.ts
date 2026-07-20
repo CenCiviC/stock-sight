@@ -4,6 +4,13 @@ export { fetchChart, fetchChartBatch, fetchFinancials, fetchCompanyProfile } fro
 export type { ChartResult } from "./yahoo";
 export { fetchNasdaqSymbolsByMarketCap } from "./symbols";
 export { rollingSMA, rollingEMA } from "./indicators";
+export { detectEmaCrossSignals } from "./ema-signal";
+export type {
+  EmaCrossSignal,
+  EmaCrossDirection,
+  EmaSentiment,
+  EmaSignalState,
+} from "./ema-signal";
 export type {
   IndexType,
   Stock,

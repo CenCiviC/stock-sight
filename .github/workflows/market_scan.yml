@@ -1,4 +1,4 @@
-name: Market Scan — EMA9/SMA50 Crossover
+name: Market Scan — EMA9/SMA50 + EMA9/21 Crossover
 
 on:
   # 미국 동부 시간 오후 5시 30분 (UTC 21:30) 평일 실행
@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name  "CenCiviC"
           git config user.email "rudqls513@gmail.com"
-          git add data/alerts/latest.json
+          git add data/alerts/latest.json data/alerts/ema921.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

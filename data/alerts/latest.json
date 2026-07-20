@@ -1,8 +1,8 @@
 {
-  "scannedAt": "2026-07-17T22:27:57.556Z",
-  "scanDateET": "2026-07-17",
+  "scannedAt": "2026-07-20T08:54:05.420Z",
+  "scanDateET": "2026-07-20",
   "total": 5000,
-  "count": 108,
+  "count": 109,
   "alerts": [
     {
       "symbol": "CNH",
@@ -300,6 +300,15 @@
       "sma200": 11.5925,
       "ratio": 1.0042,
       "daysOutside": 16
+    },
+    {
+      "symbol": "RPC",
+      "close": 8.76,
+      "ema9": 8.2214,
+      "sma50": 8.1462,
+      "sma200": 9.012,
+      "ratio": 1.0092,
+      "daysOutside": 17
     },
     {
       "symbol": "WPC",
