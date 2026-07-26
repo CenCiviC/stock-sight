@@ -1,0 +1,732 @@
+{
+  "generatedAt": "2026-07-26T17:34:30.496106+00:00",
+  "asOf": "2026-07-24",
+  "spec": {
+    "name": "swing-trend-v2",
+    "scoreMin": 7.0,
+    "scoreMax": 12.0
+  },
+  "universe": {
+    "index": "sp500",
+    "evaluated": 120,
+    "skippedForHistory": 0
+  },
+  "market": {
+    "spyUptrend": true,
+    "spyGapPct": 7.000230822607034,
+    "spyGapChange20d": 0.3478720604943808
+  },
+  "portfolioTracked": true,
+  "buy": [
+    {
+      "symbol": "ANET",
+      "close": 173.99000549316406,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 165.29050521850584,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.904218060971836,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.912 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=6.182 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=19.66 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=253 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=4.133 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=14.7 <= 8.0"
+        }
+      ]
+    }
+  ],
+  "sell": [],
+  "watch": [
+    {
+      "symbol": "AMP",
+      "close": 528.9000244140625,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.7437127675755044,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ABBV",
+      "close": 259.3599853515625,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.389065965550163,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AEE",
+      "close": 113.77999877929688,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.0007906327288016,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AES",
+      "close": 14.84000015258789,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 0.45148284787198245,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AEP",
+      "close": 135.5399932861328,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.9473988288985764,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AMGN",
+      "close": 376.0400085449219,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.3162434683303035,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AME",
+      "close": 241.97000122070312,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.15935858727968,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "APD",
+      "close": 297.8699951171875,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.0368303901128866,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BXP",
+      "close": 69.11000061035156,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.484336685882343,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CB",
+      "close": 359.75,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.447533518013812,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CHD",
+      "close": 97.63999938964844,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.2813401761386856,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CNP",
+      "close": 44.560001373291016,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.8727556230185467,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CPAY",
+      "close": 370.5799865722656,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.9677810521392076,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CPT",
+      "close": 113.7300033569336,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.7964624451432463,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ADM",
+      "close": 85.91999816894531,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.0827514943117857,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AFL",
+      "close": 125.5999984741211,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.6393309385376333,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AIZ",
+      "close": 276.94000244140625,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.833609557046625,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BBY",
+      "close": 85.43000030517578,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.8099020663665337,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CFG",
+      "close": 71.87999725341797,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.440873516882477,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CINF",
+      "close": 182.80999755859375,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.532410633291922,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CRL",
+      "close": 226.5800018310547,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.9105401138530045,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ACGL",
+      "close": 103.36000061035156,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.3127893777806583,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AIG",
+      "close": 79.05999755859375,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.2432355466105265,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BALL",
+      "close": 63.84000015258789,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.4240297723257935,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BAX",
+      "close": 22.399999618530273,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.497767933739389,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BG",
+      "close": 121.52999877929688,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.6112894700166613,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BMY",
+      "close": 62.09000015258789,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.59819889541121,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CASY",
+      "close": 861.6300048828125,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.3111655311283337,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "CBOE",
+      "close": 285.07000732421875,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.772581744007766,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "COP",
+      "close": 120.26000213623047,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.1952430922609225,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "AON",
+      "close": 361.70001220703125,
+      "score": 6.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.5594421991014986,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 6 < 7"
+      ]
+    },
+    {
+      "symbol": "APA",
+      "close": 36.150001525878906,
+      "score": 6.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.0291019274589,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 6 < 7"
+      ]
+    },
+    {
+      "symbol": "BAC",
+      "close": 62.04999923706055,
+      "score": 6.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.939565481077595,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 6 < 7"
+      ]
+    },
+    {
+      "symbol": "CF",
+      "close": 125.06999969482422,
+      "score": 6.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.2645716891328247,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 6 < 7"
+      ]
+    },
+    {
+      "symbol": "CI",
+      "close": 289.57000732421875,
+      "score": 6.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.939531839686024,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 6 < 7"
+      ]
+    },
+    {
+      "symbol": "A",
+      "close": 138.57000732421875,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.9283395609929324,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "AAPL",
+      "close": 333.0199890136719,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.5480460346070557,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "ALL",
+      "close": 259.9700012207031,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.39931646823452,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "ATO",
+      "close": 179.22000122070312,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.7478533228690614,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "BNY",
+      "close": 158.91000366210938,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.2437232135809846,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "COO",
+      "close": 70.30999755859375,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.767032073190105,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "CSX",
+      "close": 53.22999954223633,
+      "score": 5.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.866428621337724,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 5 < 7"
+      ]
+    },
+    {
+      "symbol": "ARES",
+      "close": 126.51000213623047,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.7495452124690756,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "AWK",
+      "close": 134.66000366210938,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.38749391223511,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "BDX",
+      "close": 156.36000061035156,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.68738736567196,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "BKNG",
+      "close": 177.4600067138672,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.412316867238136,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "BLK",
+      "close": 1055.6700439453125,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.679910809941063,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "CBRE",
+      "close": 139.4600067138672,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.9431375443110466,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "CME",
+      "close": 255.30999755859375,
+      "score": 4.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.7685949721718797,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 4 < 7"
+      ]
+    },
+    {
+      "symbol": "AMCR",
+      "close": 44.540000915527344,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.889536338716333,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "ARE",
+      "close": 50.939998626708984,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.332432250700662,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "BR",
+      "close": 148.9199981689453,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.1285272245715285,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "CEG",
+      "close": 274.3500061035156,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.359905186942548,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "COF",
+      "close": 202.83999633789062,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.7711496795157746,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "COR",
+      "close": 309.8900146484375,
+      "score": 3.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.47797572223323,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 3 < 7"
+      ]
+    },
+    {
+      "symbol": "ADBE",
+      "close": 225.11000061035156,
+      "score": 2.0,
+      "scoreMax": 12.0,
+      "atrPct": 4.348762666147173,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 2 < 7"
+      ]
+    },
+    {
+      "symbol": "ADSK",
+      "close": 209.75,
+      "score": 2.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.707271389512254,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 2 < 7"
+      ]
+    },
+    {
+      "symbol": "ADP",
+      "close": 250.08999633789062,
+      "score": 2.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.85237345589338,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 2 < 7"
+      ]
+    },
+    {
+      "symbol": "AJG",
+      "close": 247.77000427246094,
+      "score": 2.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.943253896527589,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 2 < 7"
+      ]
+    },
+    {
+      "symbol": "ALLE",
+      "close": 153.36000061035156,
+      "score": 2.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.846244219624279,
+      "blockers": [
+        "게이트: has_volatility",
+        "점수 부족: 2 < 7"
+      ]
+    }
+  ],
+  "watchTotal": 63
+}
