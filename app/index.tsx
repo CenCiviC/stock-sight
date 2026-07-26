@@ -963,6 +963,25 @@ export default function Index() {
             ) : null}
           </Pressable>
 
+          {/* Signals tab — spec 평가기가 낸 매수/매도 판정 (별도 화면) */}
+          <Pressable
+            style={styles.tab}
+            onPress={() => router.push("/signals")}
+          >
+            <Ionicons
+              name="pulse-outline"
+              size={14}
+              color={colors.accent_warm[300]}
+            />
+            <StyledText
+              variant="bodySmall"
+              weight="bold"
+              color={colors.accent_warm[300]}
+            >
+              매매신호
+            </StyledText>
+          </Pressable>
+
           {/* Today (alerts) tab */}
           <Pressable
             style={[styles.tab, isAlerts && styles.tabActive]}
