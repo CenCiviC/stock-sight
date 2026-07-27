@@ -1,6 +1,6 @@
 {
-  "scannedAt": "2026-07-24T22:40:09.028Z",
-  "scanDateET": "2026-07-24",
+  "scannedAt": "2026-07-27T02:35:26.504Z",
+  "scanDateET": "2026-07-26",
   "total": 5000,
   "count": 46,
   "alerts": [
@@ -11,7 +11,8 @@
       "ema21": 22.3999,
       "gapPct": 0.34,
       "changePct": -10.34,
-      "avgVolume10": 26677979
+      "atrPct": 10.9,
+      "avgVolume10": 26692900
     },
     {
       "symbol": "VZ",
@@ -20,7 +21,8 @@
       "ema21": 44.0387,
       "gapPct": 0.21,
       "changePct": 5.84,
-      "avgVolume10": 25564261
+      "atrPct": 3.03,
+      "avgVolume10": 25577650
     },
     {
       "symbol": "STAK",
@@ -29,7 +31,8 @@
       "ema21": 3.4629,
       "gapPct": 1.66,
       "changePct": 602.27,
-      "avgVolume10": 15498656
+      "atrPct": 13.11,
+      "avgVolume10": 16105770
     },
     {
       "symbol": "CNH",
@@ -38,7 +41,8 @@
       "ema21": 10.6116,
       "gapPct": 0.49,
       "changePct": 4.99,
-      "avgVolume10": 10517309
+      "atrPct": 3.47,
+      "avgVolume10": 10517330
     },
     {
       "symbol": "MDLZ",
@@ -47,7 +51,8 @@
       "ema21": 60.2048,
       "gapPct": 0.02,
       "changePct": 0.78,
-      "avgVolume10": 8615419
+      "atrPct": 2.68,
+      "avgVolume10": 8798650
     },
     {
       "symbol": "EQT",
@@ -56,7 +61,8 @@
       "ema21": 51.4282,
       "gapPct": 0.27,
       "changePct": -0.67,
-      "avgVolume10": 8116010
+      "atrPct": 2.65,
+      "avgVolume10": 8227400
     },
     {
       "symbol": "VFC",
@@ -65,7 +71,8 @@
       "ema21": 16.9015,
       "gapPct": 0.05,
       "changePct": 3.02,
-      "avgVolume10": 6135912
+      "atrPct": 3.84,
+      "avgVolume10": 6244610
     },
     {
       "symbol": "XEL",
@@ -74,7 +81,8 @@
       "ema21": 79.9694,
       "gapPct": 0.24,
       "changePct": 1.11,
-      "avgVolume10": 4819034
+      "atrPct": 1.95,
+      "avgVolume10": 4831370
     },
     {
       "symbol": "SW",
@@ -83,7 +91,8 @@
       "ema21": 44.3271,
       "gapPct": 1.06,
       "changePct": 11.1,
-      "avgVolume10": 4652730
+      "atrPct": 3.97,
+      "avgVolume10": 4653790
     },
     {
       "symbol": "AR",
@@ -92,7 +101,8 @@
       "ema21": 34.4822,
       "gapPct": 0.02,
       "changePct": 0.6,
-      "avgVolume10": 4409616
+      "atrPct": 2.95,
+      "avgVolume10": 4409630
     },
     {
       "symbol": "HUT",
@@ -101,7 +111,8 @@
       "ema21": 106.787,
       "gapPct": 0.03,
       "changePct": -6.53,
-      "avgVolume10": 4267803
+      "atrPct": 10.03,
+      "avgVolume10": 4269520
     },
     {
       "symbol": "AEP",
@@ -110,7 +121,8 @@
       "ema21": 133.6242,
       "gapPct": 0.09,
       "changePct": 0.46,
-      "avgVolume10": 3542677
+      "atrPct": 1.95,
+      "avgVolume10": 3589290
     },
     {
       "symbol": "DLR",
@@ -119,7 +131,8 @@
       "ema21": 181.2115,
       "gapPct": 0.38,
       "changePct": 11.01,
-      "avgVolume10": 3455469
+      "atrPct": 2.88,
+      "avgVolume10": 3457560
     },
     {
       "symbol": "SARO",
@@ -128,16 +141,8 @@
       "ema21": 27.7643,
       "gapPct": 0.11,
       "changePct": 1.56,
-      "avgVolume10": 3094860
-    },
-    {
-      "symbol": "SKM",
-      "close": 35.67,
-      "ema9": 33.3836,
-      "ema21": 33.3533,
-      "gapPct": 0.09,
-      "changePct": 1.34,
-      "avgVolume10": 2849387
+      "atrPct": 3.55,
+      "avgVolume10": 3184680
     },
     {
       "symbol": "JCI",
@@ -146,7 +151,18 @@
       "ema21": 142.3381,
       "gapPct": 0,
       "changePct": 0.06,
-      "avgVolume10": 2823715
+      "atrPct": 3.36,
+      "avgVolume10": 2917140
+    },
+    {
+      "symbol": "SKM",
+      "close": 35.67,
+      "ema9": 33.3836,
+      "ema21": 33.3533,
+      "gapPct": 0.09,
+      "changePct": 1.34,
+      "atrPct": 4.17,
+      "avgVolume10": 2849430
     },
     {
       "symbol": "RNG",
@@ -155,7 +171,8 @@
       "ema21": 40.6045,
       "gapPct": 2.1,
       "changePct": 25.09,
-      "avgVolume10": 2525022
+      "atrPct": 5.45,
+      "avgVolume10": 2574060
     },
     {
       "symbol": "EMR",
@@ -164,16 +181,8 @@
       "ema21": 140.6504,
       "gapPct": 0.56,
       "changePct": 2.1,
-      "avgVolume10": 2507300
-    },
-    {
-      "symbol": "BAH",
-      "close": 72.53,
-      "ema9": 66.3457,
-      "ema21": 66.0049,
-      "gapPct": 0.52,
-      "changePct": 10.11,
-      "avgVolume10": 2377976
+      "atrPct": 2.63,
+      "avgVolume10": 2515520
     },
     {
       "symbol": "SYK",
@@ -182,7 +191,18 @@
       "ema21": 319.7785,
       "gapPct": 0.33,
       "changePct": 3.54,
-      "avgVolume10": 2372574
+      "atrPct": 3.43,
+      "avgVolume10": 2383730
+    },
+    {
+      "symbol": "BAH",
+      "close": 72.53,
+      "ema9": 66.3457,
+      "ema21": 66.0049,
+      "gapPct": 0.52,
+      "changePct": 10.11,
+      "atrPct": 3.9,
+      "avgVolume10": 2378230
     },
     {
       "symbol": "NRG",
@@ -191,7 +211,8 @@
       "ema21": 137.5917,
       "gapPct": 0.16,
       "changePct": -1.37,
-      "avgVolume10": 2124519
+      "atrPct": 3.89,
+      "avgVolume10": 2203250
     },
     {
       "symbol": "SNN",
@@ -200,7 +221,8 @@
       "ema21": 30.3126,
       "gapPct": 0.02,
       "changePct": 2.69,
-      "avgVolume10": 1784274
+      "atrPct": 2.53,
+      "avgVolume10": 1788570
     },
     {
       "symbol": "MLI",
@@ -209,7 +231,8 @@
       "ema21": 61.1041,
       "gapPct": 0.24,
       "changePct": 1.24,
-      "avgVolume10": 1748007
+      "atrPct": 3.59,
+      "avgVolume10": 1748010
     },
     {
       "symbol": "AMTM",
@@ -218,7 +241,8 @@
       "ema21": 21.3431,
       "gapPct": 0.6,
       "changePct": 2.45,
-      "avgVolume10": 1670179
+      "atrPct": 3.97,
+      "avgVolume10": 1732210
     },
     {
       "symbol": "PPC",
@@ -227,7 +251,8 @@
       "ema21": 28.4924,
       "gapPct": 0.05,
       "changePct": 2.72,
-      "avgVolume10": 1564599
+      "atrPct": 3.52,
+      "avgVolume10": 1566700
     },
     {
       "symbol": "CHD",
@@ -236,7 +261,8 @@
       "ema21": 97.0859,
       "gapPct": 0.01,
       "changePct": 1.51,
-      "avgVolume10": 1512184
+      "atrPct": 2.28,
+      "avgVolume10": 1545320
     },
     {
       "symbol": "EPAM",
@@ -245,7 +271,8 @@
       "ema21": 87.4091,
       "gapPct": 0.24,
       "changePct": 4.31,
-      "avgVolume10": 1306514
+      "atrPct": 4.94,
+      "avgVolume10": 1322020
     },
     {
       "symbol": "KT",
@@ -254,7 +281,8 @@
       "ema21": 17.9741,
       "gapPct": 0.26,
       "changePct": 1.64,
-      "avgVolume10": 1281003
+      "atrPct": 2.32,
+      "avgVolume10": 1281000
     },
     {
       "symbol": "TEX",
@@ -263,7 +291,8 @@
       "ema21": 66.5914,
       "gapPct": 0.57,
       "changePct": 1.91,
-      "avgVolume10": 1169416
+      "atrPct": 4.36,
+      "avgVolume10": 1195430
     },
     {
       "symbol": "CMC",
@@ -272,7 +301,8 @@
       "ema21": 67.0275,
       "gapPct": 0.08,
       "changePct": 1.34,
-      "avgVolume10": 1158503
+      "atrPct": 3.34,
+      "avgVolume10": 1180580
     },
     {
       "symbol": "EXR",
@@ -281,7 +311,8 @@
       "ema21": 146.2695,
       "gapPct": 0.09,
       "changePct": 1.57,
-      "avgVolume10": 1143777
+      "atrPct": 2.08,
+      "avgVolume10": 1166060
     },
     {
       "symbol": "ICL",
@@ -290,7 +321,8 @@
       "ema21": 5.1722,
       "gapPct": 0.09,
       "changePct": -0.38,
-      "avgVolume10": 1108480
+      "atrPct": 2.12,
+      "avgVolume10": 1113890
     },
     {
       "symbol": "TT",
@@ -299,7 +331,8 @@
       "ema21": 476.2021,
       "gapPct": 0.04,
       "changePct": 0.27,
-      "avgVolume10": 1076845
+      "atrPct": 3.19,
+      "avgVolume10": 1095610
     },
     {
       "symbol": "VIST",
@@ -308,7 +341,8 @@
       "ema21": 66.0715,
       "gapPct": 0.6,
       "changePct": 0.64,
-      "avgVolume10": 1059127
+      "atrPct": 3.58,
+      "avgVolume10": 1064500
     },
     {
       "symbol": "TS",
@@ -317,7 +351,8 @@
       "ema21": 56.948,
       "gapPct": 0.07,
       "changePct": 0.54,
-      "avgVolume10": 988918
+      "atrPct": 2.12,
+      "avgVolume10": 994980
     },
     {
       "symbol": "VRSN",
@@ -326,16 +361,8 @@
       "ema21": 269.0582,
       "gapPct": 0.37,
       "changePct": 7.04,
-      "avgVolume10": 884669
-    },
-    {
-      "symbol": "EWTX",
-      "close": 40.84,
-      "ema9": 40.0124,
-      "ema21": 39.9715,
-      "gapPct": 0.1,
-      "changePct": 3.95,
-      "avgVolume10": 856192
+      "atrPct": 2.86,
+      "avgVolume10": 890560
     },
     {
       "symbol": "UHS",
@@ -344,7 +371,18 @@
       "ema21": 151.4075,
       "gapPct": 0.28,
       "changePct": 2.96,
-      "avgVolume10": 846467
+      "atrPct": 3.39,
+      "avgVolume10": 880380
+    },
+    {
+      "symbol": "EWTX",
+      "close": 40.84,
+      "ema9": 40.0124,
+      "ema21": 39.9715,
+      "gapPct": 0.1,
+      "changePct": 3.95,
+      "atrPct": 6.35,
+      "avgVolume10": 859350
     },
     {
       "symbol": "RBA",
@@ -353,7 +391,8 @@
       "ema21": 110.7144,
       "gapPct": 0.07,
       "changePct": 2.23,
-      "avgVolume10": 842382
+      "atrPct": 2.51,
+      "avgVolume10": 854880
     },
     {
       "symbol": "POST",
@@ -362,7 +401,8 @@
       "ema21": 88.8711,
       "gapPct": 0.08,
       "changePct": 0.83,
-      "avgVolume10": 798814
+      "atrPct": 3.19,
+      "avgVolume10": 813130
     },
     {
       "symbol": "ADNT",
@@ -371,7 +411,8 @@
       "ema21": 20.0161,
       "gapPct": 0.15,
       "changePct": 1.44,
-      "avgVolume10": 794060
+      "atrPct": 4.36,
+      "avgVolume10": 808710
     },
     {
       "symbol": "CTOS",
@@ -380,7 +421,8 @@
       "ema21": 10.5539,
       "gapPct": 0.28,
       "changePct": -0.18,
-      "avgVolume10": 770265
+      "atrPct": 4.65,
+      "avgVolume10": 786380
     },
     {
       "symbol": "MMS",
@@ -389,16 +431,8 @@
       "ema21": 57.7049,
       "gapPct": 0.39,
       "changePct": 3.94,
-      "avgVolume10": 622111
-    },
-    {
-      "symbol": "URI",
-      "close": 1141.59,
-      "ema9": 1080.5441,
-      "ema21": 1073.9306,
-      "gapPct": 0.62,
-      "changePct": 0.16,
-      "avgVolume10": 560218
+      "atrPct": 3.16,
+      "avgVolume10": 634070
     },
     {
       "symbol": "IHS",
@@ -407,7 +441,18 @@
       "ema21": 8.2111,
       "gapPct": 0,
       "changePct": -0.12,
-      "avgVolume10": 558299
+      "atrPct": 0.87,
+      "avgVolume10": 560510
+    },
+    {
+      "symbol": "URI",
+      "close": 1141.59,
+      "ema9": 1080.5441,
+      "ema21": 1073.9306,
+      "gapPct": 0.62,
+      "changePct": 0.16,
+      "atrPct": 3.25,
+      "avgVolume10": 560220
     },
     {
       "symbol": "AWI",
@@ -416,7 +461,8 @@
       "ema21": 156.7113,
       "gapPct": 0.11,
       "changePct": 1.68,
-      "avgVolume10": 500665
+      "atrPct": 2.35,
+      "avgVolume10": 508310
     }
   ]
 }
