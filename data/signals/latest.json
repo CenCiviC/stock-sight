@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T17:34:30.496106+00:00",
+  "generatedAt": "2026-07-26T18:06:26.527202+00:00",
   "asOf": "2026-07-24",
   "spec": {
     "name": "swing-trend-v2",
@@ -7,17 +7,473 @@
     "scoreMax": 12.0
   },
   "universe": {
-    "index": "sp500",
-    "evaluated": 120,
-    "skippedForHistory": 0
+    "index": "nasdaq",
+    "evaluated": 3582,
+    "skippedForHistory": 1418
   },
   "market": {
     "spyUptrend": true,
-    "spyGapPct": 7.000230822607034,
-    "spyGapChange20d": 0.3478720604943808
+    "spyGapPct": 7.000230963472154,
+    "spyGapChange20d": 0.3478719642736605
   },
   "portfolioTracked": true,
   "buy": [
+    {
+      "symbol": "HRI",
+      "close": 162.58999633789062,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "stopPrice": 147.4458273909909,
+      "stopRef": "ema_21",
+      "stopPct": 9.314330086721622,
+      "positionPct": 32.2084355189082,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.447381530173438,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.771 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=14.05 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=19.24 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=18 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=5.167 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=4.059 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "HRMY",
+      "close": 35.31999969482422,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "stopPrice": 33.553999710083005,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.3682069605049225,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.77 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=4.59 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=7.629 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=16 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=26.63 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=0.718 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "SNOW",
+      "close": 268.05999755859375,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "stopPrice": 254.65699768066406,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.703667209712436,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.855 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=14.02 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=27.92 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=11 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=4.204 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.371 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "S",
+      "close": 18.139999389648438,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "stopPrice": 17.232999420166013,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000016,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.8219400617249155,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=0.03266 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=6.123 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=17.29 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=24 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=11.34 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=3.671 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "LB",
+      "close": 76.33000183105469,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "stopPrice": 72.51350173950195,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.359097540502359,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=3.62 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.891 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=18.3 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=95 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=5.469 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=1.158 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "LGIH",
+      "close": 60.15999984741211,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "stopPrice": 57.1519998550415,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.499667513876945,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=0.8052 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=11.44 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=23.66 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=20 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=14.28 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=3.178 <= 8.0"
+        }
+      ]
+    },
     {
       "symbol": "ANET",
       "close": 173.99000549316406,
@@ -93,16 +549,2433 @@
           "detail": "dist_to_volume_node_below_pct=14.7 <= 8.0"
         }
       ]
+    },
+    {
+      "symbol": "HPE",
+      "close": 47.689998626708984,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 45.30549869537354,
+      "stopRef": "ema_21",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.614279462538016,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=8.161 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=7.084 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=65.97 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=74 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=9.647 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.846 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "MDGL",
+      "close": 544.510009765625,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 517.2845092773438,
+      "stopRef": "ema_21",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.030320800264358,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.058 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.376 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=7.812 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=231 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=13.28 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=12.69 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "CIFR",
+      "close": 23.149999618530273,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 21.99249963760376,
+      "stopRef": "sma_50",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 10.895247669841984,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=5.493 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=0.115 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=24.72 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=248 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=9.109 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=1.254 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "PRAX",
+      "close": 325.29998779296875,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 309.0349884033203,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 6.114326000545995,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=10.99 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=4.728 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=16.94 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=191 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=11.14 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=9.347 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "FRO",
+      "close": 39.290000915527344,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 37.292655940557324,
+      "stopRef": "ema_21",
+      "stopPct": 5.083596152782654,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.153727538773693,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=5.597 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=7.192 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=33.45 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=269 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=3.105 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=5.259 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "ADPT",
+      "close": 22.270000457763672,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 20.989075303562846,
+      "stopRef": "ema_21",
+      "stopPct": 5.7517967124885105,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.539065788024454,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=5.261 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=22.25 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=35.84 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=16 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=2.221 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=20.75 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "WTTR",
+      "close": 20.170000076293945,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 19.161500072479246,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000016,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.248637503429114,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=7.387 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.576 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=41.54 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=184 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=3.2 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=1.402 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "DXPE",
+      "close": 168.94000244140625,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 160.49300231933594,
+      "stopRef": "ema_21",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.378774730275121,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=3.469 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.619 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=24.05 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "sma_50_200_cross_days_ago 값 없음 → 판정 불가"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=5.826 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=3.916 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "SKWD",
+      "close": 60.459999084472656,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 57.38649241962921,
+      "stopRef": "ema_21",
+      "stopPct": 5.083537398916016,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.04184563965458,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.69 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=15.23 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=25.94 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=20 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=1.751 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=17.02 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "NSP",
+      "close": 48.349998474121094,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 45.437238428098865,
+      "stopRef": "ema_21",
+      "stopPct": 6.024322932670323,
+      "positionPct": 49.79812725062913,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.459152283508625,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_200_slope_20d=-0.3497 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=23.98 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=39.69 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=13 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=9.818 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=1.268 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "NEO",
+      "close": 13.890000343322754,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 13.195500326156616,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.848810698124598,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=6.172 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=15.94 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=29.77 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=15 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=8.023 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=12.07 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "BLFS",
+      "close": 29.979999542236328,
+      "score": 8.0,
+      "scoreMax": 12.0,
+      "stopPrice": 28.436254772013218,
+      "stopRef": "ema_21",
+      "stopPct": 5.1492488118562445,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.356237380038394,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.336 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=12.55 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=23.42 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=18 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=9.956 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "dist_to_volume_node_below_pct 값 없음 → 판정 불가"
+        }
+      ]
+    },
+    {
+      "symbol": "NTAP",
+      "close": 167.74000549316406,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 159.35300521850584,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000016,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.276847173147464,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=3.708 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=7.739 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=41.23 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=40 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=8.029 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=27.49 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "TPL",
+      "close": 419.44000244140625,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 398.46800231933594,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.097605828199657,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.777 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=6.209 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=9.735 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=106 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=26.36 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.366 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "BBIO",
+      "close": 84.0199966430664,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 78.76746635757974,
+      "stopRef": "ema_21",
+      "stopPct": 6.251524036355849,
+      "positionPct": 47.98829825420884,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.116103462294199,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=4.139 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=15.84 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=18.87 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "sma_50_200_cross_days_ago 값 없음 → 판정 불가"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=3.95 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=6.559 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "NTNX",
+      "close": 55.040000915527344,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 52.288000869750974,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.130087550904792,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_200_slope_20d=-4.487 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=8.434 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=11.2 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=4 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=31.23 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=3.237 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "ICLR",
+      "close": 165.75999450683594,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 157.47199478149415,
+      "stopRef": "ema_21",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.144544904483899,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_200_slope_20d=-0.3725 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=10.95 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=11.53 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 3.0,
+          "state": "pass",
+          "detail": "sma_50_200_cross_days_ago=0 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=39.76 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=4.953 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "TEX",
+      "close": 69.83000183105469,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 65.91819573840802,
+      "stopRef": "ema_21",
+      "stopPct": 5.601898883105882,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.364170340786897,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.729 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=8.638 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=18.75 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=259 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=4.09 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.19 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "BVN",
+      "close": 30.90999984741211,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 29.3644998550415,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.259139754292028,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.862 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=-3.944 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=-0.2915 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "sma_50_200_cross_days_ago 값 없음 → 판정 불가"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=44.54 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=5.157 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "TPC",
+      "close": 86.7699966430664,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 80.04815742363593,
+      "stopRef": "ema_21",
+      "stopPct": 7.746732141849866,
+      "positionPct": 38.72600659306675,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.175982714325369,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.193 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=12.07 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=16.15 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=294 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=7.6 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.023 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "SMG",
+      "close": 69.30999755859375,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 65.84449768066406,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.034773132553992,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.864 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=9.621 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=14.42 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=119 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=3.933 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=7.168 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "PTEN",
+      "close": 10.199999809265137,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 9.68999981880188,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.49509816067075,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=5.335 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=-4.649 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=18.91 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=149 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=22.9 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=0.8896 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "DHT",
+      "close": 18.450000762939453,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 17.52750072479248,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000016,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.130081584896033,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=4.137 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.442 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=21.9 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "sma_50_200_cross_days_ago 값 없음 → 판정 불가"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=6.997 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=11.66 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "TALO",
+      "close": 14.930000305175781,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 14.183500289916992,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.345278641528332,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=3.492 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=2.555 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=15.77 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=210 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=16.3 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=2.152 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "SLDE",
+      "close": 20.260000228881836,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 19.247000217437744,
+      "stopRef": "ema_21",
+      "stopPct": 5.000000000000004,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.447928017830791,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=3.398 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_50_pct=8.149 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=14.26 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "unknown",
+          "detail": "sma_50_200_cross_days_ago 값 없음 → 판정 불가"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=4.052 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=4.727 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "HUN",
+      "close": 12.800000190734863,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 12.04495355205695,
+      "stopRef": "ema_21",
+      "stopPct": 5.8988017767722,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 4.316406260186341,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=1.733 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=-1.416 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_sma_200_pct=10.41 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=123 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "overhead_supply_pct=24.74 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "dist_to_volume_node_below_pct=1.694 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "NVCR",
+      "close": 17.649999618530273,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 16.452722936000345,
+      "stopRef": "ema_21",
+      "stopPct": 6.783437441397666,
+      "positionPct": 44.225365471666784,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 6.763172565993454,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=2.577 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=5.538 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=28.43 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=53 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=7.303 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=19.67 <= 8.0"
+        }
+      ]
+    },
+    {
+      "symbol": "GPRE",
+      "close": 16.950000762939453,
+      "score": 7.0,
+      "scoreMax": 12.0,
+      "stopPrice": 16.10250072479248,
+      "stopRef": "ema_21",
+      "stopPct": 4.999999999999993,
+      "positionPct": 50.0,
+      "accountRiskPct": 3.0,
+      "allIn": false,
+      "tranches": [
+        {
+          "id": "tranche_first_half",
+          "pct": 50.0,
+          "trigger": "즉시"
+        },
+        {
+          "id": "tranche_add_on_surge",
+          "pct": 50.0,
+          "trigger": "조건: add_when_volume_surge"
+        }
+      ],
+      "atrPct": 5.233039732939695,
+      "factors": [
+        {
+          "id": "stock_trend_aligned",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "sma_50_above_sma_200=True == True"
+        },
+        {
+          "id": "sma200_rising",
+          "weight": 1.0,
+          "contribution": 1.0,
+          "state": "pass",
+          "detail": "sma_200_slope_20d=5.515 > 0"
+        },
+        {
+          "id": "near_sma50",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "dist_to_sma_50_pct=6.452 between [-8.0, 8.0]"
+        },
+        {
+          "id": "near_sma200",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_sma_200_pct=25.23 between [-10.0, 20.0]"
+        },
+        {
+          "id": "sma50_golden_cross_zone",
+          "weight": 3.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "sma_50_200_cross_days_ago=232 between [0.0, 20.0]"
+        },
+        {
+          "id": "low_overhead_supply",
+          "weight": 2.0,
+          "contribution": 2.0,
+          "state": "pass",
+          "detail": "overhead_supply_pct=7.001 <= 15.0"
+        },
+        {
+          "id": "support_node_nearby",
+          "weight": 1.0,
+          "contribution": 0.0,
+          "state": "fail",
+          "detail": "dist_to_volume_node_below_pct=12.95 <= 8.0"
+        }
+      ]
     }
   ],
-  "sell": [],
+  "sell": [
+    {
+      "symbol": "NVDA",
+      "close": 206.83999633789062,
+      "entryPrice": 142.5,
+      "gainPct": 45.15087462308114,
+      "ruleId": "exit_trail_sma50_when_extended",
+      "reason": "sma_50 209.11 이탈 (종가 206.84)",
+      "trails": [
+        {
+          "ref": "sma_50",
+          "level": 209.1074996948242
+        },
+        {
+          "ref": "sma_200",
+          "level": 192.7164208984375
+        }
+      ]
+    }
+  ],
   "watch": [
+    {
+      "symbol": "V",
+      "close": 355.739990234375,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.305055174245476,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "HEI",
+      "close": 349.6099853515625,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.6774222498610527,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "SYY",
+      "close": 83.11000061035156,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.24422615400813,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "HIG",
+      "close": 140.52999877929688,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.1799612020881294,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "KHC",
+      "close": 25.670000076293945,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.842812108030383,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "FE",
+      "close": 49.91999816894531,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.7518034990678748,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "OMC",
+      "close": 79.66000366210938,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.321615646330171,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "HRL",
+      "close": 25.309999465942383,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.4669190116627417,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "TXRH",
+      "close": 193.27000427246094,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.7104573191696955,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "BMRN",
+      "close": 59.33000183105469,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.597336501681604,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "RRR",
+      "close": 63.91999816894531,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.228488735303687,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ESNT",
+      "close": 65.75,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.08136990043147,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "MTN",
+      "close": 145.72000122070312,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.431581944366782,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "MHO",
+      "close": 149.8300018310547,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.734432913929656,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "SBCF",
+      "close": 33.4900016784668,
+      "score": 12.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.52463435462194,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "KRC",
+      "close": 39.41999816894531,
+      "score": 11.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.523389807687269,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "RTX",
+      "close": 212.7899932861328,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.393440348272424,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "GD",
+      "close": 386.75,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.0270247330250193,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "MMM",
+      "close": 172.6199951171875,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.632951330277922,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ITW",
+      "close": 283.0199890136719,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.0563217605413455,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
     {
       "symbol": "AMP",
       "close": 528.9000244140625,
       "score": 10.0,
       "scoreMax": 12.0,
       "atrPct": 2.7437127675755044,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "WAT",
+      "close": 374.67999267578125,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.018442495769095,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "LH",
+      "close": 296.7699890136719,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.6350372289375796,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "HQY",
+      "close": 94.63500213623047,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.163732921939126,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ICUI",
+      "close": 157.44000244140625,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 3.3034798063343365,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "NMIH",
+      "close": 42.75,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.1894733808193987,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "ABM",
+      "close": 47.720001220703125,
+      "score": 10.0,
+      "scoreMax": 12.0,
+      "atrPct": 2.2499074769082417,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "XOM",
+      "close": 156.94000244140625,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.958074304681864,
       "blockers": [
         "게이트: has_volatility"
       ]
@@ -118,31 +2991,41 @@
       ]
     },
     {
-      "symbol": "AEE",
-      "close": 113.77999877929688,
+      "symbol": "CVX",
+      "close": 194.7899932861328,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.0007906327288016,
+      "atrPct": 1.8568718643163895,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AES",
-      "close": 14.84000015258789,
+      "symbol": "KO",
+      "close": 82.25,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 0.45148284787198245,
+      "atrPct": 2.1696045478426575,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AEP",
-      "close": 135.5399932861328,
+      "symbol": "PM",
+      "close": 193.0,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 1.9473988288985764,
+      "atrPct": 2.8411920577133256,
+      "blockers": [
+        "게이트: has_volatility"
+      ]
+    },
+    {
+      "symbol": "SHEL",
+      "close": 88.37999725341797,
+      "score": 9.0,
+      "scoreMax": 12.0,
+      "atrPct": 1.6061619750377738,
       "blockers": [
         "게이트: has_volatility"
       ]
@@ -158,31 +3041,31 @@
       ]
     },
     {
-      "symbol": "AME",
-      "close": 241.97000122070312,
+      "symbol": "DE",
+      "close": 628.1599731445312,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.15935858727968,
+      "atrPct": 2.856607776000819,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "APD",
-      "close": 297.8699951171875,
+      "symbol": "BUD",
+      "close": 81.66000366210938,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.0368303901128866,
+      "atrPct": 2.1387445414235184,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BXP",
-      "close": 69.11000061035156,
+      "symbol": "PLD",
+      "close": 147.6300048828125,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.484336685882343,
+      "atrPct": 2.381629402547576,
       "blockers": [
         "게이트: has_volatility"
       ]
@@ -198,535 +3081,225 @@
       ]
     },
     {
-      "symbol": "CHD",
-      "close": 97.63999938964844,
+      "symbol": "BTI",
+      "close": 60.959999084472656,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.2813401761386856,
+      "atrPct": 2.307717896790485,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CNP",
-      "close": 44.560001373291016,
+      "symbol": "ENB",
+      "close": 56.86000061035156,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 1.8727556230185467,
+      "atrPct": 1.5933868204961548,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CPAY",
-      "close": 370.5799865722656,
+      "symbol": "PH",
+      "close": 987.5399780273438,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.9677810521392076,
+      "atrPct": 2.2801094323774844,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CPT",
-      "close": 113.7300033569336,
+      "symbol": "MO",
+      "close": 72.98999786376953,
       "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 1.7964624451432463,
+      "atrPct": 2.2968910137980307,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "ADM",
-      "close": 85.91999816894531,
-      "score": 8.0,
+      "symbol": "SO",
+      "close": 97.25,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.0827514943117857,
+      "atrPct": 1.806169524597325,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AFL",
-      "close": 125.5999984741211,
-      "score": 8.0,
+      "symbol": "BNS",
+      "close": 87.0,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 1.6393309385376333,
+      "atrPct": 1.707346418462748,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AIZ",
-      "close": 276.94000244140625,
-      "score": 8.0,
+      "symbol": "CM",
+      "close": 117.44000244140625,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 1.833609557046625,
+      "atrPct": 1.8562218425058812,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BBY",
-      "close": 85.43000030517578,
-      "score": 8.0,
+      "symbol": "TT",
+      "close": 480.989990234375,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.8099020663665337,
+      "atrPct": 3.1909180716042305,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CFG",
-      "close": 71.87999725341797,
-      "score": 8.0,
+      "symbol": "DUK",
+      "close": 130.52000427246094,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.440873516882477,
+      "atrPct": 1.7893811364103198,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CINF",
-      "close": 182.80999755859375,
-      "score": 8.0,
+      "symbol": "BCS",
+      "close": 27.90999984741211,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.532410633291922,
+      "atrPct": 2.3504108351070787,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CRL",
-      "close": 226.5800018310547,
-      "score": 8.0,
+      "symbol": "UPS",
+      "close": 114.79000091552734,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.9105401138530045,
+      "atrPct": 2.3595259925473995,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "ACGL",
-      "close": 103.36000061035156,
-      "score": 7.0,
+      "symbol": "WM",
+      "close": 238.75,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.3127893777806583,
+      "atrPct": 2.148062341500327,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AIG",
-      "close": 79.05999755859375,
-      "score": 7.0,
+      "symbol": "ING",
+      "close": 32.83000183105469,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.2432355466105265,
+      "atrPct": 1.912886692691352,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BALL",
-      "close": 63.84000015258789,
-      "score": 7.0,
+      "symbol": "JCI",
+      "close": 143.3699951171875,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.4240297723257935,
+      "atrPct": 3.3553053375644,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BAX",
-      "close": 22.399999618530273,
-      "score": 7.0,
+      "symbol": "EPD",
+      "close": 38.72999954223633,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.497767933739389,
+      "atrPct": 1.639554540272832,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BG",
-      "close": 121.52999877929688,
-      "score": 7.0,
+      "symbol": "EMR",
+      "close": 147.94000244140625,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.6112894700166613,
+      "atrPct": 2.626063442895989,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "BMY",
-      "close": 62.09000015258789,
-      "score": 7.0,
+      "symbol": "CP",
+      "close": 92.36000061035156,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.59819889541121,
+      "atrPct": 1.8103071996008528,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CASY",
-      "close": 861.6300048828125,
-      "score": 7.0,
+      "symbol": "ROST",
+      "close": 238.88999938964844,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.3111655311283337,
+      "atrPct": 2.330570050450645,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "CBOE",
-      "close": 285.07000732421875,
-      "score": 7.0,
+      "symbol": "SPG",
+      "close": 229.77999877929688,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.772581744007766,
+      "atrPct": 1.8339277562939353,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "COP",
-      "close": 120.26000213623047,
-      "score": 7.0,
+      "symbol": "NWG",
+      "close": 17.969999313354492,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.1952430922609225,
+      "atrPct": 2.164720311247042,
       "blockers": [
         "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "AON",
-      "close": 361.70001220703125,
-      "score": 6.0,
+      "symbol": "AEP",
+      "close": 135.5399932861328,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 2.5594421991014986,
+      "atrPct": 1.9473988288985764,
       "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 6 < 7"
+        "게이트: has_volatility"
       ]
     },
     {
-      "symbol": "APA",
-      "close": 36.150001525878906,
-      "score": 6.0,
+      "symbol": "TRP",
+      "close": 70.58999633789062,
+      "score": 9.0,
       "scoreMax": 12.0,
-      "atrPct": 3.0291019274589,
+      "atrPct": 1.9659504183762777,
       "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 6 < 7"
-      ]
-    },
-    {
-      "symbol": "BAC",
-      "close": 62.04999923706055,
-      "score": 6.0,
-      "scoreMax": 12.0,
-      "atrPct": 1.939565481077595,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 6 < 7"
-      ]
-    },
-    {
-      "symbol": "CF",
-      "close": 125.06999969482422,
-      "score": 6.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.2645716891328247,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 6 < 7"
-      ]
-    },
-    {
-      "symbol": "CI",
-      "close": 289.57000732421875,
-      "score": 6.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.939531839686024,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 6 < 7"
-      ]
-    },
-    {
-      "symbol": "A",
-      "close": 138.57000732421875,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.9283395609929324,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "AAPL",
-      "close": 333.0199890136719,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.5480460346070557,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "ALL",
-      "close": 259.9700012207031,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.39931646823452,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "ATO",
-      "close": 179.22000122070312,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 1.7478533228690614,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "BNY",
-      "close": 158.91000366210938,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.2437232135809846,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "COO",
-      "close": 70.30999755859375,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.767032073190105,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "CSX",
-      "close": 53.22999954223633,
-      "score": 5.0,
-      "scoreMax": 12.0,
-      "atrPct": 1.866428621337724,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 5 < 7"
-      ]
-    },
-    {
-      "symbol": "ARES",
-      "close": 126.51000213623047,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.7495452124690756,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "AWK",
-      "close": 134.66000366210938,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.38749391223511,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "BDX",
-      "close": 156.36000061035156,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.68738736567196,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "BKNG",
-      "close": 177.4600067138672,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.412316867238136,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "BLK",
-      "close": 1055.6700439453125,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.679910809941063,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "CBRE",
-      "close": 139.4600067138672,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.9431375443110466,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "CME",
-      "close": 255.30999755859375,
-      "score": 4.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.7685949721718797,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 4 < 7"
-      ]
-    },
-    {
-      "symbol": "AMCR",
-      "close": 44.540000915527344,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.889536338716333,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "ARE",
-      "close": 50.939998626708984,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.332432250700662,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "BR",
-      "close": 148.9199981689453,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.1285272245715285,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "CEG",
-      "close": 274.3500061035156,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.359905186942548,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "COF",
-      "close": 202.83999633789062,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.7711496795157746,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "COR",
-      "close": 309.8900146484375,
-      "score": 3.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.47797572223323,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 3 < 7"
-      ]
-    },
-    {
-      "symbol": "ADBE",
-      "close": 225.11000061035156,
-      "score": 2.0,
-      "scoreMax": 12.0,
-      "atrPct": 4.348762666147173,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 2 < 7"
-      ]
-    },
-    {
-      "symbol": "ADSK",
-      "close": 209.75,
-      "score": 2.0,
-      "scoreMax": 12.0,
-      "atrPct": 3.707271389512254,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 2 < 7"
-      ]
-    },
-    {
-      "symbol": "ADP",
-      "close": 250.08999633789062,
-      "score": 2.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.85237345589338,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 2 < 7"
-      ]
-    },
-    {
-      "symbol": "AJG",
-      "close": 247.77000427246094,
-      "score": 2.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.943253896527589,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 2 < 7"
-      ]
-    },
-    {
-      "symbol": "ALLE",
-      "close": 153.36000061035156,
-      "score": 2.0,
-      "scoreMax": 12.0,
-      "atrPct": 2.846244219624279,
-      "blockers": [
-        "게이트: has_volatility",
-        "점수 부족: 2 < 7"
+        "게이트: has_volatility"
       ]
     }
   ],
-  "watchTotal": 63
+  "watchTotal": 942
 }
