@@ -952,15 +952,22 @@ export default function Index() {
                 ${item.close.toFixed(2)}
               </StyledText>
             </View>
+            {/* 전일 대비 변화율 대신 ATR% — 하루 변동폭이 진입 자격을 가른다.
+                피드가 아직 구버전이면 atrPct가 없으므로 종전 값으로 되돌린다. */}
             <StyledText
               variant="caption"
               weight="medium"
               color={
-                item.changePct >= 0 ? colors.positive : colors.negative
+                item.atrPct == null
+                  ? colors.secondary[600]
+                  : item.atrPct >= 4
+                    ? colors.accent_warm[300]
+                    : colors.secondary[600]
               }
             >
-              {item.changePct >= 0 ? "+" : ""}
-              {item.changePct.toFixed(1)}%
+              {item.atrPct != null
+                ? `ATR ${item.atrPct.toFixed(1)}%`
+                : `${item.changePct >= 0 ? "+" : ""}${item.changePct.toFixed(1)}%`}
             </StyledText>
           </View>
           <View style={styles.chartGridChartWrap}>

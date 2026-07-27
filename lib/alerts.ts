@@ -31,6 +31,8 @@ export interface Ema921Item {
   gapPct: number;
   /** 전일 종가 대비 변화율 (%) */
   changePct: number;
+  /** ATR(20)/종가*100. 구버전 피드에는 없어 optional. */
+  atrPct?: number;
   avgVolume10: number;
 }
 

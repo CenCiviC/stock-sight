@@ -64,6 +64,7 @@ interface ScanResult {
   ema921Cross: boolean; // 오늘 EMA9이 EMA21을 상향 돌파했는지
   gapPct: number;       // (EMA9 - EMA21) / EMA21 * 100
   changePct: number;    // 전일 종가 대비 변화율 (%)
+  atrPct: number;       // ATR(20) / 종가 * 100 — "평소 하루에 몇 % 움직이나"
 }
 
 function isCrossover(r: ScanResult): boolean {
@@ -217,6 +218,8 @@ async function fetchNasdaqSymbols(): Promise<string[]> {
 // ──────────────────────────────────────────────
 
 interface DailyBar {
+  high: number;
+  low: number;
   close: number;
   volume: number;
 }
@@ -250,6 +253,8 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
       result?: Array<{
         indicators?: {
           quote?: Array<{
+            high?: (number | null)[];
+            low?: (number | null)[];
             close?: (number | null)[];
             volume?: (number | null)[];
           }>;
@@ -261,15 +266,28 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   const result = json?.chart?.result?.[0];
   if (!result) return null;
 
-  const rawCloses: (number | null)[] = result.indicators?.quote?.[0]?.close ?? [];
-  const rawVolumes: (number | null)[] = result.indicators?.quote?.[0]?.volume ?? [];
+  const q = result.indicators?.quote?.[0];
+  const rawCloses: (number | null)[] = q?.close ?? [];
+  const rawVolumes: (number | null)[] = q?.volume ?? [];
+  const rawHighs: (number | null)[] = q?.high ?? [];
+  const rawLows: (number | null)[] = q?.low ?? [];
 
   const bars: DailyBar[] = [];
   for (let i = 0; i < rawCloses.length; i++) {
     const c = rawCloses[i];
     const v = rawVolumes[i];
     if (c == null || !Number.isFinite(c)) continue;
-    bars.push({ close: c, volume: v != null && Number.isFinite(v) ? v : 0 });
+    // Yahoo occasionally omits high/low on a bar that has a close. Falling back
+    // to the close makes that bar's true range 0 rather than dropping the bar,
+    // which would silently shorten the ATR window.
+    const h = rawHighs[i];
+    const l = rawLows[i];
+    bars.push({
+      high: h != null && Number.isFinite(h) ? h : c,
+      low: l != null && Number.isFinite(l) ? l : c,
+      close: c,
+      volume: v != null && Number.isFinite(v) ? v : 0,
+    });
   }
 
   return bars.length >= MIN_BARS ? bars : null;
@@ -278,6 +296,30 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
 // ──────────────────────────────────────────────
 // Scanner Core
 // ──────────────────────────────────────────────
+
+/**
+ * ATR(20) as a percentage of price — the volatility measure the spec's entry
+ * gate uses. Wilder's true range, simple 20-bar mean, matching
+ * signals/indicators.py in stock-quant so both sides report the same number.
+ */
+function calcAtrPct(bars: DailyBar[], period = 20): number {
+  if (bars.length < period + 1) return 0;
+  const tr: number[] = [];
+  for (let i = bars.length - period; i < bars.length; i++) {
+    const b = bars[i];
+    const prevClose = bars[i - 1].close;
+    tr.push(
+      Math.max(
+        b.high - b.low,
+        Math.abs(b.high - prevClose),
+        Math.abs(b.low - prevClose)
+      )
+    );
+  }
+  const atr = tr.reduce((a, b) => a + b, 0) / tr.length;
+  const close = bars.at(-1)!.close;
+  return close > 0 ? (atr / close) * 100 : 0;
+}
 
 async function scanSymbol(symbol: string): Promise<ScanResult | null> {
   const bars = await fetchBars(symbol);
@@ -362,6 +404,7 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
       prevClose != null && prevClose !== 0
         ? (closes.at(-1)! / prevClose - 1) * 100
         : 0,
+    atrPct: calcAtrPct(bars),
   };
 }
 
@@ -519,6 +562,7 @@ function writeEma921Json(crossed: ScanResult[], total: number): void {
     ema21: Number(r.emaSlow.toFixed(4)),
     gapPct: Number(r.gapPct.toFixed(2)),
     changePct: Number(r.changePct.toFixed(2)),
+    atrPct: Number(r.atrPct.toFixed(2)),
     avgVolume10: Math.round(r.avgVolume10),
   }));
 
