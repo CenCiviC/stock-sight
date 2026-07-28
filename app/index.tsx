@@ -895,12 +895,13 @@ export default function Index() {
                 ${item.close.toFixed(2)}
               </StyledText>
             </View>
+            {/* G1은 ATR≥6이 진입 자격 — 날짜 대신 변동성을 보여준다 */}
             <StyledText
               variant="caption"
               weight="medium"
-              color={colors.secondary[500]}
+              color={colors.accent_warm[300]}
             >
-              {item.daysOutside}d
+              ATR {item.atrPct.toFixed(1)}%
             </StyledText>
           </View>
           <View style={styles.chartGridChartWrap}>
@@ -1106,25 +1107,6 @@ export default function Index() {
             ) : rsResult ? (
               <View style={styles.tabDot} />
             ) : null}
-          </Pressable>
-
-          {/* Signals tab — spec 평가기가 낸 매수/매도 판정 (별도 화면) */}
-          <Pressable
-            style={styles.tab}
-            onPress={() => router.push("/signals")}
-          >
-            <Ionicons
-              name="pulse-outline"
-              size={14}
-              color={colors.accent_warm[300]}
-            />
-            <StyledText
-              variant="bodySmall"
-              weight="bold"
-              color={colors.accent_warm[300]}
-            >
-              매매신호
-            </StyledText>
           </Pressable>
 
           {/* Today (alerts) tab */}
@@ -1739,7 +1721,7 @@ export default function Index() {
                 </View>
               )}
               <FlatList
-                data={[...alertFeed.alerts].sort((a, b) => a.daysOutside - b.daysOutside)}
+                data={[...alertFeed.alerts].sort((a, b) => b.atrPct - a.atrPct)}
                 keyExtractor={(item) => item.symbol}
                 numColumns={CHART_GRID_COLS}
                 renderItem={renderAlertChartItem}

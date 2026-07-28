@@ -1,16 +1,26 @@
 /**
- * Alert feed — fetched from public GitHub raw URL.
- * CI(scanner.ts) writes data/alerts/latest.json on each scheduled scan.
+ * Alert feeds — fetched from public GitHub raw URL.
+ * CI(scanner.ts) writes data/alerts/*.json on each scheduled scan.
  */
 
+/**
+ * G1 매수 시그널 — stock-quant에서 10년 검증된 폭발주 룰 (Today 탭).
+ * EMA9/21 골든크로스 + ATR%≥6 + 하락이력≥30% + 바닥 63일↑ + 이격≤5%,
+ * 시총 상위 2000 · $5↑ · 거래대금 $10M/일↑ · 중국 ADR 제외.
+ */
 export interface AlertItem {
   symbol: string;
   close: number;
   ema9: number;
-  sma50: number;
-  sma200: number;
-  ratio: number;
-  daysOutside: number;
+  ema21: number;
+  /** ATR(20)/종가*100 — 시그널 자격이자 슬롯 우선순위 */
+  atrPct: number;
+  /** 252일 고점 → 이후 저점 드로다운 % (ㄴ자의 세로획) */
+  declinePct: number;
+  /** 252일 저점 이후 경과 봉수 (바닥 다진 기간) */
+  baseDays: number;
+  /** (close/EMA21 - 1) * 100 — 크로스 시점 과확장 정도 */
+  extPct: number;
 }
 
 export interface AlertFeed {
@@ -47,7 +57,7 @@ export interface Ema921Feed {
 const RAW_BASE =
   "https://raw.githubusercontent.com/CenCiviC/stock-sight/main/data/alerts";
 
-const FEED_URL = `${RAW_BASE}/latest.json`;
+const FEED_URL = `${RAW_BASE}/g1.json`;
 const EMA921_FEED_URL = `${RAW_BASE}/ema921.json`;
 
 async function fetchFeed<T>(url: string, label: string): Promise<T> {
@@ -60,7 +70,7 @@ async function fetchFeed<T>(url: string, label: string): Promise<T> {
 }
 
 export async function fetchAlertFeed(): Promise<AlertFeed> {
-  return fetchFeed<AlertFeed>(FEED_URL, "Alert feed");
+  return fetchFeed<AlertFeed>(FEED_URL, "G1 feed");
 }
 
 export async function fetchEma921Feed(): Promise<Ema921Feed> {

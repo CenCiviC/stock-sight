@@ -1,15 +1,25 @@
 #!/usr/bin/env tsx
 /**
- * US Stock Scanner — two signals, one pass over NASDAQ 5000 symbols.
+ * US Stock Scanner — three signals, one pass over NASDAQ 5000 symbols.
  *
- * Bars are fetched once per symbol and fed to both detectors:
+ * Bars are fetched once per symbol and fed to all detectors:
  *
- *   1) EMA9 / SMA50  → data/alerts/latest.json   (app's "Today" tab)
+ *   1) G1           → data/alerts/g1.json        (app's "Today" tab)
+ *        stock-quant's validated explosive-mover rule
+ *        (docs/explosive_hunt_v1.md — 10y sim CAGR +33%):
+ *        EMA9/21 golden cross today AND ATR%(20) >= 6
+ *        AND prior decline >= 30% (252d high → subsequent low)
+ *        AND >= 63 bars since the 252d low  AND close within +5% of EMA21.
+ *        Universe: top 2000 by market cap only — widening to 5000 was
+ *        falsified (small-cap signals crowd out the good ones) — plus
+ *        $5 price, $10M/day 50d dollar volume, China/HK ADRs excluded.
+ *
+ *   2) EMA9 / SMA50  → data/alerts/latest.json   (legacy feed)
  *        previous days (5+ consecutive):  EMA9 / SMA50 < 1.0
  *        current day:                     EMA9 / SMA50 >= 0.95
  *                                         AND Close >= SMA200 * 0.95
  *
- *   2) EMA9 / EMA21  → data/alerts/ema921.json   (app's "EMA 9/21" tab)
+ *   3) EMA9 / EMA21  → data/alerts/ema921.json   (app's "EMA 9/21" tab)
  *        Port of TradingView `ta.crossover(ema9, ema21)`:
  *        yesterday EMA9 <= EMA21  AND  today EMA9 > EMA21
  *        Liquidity filters only (price / volume) — no trend filter.
@@ -35,6 +45,24 @@ const MIN_BARS = 210;          // minimum bars needed (SMA200 + buffer)
 
 const EMA_FAST = 9;            // EMA 9/21 전략의 단기선
 const EMA_SLOW = 21;           // EMA 9/21 전략의 장기선
+
+// --- G1 rule (stock-quant docs/explosive_hunt_v1.md, v11에서 임계값 확정) ---
+const G1_UNIVERSE_TOP = 2000;      // 시총 상위 2000만 — 5000 확장은 검증에서 붕괴
+const G1_MIN_ATR_PCT = 6;          // atr_pct_20d >= 6
+const G1_MIN_DECLINE_PCT = 30;     // 252일 고점 → 이후 저점 드로다운 >= 30%
+const G1_MIN_BASE_DAYS = 63;       // 252일 저점 이후 경과 봉수 >= 63
+const G1_MAX_EXT_PCT = 5;          // (close/EMA21 - 1)*100 <= 5
+const G1_MIN_DOLLAR_VOL = 10_000_000; // 50일 평균 거래대금 >= $10M
+const G1_WINDOW = 252;             // 52주 창
+const G1_MIN_BARS = 260;           // 252일 창 + 여유
+
+/** 중국/홍콩 ADR — 승률 36%/대패율 36%로 검증에서 제외 확정 (stock-quant meta.csv) */
+const CHINA_ADR = new Set([
+  "ATAT", "BABA", "BEKE", "BIDU", "BILI", "BZ", "EDU", "FUTU", "GDS", "GRAB",
+  "HTHT", "IQ", "JD", "KC", "LI", "MAAS", "MNSO", "NIO", "NTES", "PDD", "PONY",
+  "PUK", "QFIN", "RGC", "RLX", "SIMO", "TAL", "TCOM", "TIGR", "TME", "VIPS",
+  "VNET", "XPEV", "YMM", "ZTO",
+]);
 
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -65,6 +93,12 @@ interface ScanResult {
   gapPct: number;       // (EMA9 - EMA21) / EMA21 * 100
   changePct: number;    // 전일 종가 대비 변화율 (%)
   atrPct: number;       // ATR(20) / 종가 * 100 — "평소 하루에 몇 % 움직이나"
+
+  // --- G1 지표 (봉 부족 시 null — "미달"과 "판정불가"는 다른 사실) ---
+  declinePct: number | null;   // 252일 고점 → 이후 최저 저가 드로다운 %
+  baseDays: number | null;     // 252일 최저 저가 이후 경과 봉수
+  extPct: number | null;       // (close / EMA21 - 1) * 100
+  dollarVol50: number | null;  // 50일 평균 거래대금 (close × volume)
 }
 
 function isCrossover(r: ScanResult): boolean {
@@ -88,6 +122,23 @@ function isCrossover(r: ScanResult): boolean {
  * 원본 지표의 신호는 `ta.crossover(ema9, ema21)` 하나뿐이다.
  * 여기에 유동성 필터(종가/거래량)만 추가하고, 추세 필터(SMA200)는 걸지 않는다.
  */
+/**
+ * G1 매수 신호 — stock-quant에서 10년 검증된 폭발주 룰.
+ * 시총 상위 2000 제한은 호출부(main)에서 rank로 거른다.
+ */
+function isG1Signal(r: ScanResult): boolean {
+  return (
+    r.ema921Cross &&
+    !CHINA_ADR.has(r.symbol) &&
+    r.close >= MIN_PRICE &&
+    r.atrPct >= G1_MIN_ATR_PCT &&
+    r.declinePct != null && r.declinePct >= G1_MIN_DECLINE_PCT &&
+    r.baseDays != null && r.baseDays >= G1_MIN_BASE_DAYS &&
+    r.extPct != null && r.extPct <= G1_MAX_EXT_PCT &&
+    r.dollarVol50 != null && r.dollarVol50 >= G1_MIN_DOLLAR_VOL
+  );
+}
+
 function isEma921Signal(r: ScanResult): boolean {
   return (
     r.ema921Cross &&
@@ -231,7 +282,7 @@ interface DailyBar {
 async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
-    `?range=1y&interval=1d`;
+    `?range=2y&interval=1d`; // G1의 252일 창 + 여유 (1y로는 52주 지표가 항상 미달)
 
   let resp: Response;
   try {
@@ -405,6 +456,67 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
         ? (closes.at(-1)! / prevClose - 1) * 100
         : 0,
     atrPct: calcAtrPct(bars),
+    ...calcG1Metrics(bars, emaSlowArr),
+  };
+}
+
+/**
+ * G1 지표 4종 — stock-quant signals/indicators.py의 정의를 그대로 이식.
+ * 봉이 252 + 여유(G1_MIN_BARS) 미만이면 전부 null: "조건 미달"과
+ * "역사 부족으로 판정 불가"가 같은 false로 뭉개지면 안 된다.
+ */
+function calcG1Metrics(
+  bars: DailyBar[],
+  ema21Arr: (number | null)[],
+): Pick<ScanResult, "declinePct" | "baseDays" | "extPct" | "dollarVol50"> {
+  const n = bars.length;
+  const ema21 = ema21Arr.at(-1);
+  if (n < G1_MIN_BARS || ema21 == null || ema21 <= 0) {
+    return { declinePct: null, baseDays: null, extPct: null, dollarVol50: null };
+  }
+
+  const win = bars.slice(n - G1_WINDOW);
+
+  // prior_decline_pct: 창 내 최고 고가(첫 등장) → 그 이후 최저 저가의 드로다운.
+  let peak = -Infinity;
+  let peakAt = 0;
+  for (let i = 0; i < win.length; i++) {
+    if (win[i].high > peak) {
+      peak = win[i].high;
+      peakAt = i;
+    }
+  }
+  let trough = Infinity;
+  for (let i = peakAt; i < win.length; i++) {
+    if (win[i].low < trough) trough = win[i].low;
+  }
+  const declinePct = peak > 0 ? (1 - trough / peak) * 100 : null;
+
+  // days_since_52w_low: 창 내 최저 저가(첫 등장)로부터의 경과 봉수.
+  let lowVal = Infinity;
+  let lowAt = 0;
+  for (let i = 0; i < win.length; i++) {
+    if (win[i].low < lowVal) {
+      lowVal = win[i].low;
+      lowAt = i;
+    }
+  }
+  const baseDays = win.length - 1 - lowAt;
+
+  // dist_to_ema_21_pct (SMA 시딩 EMA21 기준 — python rolling_ema와 동일)
+  const close = bars.at(-1)!.close;
+  const extPct = (close / ema21 - 1) * 100;
+
+  // 50일 평균 거래대금
+  const dv = bars.slice(-50);
+  const dollarVol50 =
+    dv.reduce((a, b) => a + b.close * b.volume, 0) / dv.length;
+
+  return {
+    declinePct,
+    baseDays,
+    extPct: Number.isFinite(extPct) ? extPct : null,
+    dollarVol50,
   };
 }
 
@@ -460,12 +572,20 @@ async function main(): Promise<void> {
   // 1. Fetch NASDAQ symbols
   console.log("Fetching NASDAQ symbols...");
   let symbols: string[];
-  try {
-    symbols = await fetchNasdaqSymbols();
-    console.log(`Fetched ${symbols.length} symbols`);
-  } catch (e) {
-    console.error("Failed to fetch NASDAQ symbols:", e);
-    process.exit(1);
+  if (process.env.TEST_SYMBOLS) {
+    // 로컬 검증용: TEST_SYMBOLS="NVDA,RGTI,KOD" npx tsx scanner.ts
+    symbols = process.env.TEST_SYMBOLS.split(",").map((s: string) =>
+      s.trim().toUpperCase(),
+    );
+    console.log(`TEST_SYMBOLS override: ${symbols.length} symbols`);
+  } else {
+    try {
+      symbols = await fetchNasdaqSymbols();
+      console.log(`Fetched ${symbols.length} symbols`);
+    } catch (e) {
+      console.error("Failed to fetch NASDAQ symbols:", e);
+      process.exit(1);
+    }
   }
 
   // 2. Scan all symbols
@@ -491,11 +611,34 @@ async function main(): Promise<void> {
     .filter(isEma921Signal)
     .sort((a, b) => b.avgVolume10 - a.avgVolume10);
 
+  // 3c. G1 — 시총 상위 2000 안에서만 (symbols는 시총 내림차순).
+  //     ATR 내림차순 정렬: 포트폴리오 시뮬의 슬롯 경합 우선순위와 동일.
+  const rank = new Map(symbols.map((s, i) => [s, i]));
+  const g1 = results
+    .filter((r) => (rank.get(r.symbol) ?? Infinity) < G1_UNIVERSE_TOP)
+    .filter(isG1Signal)
+    .sort((a, b) => b.atrPct - a.atrPct);
+
+  if (process.env.TEST_SYMBOLS) {
+    // 지표 정합성 검증용 덤프 (stock-quant python 구현과 대조)
+    for (const r of results) {
+      console.log(
+        `  ${r.symbol}: close=${r.close.toFixed(2)} atr=${r.atrPct.toFixed(2)}% ` +
+          `decl=${r.declinePct?.toFixed(1)}% base=${r.baseDays}d ` +
+          `ext=${r.extPct?.toFixed(2)}% dv50=${((r.dollarVol50 ?? 0) / 1e6).toFixed(1)}M ` +
+          `cross=${r.ema921Cross}`,
+      );
+    }
+  }
+
   console.log(
     `Scan complete — total: ${symbols.length}, ` +
-      `crossovers: ${crossed.length}, ema9/21: ${ema921.length}, ` +
+      `g1: ${g1.length}, crossovers: ${crossed.length}, ema9/21: ${ema921.length}, ` +
       `errors: ${errors.length}`
   );
+  if (g1.length > 0) {
+    console.log("G1 symbols:", g1.map((r) => r.symbol).join(", "));
+  }
 
   if (crossed.length > 0) {
     console.log("Crossover symbols:", crossed.map((r) => r.symbol).join(", "));
@@ -505,6 +648,7 @@ async function main(): Promise<void> {
   }
 
   // 4. Write JSON for app consumption (data/alerts/*.json)
+  writeG1Json(g1, symbols.length);
   writeAlertsJson(crossed, symbols.length);
   writeEma921Json(ema921, symbols.length);
 
@@ -528,6 +672,31 @@ function writeAlertFile(filename: string, payload: unknown, count: number): void
   const outPath = resolve(outDir, filename);
   writeFileSync(outPath, JSON.stringify(payload, null, 2) + "\n", "utf8");
   console.log(`Wrote ${outPath} (${count} alerts)`);
+}
+
+function writeG1Json(signals: ScanResult[], total: number): void {
+  const slim = signals.map((r) => ({
+    symbol: r.symbol,
+    close: Number(r.close.toFixed(4)),
+    ema9: Number(r.emaFast.toFixed(4)),
+    ema21: Number(r.emaSlow.toFixed(4)),
+    atrPct: Number(r.atrPct.toFixed(2)),
+    declinePct: Number((r.declinePct ?? 0).toFixed(1)),
+    baseDays: r.baseDays ?? 0,
+    extPct: Number((r.extPct ?? 0).toFixed(2)),
+  }));
+
+  writeAlertFile(
+    "g1.json",
+    {
+      scannedAt: new Date().toISOString(),
+      scanDateET: scanDateET(),
+      total,
+      count: slim.length,
+      alerts: slim,
+    },
+    slim.length
+  );
 }
 
 function writeAlertsJson(crossed: ScanResult[], total: number): void {
