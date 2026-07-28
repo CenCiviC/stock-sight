@@ -647,10 +647,16 @@ async function main(): Promise<void> {
     console.log("EMA 9/21 symbols:", ema921.map((r) => r.symbol).join(", "));
   }
 
-  // 4. Write JSON for app consumption (data/alerts/*.json)
-  writeG1Json(g1, symbols.length);
-  writeAlertsJson(crossed, symbols.length);
-  writeEma921Json(ema921, symbols.length);
+  // 4. Write JSON for app consumption (data/alerts/*.json).
+  //    TEST_SYMBOLS 모드에서는 쓰지 않는다 — 부분 스캔 결과가 실제 피드를
+  //    덮어쓰면 앱이 그날의 시그널을 잃는다.
+  if (process.env.TEST_SYMBOLS) {
+    console.log("TEST_SYMBOLS mode — skipping alert JSON writes.");
+  } else {
+    writeG1Json(g1, symbols.length);
+    writeAlertsJson(crossed, symbols.length);
+    writeEma921Json(ema921, symbols.length);
+  }
 
   console.log("Done.");
 }
