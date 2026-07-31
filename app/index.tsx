@@ -537,6 +537,12 @@ export default function Index() {
     void loadAlertFeed();
   }, [isAlerts, loadAlertFeed]);
 
+  const openNearSymbol = useCallback(
+    (symbol: string) =>
+      router.push({ pathname: "/stock/[symbol]", params: { symbol } }),
+    [router],
+  );
+
   // Fetch chart bars for alerts (2-grid view)
   useEffect(() => {
     if (!isAlerts || !alertFeed || alertFeed.alerts.length === 0) return;
@@ -1685,27 +1691,51 @@ export default function Index() {
           )}
 
           {alertFeed && alertFeed.alerts.length === 0 && !alertsLoading && (
-            <View style={styles.emptyState}>
-              <Ionicons
-                name="moon-outline"
-                size={48}
-                color={colors.primary[400]}
-              />
-              <StyledText
-                variant="bodyLarge"
-                color={colors.secondary[400]}
-                style={styles.emptyTitle}
+            // 근접 종목이 있으면 "왜 0건인지"가 빈 화면을 대신 설명한다.
+            (alertFeed.near?.length ?? 0) > 0 ? (
+              <ScrollView
+                contentContainerStyle={styles.nearScroll}
+                showsVerticalScrollIndicator={false}
               >
-                오늘은 추천 종목이 없어요
-              </StyledText>
-              <StyledText
-                variant="bodySmall"
-                color={colors.secondary[600]}
-                style={styles.emptyDesc}
-              >
-                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
-              </StyledText>
-            </View>
+                <View style={styles.emptyStateCompact}>
+                  <Ionicons
+                    name="moon-outline"
+                    size={48}
+                    color={colors.primary[400]}
+                  />
+                  <StyledText
+                    variant="bodyLarge"
+                    color={colors.secondary[400]}
+                    style={styles.emptyTitle}
+                  >
+                    오늘은 추천 종목이 없어요
+                  </StyledText>
+                </View>
+                <G1NearList feed={alertFeed} onPressSymbol={openNearSymbol} />
+              </ScrollView>
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons
+                  name="moon-outline"
+                  size={48}
+                  color={colors.primary[400]}
+                />
+                <StyledText
+                  variant="bodyLarge"
+                  color={colors.secondary[400]}
+                  style={styles.emptyTitle}
+                >
+                  오늘은 추천 종목이 없어요
+                </StyledText>
+                <StyledText
+                  variant="bodySmall"
+                  color={colors.secondary[600]}
+                  style={styles.emptyDesc}
+                >
+                  미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
+                </StyledText>
+              </View>
+            )
           )}
 
           {alertFeed && alertFeed.alerts.length > 0 && (
@@ -1736,6 +1766,9 @@ export default function Index() {
                   index,
                 })}
                 extraData={alertCharts}
+                ListFooterComponent={
+                  <G1NearList feed={alertFeed} onPressSymbol={openNearSymbol} />
+                }
               />
             </>
           )}
@@ -1938,6 +1971,68 @@ export default function Index() {
   );
 }
 
+/**
+ * G1 근접 종목 리스트 (Today 탭) — 매수 0건인 날 "왜 0건인지"를 설명한다.
+ * 오늘 크로스가 떴는데 조건 하나에 막힌 종목이 먼저, 크로스 대기 풀이 뒤.
+ */
+function G1NearList({
+  feed,
+  onPressSymbol,
+}: {
+  feed: AlertFeed;
+  onPressSymbol: (symbol: string) => void;
+}) {
+  const near = feed.near ?? [];
+  if (near.length === 0) return null;
+  const omitted = (feed.nearTotal ?? near.length) - near.length;
+  return (
+    <View style={styles.nearSection}>
+      <View style={styles.nearHeader}>
+        <Ionicons name="eye-outline" size={16} color={colors.accent_warm[300]} />
+        <StyledText variant="bodySmall" weight="bold" color={colors.secondary[400]}>
+          근접 종목 {feed.nearTotal ?? near.length}
+        </StyledText>
+      </View>
+      <StyledText variant="caption" color={colors.secondary[600]}>
+        조건 하나에 막혔거나 골든크로스만 남은 종목 — 막힌 이유를 함께 표시
+      </StyledText>
+      {near.map((n) => (
+        <Pressable
+          key={n.symbol}
+          style={styles.nearRow}
+          onPress={() => onPressSymbol(n.symbol)}
+        >
+          <View style={styles.nearRowTop}>
+            <StyledText variant="bodySmall" weight="bold">
+              {n.symbol}
+            </StyledText>
+            {n.crossedToday && (
+              <StyledText variant="caption" color={colors.accent_warm[300]}>
+                오늘 크로스
+              </StyledText>
+            )}
+            <StyledText variant="caption" color={colors.secondary[500]}>
+              ${n.close.toFixed(2)} · ATR {n.atrPct.toFixed(1)}%
+            </StyledText>
+          </View>
+          <StyledText
+            variant="caption"
+            color={colors.secondary[600]}
+            numberOfLines={2}
+          >
+            {n.blockers.join(" · ")}
+          </StyledText>
+        </Pressable>
+      ))}
+      {omitted > 0 && (
+        <StyledText variant="caption" color={colors.secondary[600]}>
+          외 {omitted}종목
+        </StyledText>
+      )}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -2034,6 +2129,37 @@ const styles = StyleSheet.create({
   emptyDesc: {
     textAlign: "center",
     marginBottom: spacing.xl,
+  },
+  // 빈 날 + 근접 종목이 있을 때: 중앙 정렬 대신 스크롤 상단에 컴팩트하게.
+  emptyStateCompact: {
+    alignItems: "center",
+    paddingHorizontal: spacing["3xl"],
+    paddingVertical: spacing["2xl"],
+    gap: spacing.sm,
+  },
+  nearScroll: {
+    paddingBottom: spacing["4xl"],
+  },
+  nearSection: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+  },
+  nearHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  nearRow: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary[800],
+    gap: spacing.xs,
+  },
+  nearRowTop: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: spacing.sm,
   },
   scanBtn: {
     paddingHorizontal: spacing["5xl"],

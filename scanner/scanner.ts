@@ -55,6 +55,7 @@ const G1_MAX_EXT_PCT = 5;          // (close/EMA21 - 1)*100 <= 5
 const G1_MIN_DOLLAR_VOL = 10_000_000; // 50일 평균 거래대금 >= $10M
 const G1_WINDOW = 252;             // 52주 창
 const G1_MIN_BARS = 260;           // 252일 창 + 여유
+const G1_NEAR_MAX = 30;            // g1.json에 싣는 근접 종목 상한
 
 /** 중국/홍콩 ADR — 승률 36%/대패율 36%로 검증에서 제외 확정 (stock-quant meta.csv) */
 const CHINA_ADR = new Set([
@@ -137,6 +138,50 @@ function isG1Signal(r: ScanResult): boolean {
     r.extPct != null && r.extPct <= G1_MAX_EXT_PCT &&
     r.dollarVol50 != null && r.dollarVol50 >= G1_MIN_DOLLAR_VOL
   );
+}
+
+/**
+ * G1 근접 종목 — 빈 매수 리스트가 "왜 비었는지"를 스스로 설명하게 한다.
+ * 반환값은 막힌 조건의 설명 목록, 근접이 아니면 null.
+ *
+ * 두 부류만 근접으로 친다:
+ *   1) 오늘 크로스가 떴는데 나머지 4조건 중 정확히 하나가 막은 종목
+ *   2) 4조건은 전부 통과했지만 크로스 상태가 아닌 종목 (대기 풀)
+ * 유동성·ADR 게이트는 유니버스 정의라 근접으로 치지 않는다.
+ */
+function g1NearMiss(r: ScanResult): string[] | null {
+  if (CHINA_ADR.has(r.symbol) || r.close < MIN_PRICE) return null;
+  if (
+    r.declinePct == null || r.baseDays == null ||
+    r.extPct == null || r.dollarVol50 == null
+  ) {
+    return null; // 판정불가는 근접이 아니다
+  }
+  if (r.dollarVol50 < G1_MIN_DOLLAR_VOL) return null;
+
+  const fails: string[] = [];
+  if (r.atrPct < G1_MIN_ATR_PCT) {
+    fails.push(`ATR ${r.atrPct.toFixed(1)}% < ${G1_MIN_ATR_PCT}%`);
+  }
+  if (r.declinePct < G1_MIN_DECLINE_PCT) {
+    fails.push(`선행하락 ${r.declinePct.toFixed(0)}% < ${G1_MIN_DECLINE_PCT}%`);
+  }
+  if (r.baseDays < G1_MIN_BASE_DAYS) {
+    fails.push(`바닥 ${r.baseDays}일 < ${G1_MIN_BASE_DAYS}일`);
+  }
+  if (r.extPct > G1_MAX_EXT_PCT) {
+    fails.push(`이격 +${r.extPct.toFixed(1)}% > ${G1_MAX_EXT_PCT}%`);
+  }
+
+  if (r.ema921Cross) {
+    return fails.length === 1 ? fails : null;
+  }
+  if (fails.length > 0) return null;
+  return [
+    r.emaFast > r.emaSlow
+      ? "이미 크로스 상태 (신호는 크로스 당일만)"
+      : "골든크로스 대기 (EMA9<EMA21)",
+  ];
 }
 
 function isEma921Signal(r: ScanResult): boolean {
@@ -619,6 +664,17 @@ async function main(): Promise<void> {
     .filter(isG1Signal)
     .sort((a, b) => b.atrPct - a.atrPct);
 
+  // 3c-2. G1 근접 — 오늘 크로스+1조건 미달이 먼저, 그다음 크로스 대기 풀.
+  const g1Near = results
+    .filter((r) => (rank.get(r.symbol) ?? Infinity) < G1_UNIVERSE_TOP)
+    .map((r) => ({ r, blockers: g1NearMiss(r) }))
+    .filter((x): x is { r: ScanResult; blockers: string[] } => x.blockers != null)
+    .sort(
+      (a, b) =>
+        Number(b.r.ema921Cross) - Number(a.r.ema921Cross) ||
+        b.r.atrPct - a.r.atrPct
+    );
+
   if (process.env.TEST_SYMBOLS) {
     // 지표 정합성 검증용 덤프 (stock-quant python 구현과 대조)
     for (const r of results) {
@@ -633,11 +689,18 @@ async function main(): Promise<void> {
 
   console.log(
     `Scan complete — total: ${symbols.length}, ` +
-      `g1: ${g1.length}, crossovers: ${crossed.length}, ema9/21: ${ema921.length}, ` +
-      `errors: ${errors.length}`
+      `g1: ${g1.length} (+${g1Near.length} near), crossovers: ${crossed.length}, ` +
+      `ema9/21: ${ema921.length}, errors: ${errors.length}`
   );
   if (g1.length > 0) {
     console.log("G1 symbols:", g1.map((r) => r.symbol).join(", "));
+  }
+  const nearCrossed = g1Near.filter((x) => x.r.ema921Cross);
+  if (nearCrossed.length > 0) {
+    console.log(
+      "G1 near (crossed today):",
+      nearCrossed.map((x) => `${x.r.symbol} [${x.blockers[0]}]`).join(", ")
+    );
   }
 
   if (crossed.length > 0) {
@@ -653,7 +716,7 @@ async function main(): Promise<void> {
   if (process.env.TEST_SYMBOLS) {
     console.log("TEST_SYMBOLS mode — skipping alert JSON writes.");
   } else {
-    writeG1Json(g1, symbols.length);
+    writeG1Json(g1, g1Near, symbols.length);
     writeAlertsJson(crossed, symbols.length);
     writeEma921Json(ema921, symbols.length);
   }
@@ -680,7 +743,11 @@ function writeAlertFile(filename: string, payload: unknown, count: number): void
   console.log(`Wrote ${outPath} (${count} alerts)`);
 }
 
-function writeG1Json(signals: ScanResult[], total: number): void {
+function writeG1Json(
+  signals: ScanResult[],
+  near: { r: ScanResult; blockers: string[] }[],
+  total: number
+): void {
   const slim = signals.map((r) => ({
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
@@ -692,6 +759,14 @@ function writeG1Json(signals: ScanResult[], total: number): void {
     extPct: Number((r.extPct ?? 0).toFixed(2)),
   }));
 
+  const slimNear = near.slice(0, G1_NEAR_MAX).map(({ r, blockers }) => ({
+    symbol: r.symbol,
+    close: Number(r.close.toFixed(4)),
+    atrPct: Number(r.atrPct.toFixed(2)),
+    crossedToday: r.ema921Cross,
+    blockers,
+  }));
+
   writeAlertFile(
     "g1.json",
     {
@@ -700,6 +775,8 @@ function writeG1Json(signals: ScanResult[], total: number): void {
       total,
       count: slim.length,
       alerts: slim,
+      near: slimNear,
+      nearTotal: near.length,
     },
     slim.length
   );

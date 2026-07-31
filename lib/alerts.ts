@@ -23,12 +23,25 @@ export interface AlertItem {
   extPct: number;
 }
 
+/** G1 근접 종목 — 조건 하나에 막혔거나 크로스만 기다리는 종목 (blockers가 사유) */
+export interface NearItem {
+  symbol: string;
+  close: number;
+  atrPct: number;
+  /** 오늘 골든크로스가 떴는지 — true면 조건 미달, false면 크로스 대기 */
+  crossedToday: boolean;
+  blockers: string[];
+}
+
 export interface AlertFeed {
   scannedAt: string | null;
   scanDateET: string | null;
   total: number;
   count: number;
   alerts: AlertItem[];
+  /** 구버전 피드에는 없어 optional */
+  near?: NearItem[];
+  nearTotal?: number;
 }
 
 /** EMA 9/21 골든크로스 종목 (TradingView ta.crossover(ema9, ema21) 포팅) */
