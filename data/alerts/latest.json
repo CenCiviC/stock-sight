@@ -1,1232 +1,1331 @@
 {
-  "scannedAt": "2026-09-03T23:33:02.864Z",
-  "scanDateET": "2026-09-03",
+  "scannedAt": "2026-09-04T23:16:18.044Z",
+  "scanDateET": "2026-09-04",
   "total": 5000,
-  "count": 136,
+  "count": 147,
   "alerts": [
     {
-      "symbol": "JCI",
-      "close": 142.23,
-      "ema9": 141.5985,
-      "sma50": 144.5774,
-      "sma200": 134.5743,
-      "ratio": 0.9794,
+      "symbol": "CM",
+      "close": 117.5,
+      "ema9": 116.3223,
+      "sma50": 117.5736,
+      "sma200": 104.2585,
+      "ratio": 0.9894,
       "daysOutside": 5
     },
     {
-      "symbol": "WCN",
-      "close": 166.81,
-      "ema9": 165.8454,
-      "sma50": 167.8988,
-      "sma200": 165.5917,
-      "ratio": 0.9878,
+      "symbol": "FERG",
+      "close": 228.41,
+      "ema9": 228.0055,
+      "sma50": 235.6656,
+      "sma200": 239.6825,
+      "ratio": 0.9675,
       "daysOutside": 5
     },
     {
-      "symbol": "TKO",
-      "close": 189.42,
-      "ema9": 188.0715,
-      "sma50": 190.0192,
-      "sma200": 197.3145,
+      "symbol": "CBSH",
+      "close": 58.365,
+      "ema9": 58.1884,
+      "sma50": 58.7677,
+      "sma200": 53.7606,
+      "ratio": 0.9901,
+      "daysOutside": 5
+    },
+    {
+      "symbol": "EBC",
+      "close": 22.24,
+      "ema9": 22.2134,
+      "sma50": 22.7163,
+      "sma200": 20.5458,
+      "ratio": 0.9779,
+      "daysOutside": 5
+    },
+    {
+      "symbol": "TFSL",
+      "close": 17.57,
+      "ema9": 17.5576,
+      "sma50": 17.8136,
+      "sma200": 15.435,
+      "ratio": 0.9856,
+      "daysOutside": 5
+    },
+    {
+      "symbol": "UCB",
+      "close": 35.64,
+      "ema9": 35.2346,
+      "sma50": 35.6028,
+      "sma200": 33.4882,
       "ratio": 0.9897,
       "daysOutside": 5
     },
     {
-      "symbol": "PUK",
-      "close": 28.35,
-      "ema9": 27.7688,
-      "sma50": 28.2154,
-      "sma200": 29.5486,
-      "ratio": 0.9842,
+      "symbol": "CVBF",
+      "close": 22.62,
+      "ema9": 22.3912,
+      "sma50": 22.6142,
+      "sma200": 20.622,
+      "ratio": 0.9901,
       "daysOutside": 5
+    },
+    {
+      "symbol": "JCI",
+      "close": 144.94,
+      "ema9": 142.2668,
+      "sma50": 144.5664,
+      "sma200": 134.7171,
+      "ratio": 0.9841,
+      "daysOutside": 6
     },
     {
       "symbol": "MTB",
-      "close": 240.06,
-      "ema9": 238.3782,
-      "sma50": 244.7946,
-      "sma200": 220.4456,
-      "ratio": 0.9738,
-      "daysOutside": 5
+      "close": 239.84,
+      "ema9": 238.6706,
+      "sma50": 244.856,
+      "sma200": 220.7395,
+      "ratio": 0.9747,
+      "daysOutside": 6
     },
     {
       "symbol": "RF",
-      "close": 30.44,
-      "ema9": 30.2488,
-      "sma50": 30.8772,
-      "sma200": 28.4272,
-      "ratio": 0.9796,
-      "daysOutside": 5
+      "close": 30.42,
+      "ema9": 30.2831,
+      "sma50": 30.886,
+      "sma200": 28.4578,
+      "ratio": 0.9805,
+      "daysOutside": 6
     },
     {
       "symbol": "TIGO",
-      "close": 95.91,
-      "ema9": 94.2017,
-      "sma50": 94.3984,
-      "sma200": 76.1356,
+      "close": 94.83,
+      "ema9": 94.3274,
+      "sma50": 94.5258,
+      "sma200": 76.3422,
       "ratio": 0.9979,
-      "daysOutside": 5
+      "daysOutside": 6
+    },
+    {
+      "symbol": "RPM",
+      "close": 105.52,
+      "ema9": 105.2625,
+      "sma50": 108.5364,
+      "sma200": 106.5664,
+      "ratio": 0.9698,
+      "daysOutside": 6
     },
     {
       "symbol": "PB",
-      "close": 72.42,
-      "ema9": 72.272,
-      "sma50": 73.1518,
-      "sma200": 70.5915,
-      "ratio": 0.988,
-      "daysOutside": 5
+      "close": 72.81,
+      "ema9": 72.3796,
+      "sma50": 73.1404,
+      "sma200": 70.6314,
+      "ratio": 0.9896,
+      "daysOutside": 6
     },
     {
       "symbol": "HWC",
-      "close": 75.6,
-      "ema9": 75.1001,
-      "sma50": 76.2984,
-      "sma200": 68.9558,
-      "ratio": 0.9843,
-      "daysOutside": 5
+      "close": 75.84,
+      "ema9": 75.2481,
+      "sma50": 76.33,
+      "sma200": 69.0539,
+      "ratio": 0.9858,
+      "daysOutside": 6
     },
     {
       "symbol": "SFNC",
-      "close": 22.98,
-      "ema9": 22.7866,
-      "sma50": 23.1338,
-      "sma200": 20.9426,
-      "ratio": 0.985,
-      "daysOutside": 5
+      "close": 23.69,
+      "ema9": 22.9673,
+      "sma50": 23.1482,
+      "sma200": 20.9747,
+      "ratio": 0.9922,
+      "daysOutside": 6
+    },
+    {
+      "symbol": "DX",
+      "close": 12.9,
+      "ema9": 12.8804,
+      "sma50": 12.9854,
+      "sma200": 13.3855,
+      "ratio": 0.9919,
+      "daysOutside": 6
     },
     {
       "symbol": "CFG",
-      "close": 70.83,
-      "ema9": 70.0443,
-      "sma50": 71.4724,
-      "sma200": 63.8991,
-      "ratio": 0.98,
-      "daysOutside": 6
+      "close": 70.78,
+      "ema9": 70.1915,
+      "sma50": 71.4748,
+      "sma200": 64.0044,
+      "ratio": 0.982,
+      "daysOutside": 7
     },
     {
       "symbol": "BWA",
-      "close": 65.73,
-      "ema9": 65.0809,
-      "sma50": 65.2804,
-      "sma200": 57.4931,
-      "ratio": 0.9969,
-      "daysOutside": 6
+      "close": 67.54,
+      "ema9": 65.5727,
+      "sma50": 65.2418,
+      "sma200": 57.6137,
+      "ratio": 1.0051,
+      "daysOutside": 7
     },
     {
       "symbol": "EPR",
-      "close": 60.48,
-      "ema9": 59.9063,
-      "sma50": 60.7382,
-      "sma200": 56.2877,
+      "close": 59.99,
+      "ema9": 59.9231,
+      "sma50": 60.7572,
+      "sma200": 56.3358,
       "ratio": 0.9863,
-      "daysOutside": 6
+      "daysOutside": 7
     },
     {
       "symbol": "PFS",
-      "close": 23.56,
-      "ema9": 23.519,
-      "sma50": 23.9794,
-      "sma200": 22.0742,
-      "ratio": 0.9808,
-      "daysOutside": 6
+      "close": 23.72,
+      "ema9": 23.5592,
+      "sma50": 23.9814,
+      "sma200": 22.1039,
+      "ratio": 0.9824,
+      "daysOutside": 7
     },
     {
       "symbol": "RY",
-      "close": 212.07,
-      "ema9": 207.2992,
-      "sma50": 209.3418,
-      "sma200": 181.7563,
-      "ratio": 0.9902,
-      "daysOutside": 7
+      "close": 210.59,
+      "ema9": 207.9573,
+      "sma50": 209.479,
+      "sma200": 182.0736,
+      "ratio": 0.9927,
+      "daysOutside": 8
     },
     {
       "symbol": "TFC",
-      "close": 51.61,
-      "ema9": 50.6746,
-      "sma50": 51.5108,
-      "sma200": 49.6337,
-      "ratio": 0.9838,
-      "daysOutside": 7
+      "close": 51.65,
+      "ema9": 50.8697,
+      "sma50": 51.5304,
+      "sma200": 49.6724,
+      "ratio": 0.9872,
+      "daysOutside": 8
+    },
+    {
+      "symbol": "TER",
+      "close": 357.03,
+      "ema9": 354.4151,
+      "sma50": 371.9314,
+      "sma200": 316.2898,
+      "ratio": 0.9529,
+      "daysOutside": 8
     },
     {
       "symbol": "EWBC",
-      "close": 130.61,
-      "ema9": 129.4253,
-      "sma50": 131.3314,
-      "sma200": 119.803,
-      "ratio": 0.9855,
-      "daysOutside": 7
+      "close": 130.77,
+      "ema9": 129.6943,
+      "sma50": 131.342,
+      "sma200": 119.9592,
+      "ratio": 0.9875,
+      "daysOutside": 8
     },
     {
       "symbol": "ONB",
-      "close": 25.98,
-      "ema9": 25.7867,
-      "sma50": 26.3184,
-      "sma200": 24.0725,
-      "ratio": 0.9798,
-      "daysOutside": 7
+      "close": 26.04,
+      "ema9": 25.8374,
+      "sma50": 26.3216,
+      "sma200": 24.1038,
+      "ratio": 0.9816,
+      "daysOutside": 8
     },
     {
       "symbol": "ARLO",
-      "close": 13.48,
-      "ema9": 13.1734,
-      "sma50": 13.5884,
-      "sma200": 13.5752,
-      "ratio": 0.9695,
-      "daysOutside": 7
+      "close": 13.97,
+      "ema9": 13.3327,
+      "sma50": 13.6204,
+      "sma200": 13.5774,
+      "ratio": 0.9789,
+      "daysOutside": 8
+    },
+    {
+      "symbol": "AVR",
+      "close": 9.04,
+      "ema9": 8.813,
+      "sma50": 8.9296,
+      "sma200": 6.8879,
+      "ratio": 0.9869,
+      "daysOutside": 8
+    },
+    {
+      "symbol": "BA",
+      "close": 212.25,
+      "ema9": 211.2369,
+      "sma50": 219.4108,
+      "sma200": 220.2467,
+      "ratio": 0.9627,
+      "daysOutside": 9
     },
     {
       "symbol": "BMO",
-      "close": 176.86,
-      "ema9": 173.4788,
-      "sma50": 177.8142,
-      "sma200": 151.772,
-      "ratio": 0.9756,
-      "daysOutside": 8
+      "close": 175.4,
+      "ema9": 173.863,
+      "sma50": 177.8262,
+      "sma200": 152.0385,
+      "ratio": 0.9777,
+      "daysOutside": 9
     },
     {
       "symbol": "PNC",
-      "close": 245.18,
-      "ema9": 243.235,
-      "sma50": 249.4512,
-      "sma200": 224.3601,
-      "ratio": 0.9751,
-      "daysOutside": 8
+      "close": 245.6,
+      "ema9": 243.708,
+      "sma50": 249.4576,
+      "sma200": 224.6929,
+      "ratio": 0.977,
+      "daysOutside": 9
     },
     {
       "symbol": "F",
-      "close": 14.41,
-      "ema9": 14.079,
-      "sma50": 14.1034,
-      "sma200": 13.4918,
-      "ratio": 0.9983,
-      "daysOutside": 8
+      "close": 14.62,
+      "ema9": 14.1872,
+      "sma50": 14.1136,
+      "sma200": 13.5005,
+      "ratio": 1.0052,
+      "daysOutside": 9
+    },
+    {
+      "symbol": "ENTG",
+      "close": 138.74,
+      "ema9": 136.5855,
+      "sma50": 141.7904,
+      "sma200": 126.1646,
+      "ratio": 0.9633,
+      "daysOutside": 9
     },
     {
       "symbol": "ZION",
-      "close": 69.31,
-      "ema9": 68.1209,
-      "sma50": 69.811,
-      "sma200": 62.2721,
-      "ratio": 0.9758,
-      "daysOutside": 8
+      "close": 69.37,
+      "ema9": 68.3707,
+      "sma50": 69.8118,
+      "sma200": 62.3743,
+      "ratio": 0.9794,
+      "daysOutside": 9
     },
     {
       "symbol": "AUB",
-      "close": 40.77,
-      "ema9": 40.6649,
-      "sma50": 41.9264,
-      "sma200": 38.3665,
-      "ratio": 0.9699,
-      "daysOutside": 8
+      "close": 40.91,
+      "ema9": 40.7139,
+      "sma50": 41.9112,
+      "sma200": 38.4146,
+      "ratio": 0.9714,
+      "daysOutside": 9
     },
     {
       "symbol": "BKV",
-      "close": 26.29,
-      "ema9": 25.0954,
-      "sma50": 25.4466,
-      "sma200": 27.4278,
-      "ratio": 0.9862,
-      "daysOutside": 8
+      "close": 26.06,
+      "ema9": 25.2883,
+      "sma50": 25.4504,
+      "sma200": 27.418,
+      "ratio": 0.9936,
+      "daysOutside": 9
     },
     {
       "symbol": "OCFC",
-      "close": 19.28,
-      "ema9": 19.012,
-      "sma50": 19.3474,
-      "sma200": 18.8222,
-      "ratio": 0.9827,
-      "daysOutside": 8
-    },
-    {
-      "symbol": "NUAI",
-      "close": 5.27,
-      "ema9": 5.034,
-      "sma50": 5.0085,
-      "sma200": 4.781,
-      "ratio": 1.0051,
-      "daysOutside": 8
-    },
-    {
-      "symbol": "TD",
-      "close": 123.31,
-      "ema9": 120.9152,
-      "sma50": 120.737,
-      "sma200": 104.4061,
-      "ratio": 1.0015,
+      "close": 19.43,
+      "ema9": 19.0956,
+      "sma50": 19.3586,
+      "sma200": 18.8334,
+      "ratio": 0.9864,
       "daysOutside": 9
     },
     {
-      "symbol": "APH",
-      "close": 82.07,
-      "ema9": 80.4908,
-      "sma50": 80.5078,
-      "sma200": 72.7812,
-      "ratio": 0.9998,
-      "daysOutside": 9
+      "symbol": "ASML",
+      "close": 1714.88,
+      "ema9": 1702.6626,
+      "sma50": 1751.4748,
+      "sma200": 1480.5319,
+      "ratio": 0.9721,
+      "daysOutside": 10
     },
     {
       "symbol": "BCS",
-      "close": 26.9,
-      "ema9": 26.7416,
-      "sma50": 27.4362,
-      "sma200": 24.875,
-      "ratio": 0.9747,
-      "daysOutside": 9
+      "close": 27,
+      "ema9": 26.7933,
+      "sma50": 27.4302,
+      "sma200": 24.9042,
+      "ratio": 0.9768,
+      "daysOutside": 10
+    },
+    {
+      "symbol": "PWR",
+      "close": 624.41,
+      "ema9": 621.4494,
+      "sma50": 652.1758,
+      "sma200": 587.8602,
+      "ratio": 0.9529,
+      "daysOutside": 10
+    },
+    {
+      "symbol": "KEYS",
+      "close": 327.21,
+      "ema9": 323.6376,
+      "sma50": 326.1178,
+      "sma200": 288.5134,
+      "ratio": 0.9924,
+      "daysOutside": 10
     },
     {
       "symbol": "FITB",
-      "close": 54.97,
-      "ema9": 54.626,
-      "sma50": 56.6332,
-      "sma200": 50.8304,
-      "ratio": 0.9646,
-      "daysOutside": 9
+      "close": 54.87,
+      "ema9": 54.6748,
+      "sma50": 56.6024,
+      "sma200": 50.8992,
+      "ratio": 0.9659,
+      "daysOutside": 10
     },
     {
       "symbol": "SLF",
-      "close": 80.79,
-      "ema9": 79.3767,
-      "sma50": 80.3926,
-      "sma200": 69.6532,
-      "ratio": 0.9874,
-      "daysOutside": 9
+      "close": 80.97,
+      "ema9": 79.6953,
+      "sma50": 80.462,
+      "sma200": 69.7629,
+      "ratio": 0.9905,
+      "daysOutside": 10
     },
     {
       "symbol": "NVT",
-      "close": 152.09,
-      "ema9": 151.9985,
-      "sma50": 157.6054,
-      "sma200": 135.1667,
-      "ratio": 0.9644,
-      "daysOutside": 9
+      "close": 156.03,
+      "ema9": 152.8048,
+      "sma50": 157.2878,
+      "sma200": 135.4264,
+      "ratio": 0.9715,
+      "daysOutside": 10
+    },
+    {
+      "symbol": "VLY",
+      "close": 14.025,
+      "ema9": 13.931,
+      "sma50": 14.4865,
+      "sma200": 13.1417,
+      "ratio": 0.9617,
+      "daysOutside": 10
+    },
+    {
+      "symbol": "MSM",
+      "close": 121.41,
+      "ema9": 119.3703,
+      "sma50": 122.0574,
+      "sma200": 101.8265,
+      "ratio": 0.978,
+      "daysOutside": 10
     },
     {
       "symbol": "FNB",
-      "close": 18.47,
-      "ema9": 18.388,
-      "sma50": 18.9074,
-      "sma200": 17.7588,
-      "ratio": 0.9725,
-      "daysOutside": 9
+      "close": 18.67,
+      "ema9": 18.4444,
+      "sma50": 18.898,
+      "sma200": 17.7753,
+      "ratio": 0.976,
+      "daysOutside": 10
     },
     {
       "symbol": "ACIW",
-      "close": 52.91,
-      "ema9": 52.7556,
-      "sma50": 54.4508,
-      "sma200": 46.2328,
-      "ratio": 0.9689,
-      "daysOutside": 9
+      "close": 52.95,
+      "ema9": 52.7945,
+      "sma50": 54.5766,
+      "sma200": 46.266,
+      "ratio": 0.9673,
+      "daysOutside": 10
+    },
+    {
+      "symbol": "FFIN",
+      "close": 33.44,
+      "ema9": 33.4208,
+      "sma50": 34.5576,
+      "sma200": 32.4105,
+      "ratio": 0.9671,
+      "daysOutside": 10
     },
     {
       "symbol": "FULT",
-      "close": 23.87,
-      "ema9": 23.6922,
-      "sma50": 24.2086,
-      "sma200": 21.5999,
-      "ratio": 0.9787,
-      "daysOutside": 9
+      "close": 24.1,
+      "ema9": 23.7737,
+      "sma50": 24.205,
+      "sma200": 21.6352,
+      "ratio": 0.9822,
+      "daysOutside": 10
     },
     {
       "symbol": "FIBK",
-      "close": 37.48,
-      "ema9": 37.2038,
-      "sma50": 38.2382,
-      "sma200": 35.9281,
-      "ratio": 0.9729,
-      "daysOutside": 9
-    },
-    {
-      "symbol": "CB",
-      "close": 348.25,
-      "ema9": 342.1639,
-      "sma50": 347.7166,
-      "sma200": 326.118,
-      "ratio": 0.984,
+      "close": 37.85,
+      "ema9": 37.333,
+      "sma50": 38.2264,
+      "sma200": 35.9689,
+      "ratio": 0.9766,
       "daysOutside": 10
     },
     {
       "symbol": "STLD",
-      "close": 246.03,
-      "ema9": 239.5648,
-      "sma50": 242.1434,
-      "sma200": 209.8768,
-      "ratio": 0.9894,
-      "daysOutside": 10
+      "close": 242.06,
+      "ema9": 240.0639,
+      "sma50": 241.9646,
+      "sma200": 210.3117,
+      "ratio": 0.9921,
+      "daysOutside": 11
     },
     {
       "symbol": "HBAN",
-      "close": 17.06,
-      "ema9": 16.9261,
-      "sma50": 17.5322,
-      "sma200": 16.9788,
-      "ratio": 0.9654,
-      "daysOutside": 10
+      "close": 17.03,
+      "ema9": 16.9469,
+      "sma50": 17.5148,
+      "sma200": 16.9875,
+      "ratio": 0.9676,
+      "daysOutside": 11
     },
     {
       "symbol": "FHN",
-      "close": 24.96,
-      "ema9": 24.6393,
-      "sma50": 25.409,
-      "sma200": 24.2656,
-      "ratio": 0.9697,
-      "daysOutside": 10
+      "close": 24.94,
+      "ema9": 24.6994,
+      "sma50": 25.3966,
+      "sma200": 24.2873,
+      "ratio": 0.9725,
+      "daysOutside": 11
     },
     {
       "symbol": "COLB",
-      "close": 30.45,
-      "ema9": 30.3098,
-      "sma50": 31.5876,
-      "sma200": 29.6405,
-      "ratio": 0.9595,
-      "daysOutside": 10
+      "close": 30.8,
+      "ema9": 30.4078,
+      "sma50": 31.5622,
+      "sma200": 29.6657,
+      "ratio": 0.9634,
+      "daysOutside": 11
+    },
+    {
+      "symbol": "GTES",
+      "close": 25.95,
+      "ema9": 25.7034,
+      "sma50": 26.891,
+      "sma200": 24.9663,
+      "ratio": 0.9558,
+      "daysOutside": 11
     },
     {
       "symbol": "OZK",
-      "close": 50.17,
-      "ema9": 49.5217,
-      "sma50": 50.7998,
-      "sma200": 48.332,
-      "ratio": 0.9748,
-      "daysOutside": 10
+      "close": 50.43,
+      "ema9": 49.7033,
+      "sma50": 50.7722,
+      "sma200": 48.371,
+      "ratio": 0.9789,
+      "daysOutside": 11
+    },
+    {
+      "symbol": "DIOD",
+      "close": 91.79,
+      "ema9": 90.8738,
+      "sma50": 93.4926,
+      "sma200": 79.8189,
+      "ratio": 0.972,
+      "daysOutside": 11
     },
     {
       "symbol": "RNST",
-      "close": 41.2,
-      "ema9": 41.0801,
-      "sma50": 42.7026,
-      "sma200": 39.3687,
-      "ratio": 0.962,
-      "daysOutside": 10
+      "close": 41.4,
+      "ema9": 41.1441,
+      "sma50": 42.6638,
+      "sma200": 39.4087,
+      "ratio": 0.9644,
+      "daysOutside": 11
     },
     {
       "symbol": "FFBC",
-      "close": 32.83,
-      "ema9": 32.7601,
-      "sma50": 33.8724,
-      "sma200": 29.7151,
-      "ratio": 0.9672,
-      "daysOutside": 10
+      "close": 32.98,
+      "ema9": 32.804,
+      "sma50": 33.8622,
+      "sma200": 29.7636,
+      "ratio": 0.9688,
+      "daysOutside": 11
     },
     {
       "symbol": "MLYS",
-      "close": 28.27,
-      "ema9": 26.8391,
-      "sma50": 26.9586,
-      "sma200": 29.6876,
-      "ratio": 0.9956,
-      "daysOutside": 10
+      "close": 28.21,
+      "ema9": 27.1133,
+      "sma50": 26.996,
+      "sma200": 29.6073,
+      "ratio": 1.0043,
+      "daysOutside": 11
     },
     {
       "symbol": "MS",
-      "close": 217.15,
-      "ema9": 214.1354,
-      "sma50": 215.652,
-      "sma200": 190.6326,
-      "ratio": 0.993,
-      "daysOutside": 11
+      "close": 217.72,
+      "ema9": 214.8523,
+      "sma50": 215.5856,
+      "sma200": 190.924,
+      "ratio": 0.9966,
+      "daysOutside": 12
     },
     {
-      "symbol": "AFL",
-      "close": 118.36,
-      "ema9": 117.3409,
-      "sma50": 121.5226,
-      "sma200": 114.5464,
-      "ratio": 0.9656,
-      "daysOutside": 11
+      "symbol": "STX",
+      "close": 849.28,
+      "ema9": 829.6658,
+      "sma50": 853.5238,
+      "sma200": 593.4199,
+      "ratio": 0.972,
+      "daysOutside": 12
     },
     {
       "symbol": "KEY",
-      "close": 22.12,
-      "ema9": 21.8985,
-      "sma50": 22.7392,
-      "sma200": 21.393,
-      "ratio": 0.963,
-      "daysOutside": 11
-    },
-    {
-      "symbol": "L",
-      "close": 110.04,
-      "ema9": 109.867,
-      "sma50": 113.7876,
-      "sma200": 108.8028,
-      "ratio": 0.9655,
-      "daysOutside": 11
+      "close": 22.18,
+      "ema9": 21.9548,
+      "sma50": 22.7146,
+      "sma200": 21.4183,
+      "ratio": 0.9665,
+      "daysOutside": 12
     },
     {
       "symbol": "WAL",
-      "close": 81,
-      "ema9": 79.3166,
-      "sma50": 81.192,
-      "sma200": 81.4629,
-      "ratio": 0.9769,
-      "daysOutside": 11
+      "close": 80.95,
+      "ema9": 79.6433,
+      "sma50": 81.1814,
+      "sma200": 81.4984,
+      "ratio": 0.9811,
+      "daysOutside": 12
     },
     {
       "symbol": "LIVN",
-      "close": 81.2,
-      "ema9": 80.5344,
-      "sma50": 80.6673,
-      "sma200": 69.6456,
-      "ratio": 0.9984,
-      "daysOutside": 11
+      "close": 81.92,
+      "ema9": 80.8115,
+      "sma50": 80.6847,
+      "sma200": 69.787,
+      "ratio": 1.0016,
+      "daysOutside": 12
+    },
+    {
+      "symbol": "HIW",
+      "close": 31.19,
+      "ema9": 31.0719,
+      "sma50": 31.8578,
+      "sma200": 26.8263,
+      "ratio": 0.9753,
+      "daysOutside": 12
+    },
+    {
+      "symbol": "TEX",
+      "close": 63.23,
+      "ema9": 63.2043,
+      "sma50": 66.0702,
+      "sma200": 61.1899,
+      "ratio": 0.9566,
+      "daysOutside": 13
+    },
+    {
+      "symbol": "M",
+      "close": 23.05,
+      "ema9": 22.5954,
+      "sma50": 23.693,
+      "sma200": 21.5568,
+      "ratio": 0.9537,
+      "daysOutside": 13
     },
     {
       "symbol": "XMTR",
-      "close": 93.04,
-      "ema9": 91.3934,
+      "close": 92.53,
+      "ema9": 91.6207,
       "sma50": 91.6004,
-      "sma200": 68.5853,
-      "ratio": 0.9977,
-      "daysOutside": 12
+      "sma200": 68.7662,
+      "ratio": 1.0002,
+      "daysOutside": 13
     },
     {
       "symbol": "RDN",
-      "close": 36.81,
-      "ema9": 36.4837,
-      "sma50": 37.6126,
-      "sma200": 35.4213,
-      "ratio": 0.97,
-      "daysOutside": 12
-    },
-    {
-      "symbol": "AIG",
-      "close": 76.86,
-      "ema9": 76.5036,
-      "sma50": 77.8574,
-      "sma200": 77.3728,
-      "ratio": 0.9826,
+      "close": 36.66,
+      "ema9": 36.5189,
+      "sma50": 37.6058,
+      "sma200": 35.4331,
+      "ratio": 0.9711,
       "daysOutside": 13
     },
     {
       "symbol": "WRB",
-      "close": 69.5,
-      "ema9": 68.6604,
-      "sma50": 71.0826,
-      "sma200": 69.2959,
-      "ratio": 0.9659,
-      "daysOutside": 13
+      "close": 69.14,
+      "ema9": 68.7564,
+      "sma50": 71.0796,
+      "sma200": 69.2561,
+      "ratio": 0.9673,
+      "daysOutside": 14
     },
     {
       "symbol": "LOGI",
-      "close": 101.71,
-      "ema9": 99.3614,
-      "sma50": 101.102,
-      "sma200": 100.7723,
-      "ratio": 0.9828,
-      "daysOutside": 13
+      "close": 102.05,
+      "ema9": 99.8991,
+      "sma50": 101.126,
+      "sma200": 100.7162,
+      "ratio": 0.9879,
+      "daysOutside": 14
+    },
+    {
+      "symbol": "IMTX",
+      "close": 9.56,
+      "ema9": 9.4189,
+      "sma50": 9.4097,
+      "sma200": 10.015,
+      "ratio": 1.001,
+      "daysOutside": 14
     },
     {
       "symbol": "BUD",
-      "close": 80.22,
-      "ema9": 79.3722,
-      "sma50": 81.0234,
-      "sma200": 74.7034,
-      "ratio": 0.9796,
-      "daysOutside": 14
+      "close": 80.35,
+      "ema9": 79.5678,
+      "sma50": 80.9488,
+      "sma200": 74.7946,
+      "ratio": 0.9829,
+      "daysOutside": 15
     },
     {
       "symbol": "EEFT",
-      "close": 73.28,
-      "ema9": 70.9317,
-      "sma50": 74.3668,
-      "sma200": 72.256,
-      "ratio": 0.9538,
-      "daysOutside": 14
+      "close": 73.81,
+      "ema9": 71.5074,
+      "sma50": 74.5018,
+      "sma200": 72.2714,
+      "ratio": 0.9598,
+      "daysOutside": 15
     },
     {
       "symbol": "NVO",
-      "close": 47.51,
-      "ema9": 46.4833,
-      "sma50": 47.9086,
-      "sma200": 46.3543,
-      "ratio": 0.9702,
-      "daysOutside": 15
-    },
-    {
-      "symbol": "WM",
-      "close": 221.72,
-      "ema9": 220.931,
-      "sma50": 228.416,
-      "sma200": 225.1605,
-      "ratio": 0.9672,
-      "daysOutside": 15
+      "close": 46.6,
+      "ema9": 46.5066,
+      "sma50": 47.8878,
+      "sma200": 46.345,
+      "ratio": 0.9712,
+      "daysOutside": 16
     },
     {
       "symbol": "VTRS",
-      "close": 16.94,
-      "ema9": 16.7163,
-      "sma50": 16.748,
-      "sma200": 14.6907,
-      "ratio": 0.9981,
-      "daysOutside": 15
+      "close": 16.88,
+      "ema9": 16.749,
+      "sma50": 16.7642,
+      "sma200": 14.7218,
+      "ratio": 0.9991,
+      "daysOutside": 16
     },
     {
       "symbol": "LTM",
-      "close": 51.73,
-      "ema9": 51.2478,
-      "sma50": 53.6196,
-      "sma200": 53.3056,
-      "ratio": 0.9558,
-      "daysOutside": 15
-    },
-    {
-      "symbol": "SMMT",
-      "close": 17.13,
-      "ema9": 14.5472,
-      "sma50": 14.1481,
-      "sma200": 16.4078,
-      "ratio": 1.0282,
-      "daysOutside": 15
+      "close": 52.47,
+      "ema9": 51.4922,
+      "sma50": 53.531,
+      "sma200": 53.3458,
+      "ratio": 0.9619,
+      "daysOutside": 16
     },
     {
       "symbol": "SIRI",
-      "close": 29.77,
-      "ema9": 28.8497,
-      "sma50": 29.669,
-      "sma200": 24.9956,
-      "ratio": 0.9724,
-      "daysOutside": 15
+      "close": 28.99,
+      "ema9": 28.8778,
+      "sma50": 29.6936,
+      "sma200": 25.0351,
+      "ratio": 0.9725,
+      "daysOutside": 16
     },
     {
-      "symbol": "CTRE",
-      "close": 39.61,
-      "ema9": 39.5521,
-      "sma50": 40.72,
-      "sma200": 38.9755,
-      "ratio": 0.9713,
-      "daysOutside": 15
-    },
-    {
-      "symbol": "CUZ",
-      "close": 29.25,
-      "ema9": 29.2348,
-      "sma50": 30.3814,
-      "sma200": 26.4475,
-      "ratio": 0.9623,
-      "daysOutside": 15
+      "symbol": "PDO",
+      "close": 12.82,
+      "ema9": 12.6003,
+      "sma50": 12.9474,
+      "sma200": 13.3642,
+      "ratio": 0.9732,
+      "daysOutside": 16
     },
     {
       "symbol": "ES",
-      "close": 71.47,
-      "ema9": 70.9772,
-      "sma50": 72.7952,
-      "sma200": 70.1903,
-      "ratio": 0.975,
-      "daysOutside": 16
+      "close": 71.05,
+      "ema9": 70.9917,
+      "sma50": 72.7746,
+      "sma200": 70.1754,
+      "ratio": 0.9755,
+      "daysOutside": 17
     },
     {
-      "symbol": "OHI",
-      "close": 47.04,
-      "ema9": 46.6834,
-      "sma50": 48.3084,
-      "sma200": 46.3553,
-      "ratio": 0.9664,
-      "daysOutside": 16
+      "symbol": "CGNX",
+      "close": 62.25,
+      "ema9": 61.1294,
+      "sma50": 63.9176,
+      "sma200": 53.5354,
+      "ratio": 0.9564,
+      "daysOutside": 17
     },
     {
       "symbol": "MQ",
-      "close": 16.98,
-      "ema9": 16.4746,
-      "sma50": 16.6145,
-      "sma200": 16.9921,
-      "ratio": 0.9916,
-      "daysOutside": 16
-    },
-    {
-      "symbol": "GOOG",
-      "close": 339.08,
-      "ema9": 338.0804,
-      "sma50": 346.6678,
-      "sma200": 334.5352,
-      "ratio": 0.9752,
+      "close": 16.58,
+      "ema9": 16.4957,
+      "sma50": 16.6301,
+      "sma200": 16.9806,
+      "ratio": 0.9919,
       "daysOutside": 17
     },
     {
       "symbol": "ITUB",
-      "close": 8.22,
-      "ema9": 7.7808,
-      "sma50": 8.012,
-      "sma200": 8.0812,
-      "ratio": 0.9711,
-      "daysOutside": 17
+      "close": 8.15,
+      "ema9": 7.8547,
+      "sma50": 8.0144,
+      "sma200": 8.0852,
+      "ratio": 0.9801,
+      "daysOutside": 18
     },
     {
       "symbol": "FE",
-      "close": 47.04,
-      "ema9": 46.4905,
-      "sma50": 47.7766,
-      "sma200": 47.5327,
-      "ratio": 0.9731,
-      "daysOutside": 17
+      "close": 46.77,
+      "ema9": 46.5464,
+      "sma50": 47.7518,
+      "sma200": 47.5337,
+      "ratio": 0.9748,
+      "daysOutside": 18
     },
     {
       "symbol": "JEF",
-      "close": 54.26,
-      "ema9": 53.1156,
-      "sma50": 53.9514,
-      "sma200": 53.5019,
-      "ratio": 0.9845,
-      "daysOutside": 17
+      "close": 55.23,
+      "ema9": 53.5385,
+      "sma50": 54.0032,
+      "sma200": 53.5156,
+      "ratio": 0.9914,
+      "daysOutside": 18
     },
     {
       "symbol": "KRC",
-      "close": 36.96,
-      "ema9": 36.6136,
-      "sma50": 38.018,
-      "sma200": 35.5338,
-      "ratio": 0.9631,
-      "daysOutside": 17
-    },
-    {
-      "symbol": "SPNT",
-      "close": 24.84,
-      "ema9": 24.2402,
-      "sma50": 24.1412,
-      "sma200": 22.2744,
-      "ratio": 1.0041,
-      "daysOutside": 17
+      "close": 37.14,
+      "ema9": 36.7189,
+      "sma50": 38.0106,
+      "sma200": 35.5174,
+      "ratio": 0.966,
+      "daysOutside": 18
     },
     {
       "symbol": "PBI",
-      "close": 17.58,
-      "ema9": 17.1622,
-      "sma50": 17.4458,
-      "sma200": 13.5048,
-      "ratio": 0.9837,
-      "daysOutside": 17
+      "close": 17.4,
+      "ema9": 17.2097,
+      "sma50": 17.4438,
+      "sma200": 13.5467,
+      "ratio": 0.9866,
+      "daysOutside": 18
     },
     {
       "symbol": "UNH",
-      "close": 400.94,
-      "ema9": 396.8898,
-      "sma50": 412.1062,
-      "sma200": 351.1074,
-      "ratio": 0.9631,
-      "daysOutside": 18
-    },
-    {
-      "symbol": "EBAY",
-      "close": 105.86,
-      "ema9": 105.1542,
-      "sma50": 109.4212,
-      "sma200": 98.5547,
-      "ratio": 0.961,
-      "daysOutside": 18
+      "close": 397.14,
+      "ema9": 396.9398,
+      "sma50": 411.7384,
+      "sma200": 351.4905,
+      "ratio": 0.9641,
+      "daysOutside": 19
     },
     {
       "symbol": "ELAN",
-      "close": 24.42,
-      "ema9": 24.2961,
-      "sma50": 24.6334,
-      "sma200": 23.7212,
-      "ratio": 0.9863,
-      "daysOutside": 18
-    },
-    {
-      "symbol": "HR",
-      "close": 19.27,
-      "ema9": 19.2594,
-      "sma50": 20.242,
-      "sma200": 18.7258,
-      "ratio": 0.9515,
-      "daysOutside": 18
-    },
-    {
-      "symbol": "D",
-      "close": 66.79,
-      "ema9": 66.5773,
-      "sma50": 68.8178,
-      "sma200": 64.0943,
-      "ratio": 0.9674,
+      "close": 24.5,
+      "ema9": 24.3369,
+      "sma50": 24.636,
+      "sma200": 23.7366,
+      "ratio": 0.9879,
       "daysOutside": 19
     },
     {
-      "symbol": "ED",
-      "close": 108.75,
-      "ema9": 107.7922,
-      "sma50": 109.8058,
-      "sma200": 107.2642,
-      "ratio": 0.9817,
+      "symbol": "AHRT",
+      "close": 6.61,
+      "ema9": 6.5655,
+      "sma50": 6.8852,
+      "sma200": 6.5419,
+      "ratio": 0.9536,
       "daysOutside": 19
     },
     {
-      "symbol": "ATO",
-      "close": 169.12,
-      "ema9": 168.0887,
-      "sma50": 172.9856,
-      "sma200": 175.6125,
-      "ratio": 0.9717,
-      "daysOutside": 19
-    },
-    {
-      "symbol": "NEE",
-      "close": 84.06,
-      "ema9": 83.5628,
-      "sma50": 86.639,
-      "sma200": 87.8222,
-      "ratio": 0.9645,
-      "daysOutside": 20
-    },
-    {
-      "symbol": "DUK",
-      "close": 121.4,
-      "ema9": 121.1074,
-      "sma50": 124.8794,
-      "sma200": 124.296,
-      "ratio": 0.9698,
-      "daysOutside": 20
-    },
-    {
-      "symbol": "FTS",
-      "close": 55.57,
-      "ema9": 55.2833,
-      "sma50": 56.8226,
-      "sma200": 55.2743,
-      "ratio": 0.9729,
-      "daysOutside": 20
-    },
-    {
-      "symbol": "REG",
-      "close": 75.92,
-      "ema9": 75.9156,
-      "sma50": 78.8388,
-      "sma200": 75.8978,
-      "ratio": 0.9629,
+      "symbol": "CVS",
+      "close": 96.74,
+      "ema9": 95.7936,
+      "sma50": 100.794,
+      "sma200": 86.5531,
+      "ratio": 0.9504,
       "daysOutside": 20
     },
     {
       "symbol": "BRKR",
-      "close": 59.41,
-      "ema9": 58.1122,
-      "sma50": 58.7904,
-      "sma200": 47.9411,
-      "ratio": 0.9885,
-      "daysOutside": 20
+      "close": 58.5,
+      "ema9": 58.1897,
+      "sma50": 58.7426,
+      "sma200": 48.0247,
+      "ratio": 0.9906,
+      "daysOutside": 21
     },
     {
       "symbol": "SGHC",
-      "close": 14.17,
-      "ema9": 13.7425,
-      "sma50": 14.016,
-      "sma200": 12.0682,
-      "ratio": 0.9805,
-      "daysOutside": 20
+      "close": 13.99,
+      "ema9": 13.792,
+      "sma50": 14.0284,
+      "sma200": 12.0777,
+      "ratio": 0.9831,
+      "daysOutside": 21
+    },
+    {
+      "symbol": "ADNT",
+      "close": 20.01,
+      "ema9": 19.3073,
+      "sma50": 19.6694,
+      "sma200": 20.9084,
+      "ratio": 0.9816,
+      "daysOutside": 21
     },
     {
       "symbol": "STAG",
-      "close": 37.7,
-      "ema9": 37.325,
-      "sma50": 38.4782,
-      "sma200": 38.1611,
-      "ratio": 0.97,
-      "daysOutside": 21
+      "close": 37.68,
+      "ema9": 37.396,
+      "sma50": 38.45,
+      "sma200": 38.1569,
+      "ratio": 0.9726,
+      "daysOutside": 22
     },
     {
       "symbol": "DOLE",
-      "close": 13.9,
-      "ema9": 13.7642,
-      "sma50": 13.834,
-      "sma200": 14.6032,
-      "ratio": 0.995,
-      "daysOutside": 21
+      "close": 14.01,
+      "ema9": 13.8134,
+      "sma50": 13.8382,
+      "sma200": 14.6031,
+      "ratio": 0.9982,
+      "daysOutside": 22
+    },
+    {
+      "symbol": "TWI",
+      "close": 8.33,
+      "ema9": 7.4991,
+      "sma50": 7.379,
+      "sma200": 8.0585,
+      "ratio": 1.0163,
+      "daysOutside": 22
     },
     {
       "symbol": "CI",
-      "close": 286.26,
-      "ema9": 281.1565,
-      "sma50": 283.441,
-      "sma200": 279.5205,
-      "ratio": 0.9919,
-      "daysOutside": 22
-    },
-    {
-      "symbol": "EXC",
-      "close": 44.53,
-      "ema9": 44.232,
-      "sma50": 45.849,
-      "sma200": 45.9522,
-      "ratio": 0.9647,
-      "daysOutside": 22
-    },
-    {
-      "symbol": "EVRG",
-      "close": 81.93,
-      "ema9": 81.5711,
-      "sma50": 84.2692,
-      "sma200": 80.6223,
-      "ratio": 0.968,
+      "close": 282.52,
+      "ema9": 281.4292,
+      "sma50": 283.454,
+      "sma200": 279.5765,
+      "ratio": 0.9929,
       "daysOutside": 23
     },
     {
       "symbol": "OGE",
-      "close": 46.89,
-      "ema9": 46.3179,
-      "sma50": 47.745,
-      "sma200": 46.506,
-      "ratio": 0.9701,
-      "daysOutside": 23
+      "close": 46.92,
+      "ema9": 46.4383,
+      "sma50": 47.7044,
+      "sma200": 46.5176,
+      "ratio": 0.9735,
+      "daysOutside": 24
     },
     {
       "symbol": "LEA",
-      "close": 131.05,
-      "ema9": 126.7014,
-      "sma50": 131.6922,
-      "sma200": 126.9027,
-      "ratio": 0.9621,
-      "daysOutside": 23
+      "close": 134.68,
+      "ema9": 128.2972,
+      "sma50": 131.6214,
+      "sma200": 127.0667,
+      "ratio": 0.9747,
+      "daysOutside": 24
+    },
+    {
+      "symbol": "VKTX",
+      "close": 34.87,
+      "ema9": 33.8529,
+      "sma50": 35.4266,
+      "sma200": 33.5012,
+      "ratio": 0.9556,
+      "daysOutside": 24
     },
     {
       "symbol": "XIFR",
-      "close": 12.01,
-      "ema9": 11.7872,
-      "sma50": 11.9006,
-      "sma200": 10.7731,
-      "ratio": 0.9905,
-      "daysOutside": 23
+      "close": 12.14,
+      "ema9": 11.8578,
+      "sma50": 11.912,
+      "sma200": 10.7869,
+      "ratio": 0.9954,
+      "daysOutside": 24
     },
     {
       "symbol": "MO",
-      "close": 69.49,
-      "ema9": 68.6509,
-      "sma50": 69.915,
-      "sma200": 66.3329,
-      "ratio": 0.9819,
-      "daysOutside": 24
+      "close": 68.88,
+      "ema9": 68.6967,
+      "sma50": 69.8284,
+      "sma200": 66.3867,
+      "ratio": 0.9838,
+      "daysOutside": 25
     },
     {
       "symbol": "AEP",
-      "close": 124.71,
-      "ema9": 123.5351,
-      "sma50": 129.5306,
-      "sma200": 126.8869,
-      "ratio": 0.9537,
-      "daysOutside": 24
+      "close": 124.5,
+      "ema9": 123.7281,
+      "sma50": 129.2806,
+      "sma200": 126.8908,
+      "ratio": 0.9571,
+      "daysOutside": 25
     },
     {
       "symbol": "PPL",
       "close": 35.11,
-      "ema9": 34.7283,
-      "sma50": 35.5858,
-      "sma200": 36.295,
-      "ratio": 0.9759,
-      "daysOutside": 24
+      "ema9": 34.8046,
+      "sma50": 35.548,
+      "sma200": 36.2865,
+      "ratio": 0.9791,
+      "daysOutside": 25
     },
     {
       "symbol": "JBHT",
-      "close": 266.28,
-      "ema9": 264.0259,
-      "sma50": 276.3438,
-      "sma200": 236.8376,
-      "ratio": 0.9554,
-      "daysOutside": 24
+      "close": 273.77,
+      "ema9": 265.9748,
+      "sma50": 276.3256,
+      "sma200": 237.4049,
+      "ratio": 0.9625,
+      "daysOutside": 25
     },
     {
       "symbol": "LNTH",
-      "close": 100.98,
-      "ema9": 100.8124,
-      "sma50": 103.2741,
-      "sma200": 83.973,
-      "ratio": 0.9762,
-      "daysOutside": 24
+      "close": 100.97,
+      "ema9": 100.8439,
+      "sma50": 103.1133,
+      "sma200": 84.2153,
+      "ratio": 0.978,
+      "daysOutside": 25
     },
     {
       "symbol": "BKH",
-      "close": 73.3,
-      "ema9": 72.8067,
-      "sma50": 73.6172,
-      "sma200": 72.6282,
-      "ratio": 0.989,
-      "daysOutside": 24
+      "close": 73.21,
+      "ema9": 72.8873,
+      "sma50": 73.5952,
+      "sma200": 72.6465,
+      "ratio": 0.9904,
+      "daysOutside": 25
     },
     {
       "symbol": "SNDX",
-      "close": 20.68,
-      "ema9": 20.1486,
-      "sma50": 20.9301,
-      "sma200": 20.9568,
-      "ratio": 0.9627,
-      "daysOutside": 24
+      "close": 20.56,
+      "ema9": 20.2309,
+      "sma50": 20.9451,
+      "sma200": 20.9737,
+      "ratio": 0.9659,
+      "daysOutside": 25
     },
     {
       "symbol": "META",
-      "close": 610.68,
-      "ema9": 582.8629,
-      "sma50": 594.0136,
-      "sma200": 622.2163,
-      "ratio": 0.9812,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "PG",
-      "close": 146.92,
-      "ema9": 145.7315,
-      "sma50": 146.7614,
-      "sma200": 147.5675,
-      "ratio": 0.993,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "GS",
-      "close": 1037.9301,
-      "ema9": 1026.8567,
-      "sma50": 1044.233,
-      "sma200": 946.7656,
-      "ratio": 0.9834,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "TRP",
-      "close": 62.88,
-      "ema9": 62.6556,
-      "sma50": 65.8952,
-      "sma200": 62.4474,
-      "ratio": 0.9508,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "ETR",
-      "close": 107.78,
-      "ema9": 106.8697,
-      "sma50": 110.4764,
-      "sma200": 105.4482,
-      "ratio": 0.9674,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "MOH",
-      "close": 202.91,
-      "ema9": 201.4082,
-      "sma50": 211.1056,
-      "sma200": 177.0594,
-      "ratio": 0.9541,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "LRN",
-      "close": 85.8,
-      "ema9": 85.6025,
-      "sma50": 85.8506,
-      "sma200": 82.9166,
-      "ratio": 0.9971,
-      "daysOutside": 25
-    },
-    {
-      "symbol": "ALLY",
-      "close": 43.59,
-      "ema9": 42.7502,
-      "sma50": 44.2936,
-      "sma200": 42.7897,
-      "ratio": 0.9652,
+      "close": 616.77,
+      "ema9": 589.6443,
+      "sma50": 595.4916,
+      "sma200": 622.2901,
+      "ratio": 0.9902,
       "daysOutside": 26
     },
     {
-      "symbol": "ASX",
-      "close": 37.43,
-      "ema9": 37.3674,
-      "sma50": 38.6086,
-      "sma200": 27.9788,
-      "ratio": 0.9679,
+      "symbol": "PG",
+      "close": 146.44,
+      "ema9": 145.8732,
+      "sma50": 146.7202,
+      "sma200": 147.5706,
+      "ratio": 0.9942,
+      "daysOutside": 26
+    },
+    {
+      "symbol": "GS",
+      "close": 1038.61,
+      "ema9": 1029.2074,
+      "sma50": 1043.7034,
+      "sma200": 948.0809,
+      "ratio": 0.9861,
+      "daysOutside": 26
+    },
+    {
+      "symbol": "ETR",
+      "close": 107.27,
+      "ema9": 106.9497,
+      "sma50": 110.3142,
+      "sma200": 105.5068,
+      "ratio": 0.9695,
+      "daysOutside": 26
+    },
+    {
+      "symbol": "PPG",
+      "close": 112.53,
+      "ema9": 112.2213,
+      "sma50": 115.7898,
+      "sma200": 111.376,
+      "ratio": 0.9692,
+      "daysOutside": 26
+    },
+    {
+      "symbol": "SNDR",
+      "close": 35.04,
+      "ema9": 34.5273,
+      "sma50": 35.9376,
+      "sma200": 30.7509,
+      "ratio": 0.9608,
+      "daysOutside": 26
+    },
+    {
+      "symbol": "ALLY",
+      "close": 43.73,
+      "ema9": 42.9461,
+      "sma50": 44.2418,
+      "sma200": 42.8198,
+      "ratio": 0.9707,
       "daysOutside": 27
     },
     {
-      "symbol": "IQMX",
-      "close": 10.8,
-      "ema9": 10.6245,
-      "sma50": 10.7957,
-      "sma200": 10.6401,
-      "ratio": 0.9841,
-      "daysOutside": 29
+      "symbol": "WERN",
+      "close": 40.04,
+      "ema9": 38.6605,
+      "sma50": 40.5638,
+      "sma200": 35.3074,
+      "ratio": 0.9531,
+      "daysOutside": 27
     },
     {
-      "symbol": "ZVRA",
-      "close": 12.54,
-      "ema9": 12.0173,
-      "sma50": 12.0577,
-      "sma200": 10.2713,
-      "ratio": 0.9967,
-      "daysOutside": 29
+      "symbol": "ASX",
+      "close": 37.51,
+      "ema9": 37.3959,
+      "sma50": 38.5218,
+      "sma200": 28.0949,
+      "ratio": 0.9708,
+      "daysOutside": 28
     },
     {
-      "symbol": "NMCO",
-      "close": 10.14,
-      "ema9": 10.022,
-      "sma50": 10.5372,
-      "sma200": 10.6181,
-      "ratio": 0.9511,
+      "symbol": "KNX",
+      "close": 71.99,
+      "ema9": 69.3027,
+      "sma50": 72.2132,
+      "sma200": 63.3337,
+      "ratio": 0.9597,
       "daysOutside": 30
     },
     {
-      "symbol": "C",
-      "close": 138.14,
-      "ema9": 134.1848,
-      "sma50": 135.4322,
-      "sma200": 122.9827,
-      "ratio": 0.9908,
-      "daysOutside": 32
+      "symbol": "BKU",
+      "close": 46.38,
+      "ema9": 46.0248,
+      "sma50": 47.2598,
+      "sma200": 46.5311,
+      "ratio": 0.9739,
+      "daysOutside": 30
     },
     {
-      "symbol": "YUM",
-      "close": 152.54,
-      "ema9": 152.3199,
-      "sma50": 153.2414,
-      "sma200": 154.8238,
-      "ratio": 0.994,
-      "daysOutside": 32
+      "symbol": "ZVRA",
+      "close": 12.4,
+      "ema9": 12.0939,
+      "sma50": 12.0411,
+      "sma200": 10.2874,
+      "ratio": 1.0044,
+      "daysOutside": 30
+    },
+    {
+      "symbol": "UMC",
+      "close": 20.77,
+      "ema9": 19.8792,
+      "sma50": 20.9188,
+      "sma200": 14.2694,
+      "ratio": 0.9503,
+      "daysOutside": 31
+    },
+    {
+      "symbol": "NMCO",
+      "close": 10.2,
+      "ema9": 10.0576,
+      "sma50": 10.5262,
+      "sma200": 10.6149,
+      "ratio": 0.9555,
+      "daysOutside": 31
+    },
+    {
+      "symbol": "C",
+      "close": 137.72,
+      "ema9": 134.8919,
+      "sma50": 135.287,
+      "sma200": 123.1803,
+      "ratio": 0.9971,
+      "daysOutside": 33
     },
     {
       "symbol": "TSM",
-      "close": 417.01,
-      "ema9": 416.9945,
-      "sma50": 420.5288,
-      "sma200": 372.0969,
-      "ratio": 0.9916,
-      "daysOutside": 34
-    },
-    {
-      "symbol": "MU",
-      "close": 958.16,
-      "ema9": 945.8545,
-      "sma50": 942.219,
-      "sma200": 602.6064,
-      "ratio": 1.0039,
-      "daysOutside": 34
-    },
-    {
-      "symbol": "BEAM",
-      "close": 29.46,
-      "ema9": 29.293,
-      "sma50": 29.4362,
-      "sma200": 28.4886,
-      "ratio": 0.9951,
-      "daysOutside": 34
-    },
-    {
-      "symbol": "COLM",
-      "close": 57.79,
-      "ema9": 57.7149,
-      "sma50": 60.5514,
-      "sma200": 59.0791,
-      "ratio": 0.9532,
-      "daysOutside": 34
-    },
-    {
-      "symbol": "SNDK",
-      "close": 1554.99,
-      "ema9": 1534.2643,
-      "sma50": 1562.1506,
-      "sma200": 996.597,
-      "ratio": 0.9821,
+      "close": 428.91,
+      "ema9": 419.3776,
+      "sma50": 420.4072,
+      "sma200": 372.8314,
+      "ratio": 0.9976,
       "daysOutside": 35
     },
     {
+      "symbol": "BEAM",
+      "close": 29.66,
+      "ema9": 29.3664,
+      "sma50": 29.3508,
+      "sma200": 28.5268,
+      "ratio": 1.0005,
+      "daysOutside": 35
+    },
+    {
+      "symbol": "COLM",
+      "close": 57.72,
+      "ema9": 57.7159,
+      "sma50": 60.4286,
+      "sma200": 59.1104,
+      "ratio": 0.9551,
+      "daysOutside": 35
+    },
+    {
+      "symbol": "ARR",
+      "close": 16.35,
+      "ema9": 16.2654,
+      "sma50": 16.615,
+      "sma200": 17.1918,
+      "ratio": 0.979,
+      "daysOutside": 35
+    },
+    {
+      "symbol": "SNDK",
+      "close": 1740,
+      "ema9": 1575.4115,
+      "sma50": 1550.2506,
+      "sma200": 1003.9676,
+      "ratio": 1.0162,
+      "daysOutside": 36
+    },
+    {
+      "symbol": "GNTX",
+      "close": 23.14,
+      "ema9": 22.9738,
+      "sma50": 23.7876,
+      "sma200": 23.4404,
+      "ratio": 0.9658,
+      "daysOutside": 38
+    },
+    {
+      "symbol": "SG",
+      "close": 6.84,
+      "ema9": 6.7266,
+      "sma50": 6.8276,
+      "sma200": 6.8047,
+      "ratio": 0.9852,
+      "daysOutside": 38
+    },
+    {
+      "symbol": "CECO",
+      "close": 74.1,
+      "ema9": 72.4599,
+      "sma50": 76.0536,
+      "sma200": 70.2432,
+      "ratio": 0.9527,
+      "daysOutside": 41
+    },
+    {
       "symbol": "BE",
-      "close": 235.55,
-      "ema9": 217.8806,
-      "sma50": 227.6044,
-      "sma200": 190.5248,
-      "ratio": 0.9573,
-      "daysOutside": 41
-    },
-    {
-      "symbol": "SMTC",
-      "close": 135.4,
-      "ema9": 133.491,
-      "sma50": 133.1324,
-      "sma200": 107.0251,
-      "ratio": 1.0027,
-      "daysOutside": 41
-    },
-    {
-      "symbol": "KGS",
-      "close": 61.7,
-      "ema9": 60.3877,
-      "sma50": 63.5224,
-      "sma200": 55.8095,
-      "ratio": 0.9507,
+      "close": 252.87,
+      "ema9": 224.8785,
+      "sma50": 226.4782,
+      "sma200": 191.2536,
+      "ratio": 0.9929,
       "daysOutside": 42
     },
     {
-      "symbol": "INVA",
-      "close": 21.35,
-      "ema9": 21.1374,
-      "sma50": 21.5034,
-      "sma200": 21.7809,
-      "ratio": 0.983,
+      "symbol": "RIOT",
+      "close": 21.8,
+      "ema9": 20.1032,
+      "sma50": 21.0702,
+      "sma200": 18.6565,
+      "ratio": 0.9541,
+      "daysOutside": 42
+    },
+    {
+      "symbol": "KGS",
+      "close": 62.59,
+      "ema9": 60.8281,
+      "sma50": 63.295,
+      "sma200": 55.9577,
+      "ratio": 0.961,
       "daysOutside": 43
     },
     {
+      "symbol": "MARA",
+      "close": 11.31,
+      "ema9": 10.9779,
+      "sma50": 11.4408,
+      "sma200": 10.9192,
+      "ratio": 0.9595,
+      "daysOutside": 43
+    },
+    {
+      "symbol": "BTDR",
+      "close": 12.38,
+      "ema9": 11.1688,
+      "sma50": 11.5315,
+      "sma200": 11.9939,
+      "ratio": 0.9686,
+      "daysOutside": 43
+    },
+    {
+      "symbol": "SANM",
+      "close": 198.47,
+      "ema9": 194.6975,
+      "sma50": 204.1384,
+      "sma200": 183.3897,
+      "ratio": 0.9538,
+      "daysOutside": 44
+    },
+    {
+      "symbol": "INVA",
+      "close": 21.33,
+      "ema9": 21.176,
+      "sma50": 21.463,
+      "sma200": 21.7777,
+      "ratio": 0.9866,
+      "daysOutside": 44
+    },
+    {
       "symbol": "QCOM",
-      "close": 168.57,
-      "ema9": 166.2888,
-      "sma50": 170.0346,
-      "sma200": 167.8182,
-      "ratio": 0.978,
-      "daysOutside": 46
+      "close": 168.74,
+      "ema9": 166.7791,
+      "sma50": 169.3114,
+      "sma200": 167.8281,
+      "ratio": 0.985,
+      "daysOutside": 47
     },
     {
       "symbol": "UNIT",
       "close": 10.17,
-      "ema9": 9.9801,
-      "sma50": 10.3874,
-      "sma200": 9.3181,
-      "ratio": 0.9608,
-      "daysOutside": 47
+      "ema9": 10.0181,
+      "sma50": 10.3616,
+      "sma200": 9.3375,
+      "ratio": 0.9668,
+      "daysOutside": 48
     },
     {
-      "symbol": "CHPT",
-      "close": 9.08,
-      "ema9": 6.283,
-      "sma50": 5.8482,
-      "sma200": 6.4724,
-      "ratio": 1.0743,
-      "daysOutside": 49
+      "symbol": "IREN",
+      "close": 44.68,
+      "ema9": 40.6096,
+      "sma50": 40.2237,
+      "sma200": 45.6601,
+      "ratio": 1.0096,
+      "daysOutside": 50
     },
     {
       "symbol": "AESI",
-      "close": 13.17,
-      "ema9": 12.7962,
-      "sma50": 13.0632,
-      "sma200": 13.0106,
-      "ratio": 0.9796,
-      "daysOutside": 53
-    },
-    {
-      "symbol": "GOOGL",
-      "close": 342.48,
-      "ema9": 341.323,
-      "sma50": 348.6744,
-      "sma200": 335.6738,
-      "ratio": 0.9789,
+      "close": 13.46,
+      "ema9": 12.9289,
+      "sma50": 12.9996,
+      "sma200": 13.0351,
+      "ratio": 0.9946,
       "daysOutside": 54
     },
     {
       "symbol": "TS",
-      "close": 56.31,
-      "ema9": 55.2227,
-      "sma50": 55.2484,
-      "sma200": 52.6924,
-      "ratio": 0.9995,
-      "daysOutside": 54
+      "close": 56.45,
+      "ema9": 55.4682,
+      "sma50": 55.2302,
+      "sma200": 52.7736,
+      "ratio": 1.0043,
+      "daysOutside": 55
+    },
+    {
+      "symbol": "EFXT",
+      "close": 22.26,
+      "ema9": 21.1576,
+      "sma50": 22.1972,
+      "sma200": 20.9344,
+      "ratio": 0.9532,
+      "daysOutside": 59
     },
     {
       "symbol": "ARCO",
-      "close": 8.25,
-      "ema9": 8.0772,
-      "sma50": 8.1524,
-      "sma200": 8.1653,
-      "ratio": 0.9908,
-      "daysOutside": 64
-    },
-    {
-      "symbol": "PIPR",
-      "close": 77.75,
-      "ema9": 75.5038,
-      "sma50": 75.0842,
-      "sma200": 80.6393,
-      "ratio": 1.0056,
-      "daysOutside": 74
+      "close": 8.17,
+      "ema9": 8.0958,
+      "sma50": 8.1532,
+      "sma200": 8.1699,
+      "ratio": 0.993,
+      "daysOutside": 65
     }
   ]
 }
