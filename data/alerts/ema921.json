@@ -1,6 +1,6 @@
 {
-  "scannedAt": "2026-09-04T23:16:18.045Z",
-  "scanDateET": "2026-09-04",
+  "scannedAt": "2026-09-07T23:45:26.327Z",
+  "scanDateET": "2026-09-07",
   "total": 5000,
   "count": 24,
   "alerts": [
@@ -12,7 +12,7 @@
       "gapPct": 0.18,
       "changePct": 7.27,
       "atrPct": 7.37,
-      "avgVolume10": 44017532
+      "avgVolume10": 44050190
     },
     {
       "symbol": "F",
@@ -22,7 +22,7 @@
       "gapPct": 0.33,
       "changePct": 1.46,
       "atrPct": 2.56,
-      "avgVolume10": 42416477
+      "avgVolume10": 42455610
     },
     {
       "symbol": "RBLX",
@@ -32,7 +32,7 @@
       "gapPct": 0.6,
       "changePct": 4.34,
       "atrPct": 4.33,
-      "avgVolume10": 10061778
+      "avgVolume10": 10062470
     },
     {
       "symbol": "TSM",
@@ -41,8 +41,8 @@
       "ema21": 418.4139,
       "gapPct": 0.23,
       "changePct": 2.85,
-      "atrPct": 2.32,
-      "avgVolume10": 8785676
+      "atrPct": 2.33,
+      "avgVolume10": 8786530
     },
     {
       "symbol": "C",
@@ -52,7 +52,7 @@
       "gapPct": 0.28,
       "changePct": -0.3,
       "atrPct": 1.91,
-      "avgVolume10": 8473998
+      "avgVolume10": 8475010
     },
     {
       "symbol": "NUAI",
@@ -62,7 +62,7 @@
       "gapPct": 0.59,
       "changePct": 2.66,
       "atrPct": 8.72,
-      "avgVolume10": 4989515
+      "avgVolume10": 4989700
     },
     {
       "symbol": "SGI",
@@ -72,7 +72,7 @@
       "gapPct": 0.5,
       "changePct": 0.5,
       "atrPct": 3.25,
-      "avgVolume10": 4523964
+      "avgVolume10": 4523960
     },
     {
       "symbol": "BRK-B",
@@ -82,7 +82,7 @@
       "gapPct": 0.02,
       "changePct": -0.41,
       "atrPct": 1.28,
-      "avgVolume10": 4076882
+      "avgVolume10": 4077320
     },
     {
       "symbol": "MS",
@@ -91,8 +91,8 @@
       "ema21": 214.7864,
       "gapPct": 0.03,
       "changePct": 0.26,
-      "atrPct": 2.04,
-      "avgVolume10": 3664139
+      "atrPct": 2.05,
+      "avgVolume10": 3684520
     },
     {
       "symbol": "ABR",
@@ -102,7 +102,7 @@
       "gapPct": 0.1,
       "changePct": 1.16,
       "atrPct": 3.01,
-      "avgVolume10": 3162332
+      "avgVolume10": 3162350
     },
     {
       "symbol": "BEN",
@@ -112,7 +112,7 @@
       "gapPct": 0.07,
       "changePct": 3.52,
       "atrPct": 2,
-      "avgVolume10": 2954516
+      "avgVolume10": 2954520
     },
     {
       "symbol": "LKQ",
@@ -121,8 +121,8 @@
       "ema21": 25.2365,
       "gapPct": 0.07,
       "changePct": 1.15,
-      "atrPct": 2.62,
-      "avgVolume10": 2738165
+      "atrPct": 2.63,
+      "avgVolume10": 2738170
     },
     {
       "symbol": "NWG",
@@ -132,7 +132,7 @@
       "gapPct": 0.18,
       "changePct": -0.05,
       "atrPct": 1.34,
-      "avgVolume10": 2602358
+      "avgVolume10": 2602360
     },
     {
       "symbol": "SLM",
@@ -141,8 +141,8 @@
       "ema21": 26.5215,
       "gapPct": 0.09,
       "changePct": 2.23,
-      "atrPct": 2.58,
-      "avgVolume10": 1798739
+      "atrPct": 2.61,
+      "avgVolume10": 1798740
     },
     {
       "symbol": "HSAI",
@@ -152,7 +152,7 @@
       "gapPct": 0.36,
       "changePct": 2.33,
       "atrPct": 5.04,
-      "avgVolume10": 1735968
+      "avgVolume10": 1735970
     },
     {
       "symbol": "MFC",
@@ -161,8 +161,8 @@
       "ema21": 43.3886,
       "gapPct": 0.2,
       "changePct": -0.56,
-      "atrPct": 1.6,
-      "avgVolume10": 1596341
+      "atrPct": 1.61,
+      "avgVolume10": 1606340
     },
     {
       "symbol": "INGM",
@@ -172,7 +172,7 @@
       "gapPct": 0.05,
       "changePct": 1.02,
       "atrPct": 3,
-      "avgVolume10": 1175116
+      "avgVolume10": 1175320
     },
     {
       "symbol": "LAZ",
@@ -181,8 +181,8 @@
       "ema21": 43.6189,
       "gapPct": 0.32,
       "changePct": 1.51,
-      "atrPct": 3.49,
-      "avgVolume10": 1023937
+      "atrPct": 3.5,
+      "avgVolume10": 1029190
     },
     {
       "symbol": "POST",
@@ -192,7 +192,7 @@
       "gapPct": 0.05,
       "changePct": 0.45,
       "atrPct": 3.04,
-      "avgVolume10": 851283
+      "avgVolume10": 851280
     },
     {
       "symbol": "BKV",
@@ -201,8 +201,8 @@
       "ema21": 25.1887,
       "gapPct": 0.4,
       "changePct": -0.87,
-      "atrPct": 3.7,
-      "avgVolume10": 812003
+      "atrPct": 3.71,
+      "avgVolume10": 812000
     },
     {
       "symbol": "CFFN",
@@ -212,7 +212,7 @@
       "gapPct": 0.2,
       "changePct": 0.8,
       "atrPct": 1.69,
-      "avgVolume10": 757739
+      "avgVolume10": 757740
     },
     {
       "symbol": "BBT",
@@ -221,8 +221,8 @@
       "ema21": 31.4377,
       "gapPct": 0,
       "changePct": 1.3,
-      "atrPct": 1.86,
-      "avgVolume10": 633121
+      "atrPct": 1.88,
+      "avgVolume10": 633120
     },
     {
       "symbol": "LEA",
@@ -232,7 +232,7 @@
       "gapPct": 0.5,
       "changePct": 2.77,
       "atrPct": 2.16,
-      "avgVolume10": 607550
+      "avgVolume10": 607590
     },
     {
       "symbol": "TLK",
@@ -242,7 +242,7 @@
       "gapPct": 0.05,
       "changePct": 0.27,
       "atrPct": 1.6,
-      "avgVolume10": 557212
+      "avgVolume10": 557210
     }
   ]
 }

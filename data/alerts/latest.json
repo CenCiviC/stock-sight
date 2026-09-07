@@ -1,8 +1,8 @@
 {
-  "scannedAt": "2026-09-04T23:16:18.044Z",
-  "scanDateET": "2026-09-04",
+  "scannedAt": "2026-09-07T23:45:26.326Z",
+  "scanDateET": "2026-09-07",
   "total": 5000,
-  "count": 147,
+  "count": 148,
   "alerts": [
     {
       "symbol": "CM",
@@ -24,11 +24,11 @@
     },
     {
       "symbol": "CBSH",
-      "close": 58.365,
-      "ema9": 58.1884,
-      "sma50": 58.7677,
+      "close": 58.37,
+      "ema9": 58.1894,
+      "sma50": 58.7678,
       "sma200": 53.7606,
-      "ratio": 0.9901,
+      "ratio": 0.9902,
       "daysOutside": 5
     },
     {
@@ -338,6 +338,15 @@
       "daysOutside": 10
     },
     {
+      "symbol": "APH",
+      "close": 82.78,
+      "ema9": 80.9486,
+      "sma50": 80.5119,
+      "sma200": 72.8643,
+      "ratio": 1.0054,
+      "daysOutside": 10
+    },
+    {
       "symbol": "BCS",
       "close": 27,
       "ema9": 26.7933,
@@ -393,9 +402,9 @@
     },
     {
       "symbol": "VLY",
-      "close": 14.025,
-      "ema9": 13.931,
-      "sma50": 14.4865,
+      "close": 14.03,
+      "ema9": 13.932,
+      "sma50": 14.4866,
       "sma200": 13.1417,
       "ratio": 0.9617,
       "daysOutside": 10
