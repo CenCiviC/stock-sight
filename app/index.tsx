@@ -12,13 +12,20 @@ import {
 } from "@/components/ui";
 import { colors } from "@/constants/colors";
 import { borderRadius, spacing } from "@/constants/spacing";
+import { fonts } from "@/constants/typography";
 import type {
   AlertFeed,
   AlertItem,
   Ema921Feed,
   Ema921Item,
 } from "@/lib/alerts";
-import { fetchAlertFeed, fetchEma921Feed } from "@/lib/alerts";
+import {
+  fetchAlertFeed,
+  fetchEma921Feed,
+  TIER_MIN_ATR_RANK,
+  TIER_MIN_BELOW_DAYS,
+  TIER_MIN_VEXP,
+} from "@/lib/alerts";
 import type { ComparisonResult, FavoriteRecord, RankChange } from "@/lib/db";
 import {
   addFavorite,
@@ -92,6 +99,9 @@ const CHART_GRID_COLS = 2;
 const CHART_CELL_H = 140;
 // Row height for getItemLayout: cell height + vertical margin (xs * 2)
 const CHART_ROW_H = CHART_CELL_H + 8;
+const ALERT_CARD_H = 96;               // Today 카드 (칩 3개 + 미니 차트)
+const ALERT_ROW_H = ALERT_CARD_H + spacing.sm;
+const ALERT_CHART_W = 112;
 
 export default function Index() {
   const router = useRouter();
@@ -537,12 +547,6 @@ export default function Index() {
     void loadAlertFeed();
   }, [isAlerts, loadAlertFeed]);
 
-  const openNearSymbol = useCallback(
-    (symbol: string) =>
-      router.push({ pathname: "/stock/[symbol]", params: { symbol } }),
-    [router],
-  );
-
   // Fetch chart bars for alerts (2-grid view)
   useEffect(() => {
     if (!isAlerts || !alertFeed || alertFeed.alerts.length === 0) return;
@@ -871,12 +875,33 @@ export default function Index() {
     [favCharts, router, CHART_SMA, CHART_EMA, toggleFavorite],
   );
 
-  const renderAlertChartItem = useCallback(
+  // Today 카드 — 종목 한 줄 + v20 티어 3표 칩 + 미니 차트.
+  // 칩은 값이 임계값을 넘으면 채워진 점, 아니면 빈 점. 값은 미충족이어도
+  // 그대로 보여서 "얼마나 모자란지"가 읽힌다. null(봉 부족)은 "—".
+  const renderAlertCard = useCallback(
     ({ item }: { item: AlertItem }) => {
       const bars = alertCharts[item.symbol];
+      const hasVotes = item.votes != null;
+      const chips: { label: string; value: string; on: boolean }[] = [
+        {
+          label: "역배열",
+          value: item.belowDays == null ? "—" : `${item.belowDays}일`,
+          on: item.belowDays != null && item.belowDays >= TIER_MIN_BELOW_DAYS,
+        },
+        {
+          label: "ATR%ile",
+          value: item.atrRank252 == null ? "—" : item.atrRank252.toFixed(0),
+          on: item.atrRank252 != null && item.atrRank252 >= TIER_MIN_ATR_RANK,
+        },
+        {
+          label: "거래량",
+          value: item.vexp63 == null ? "—" : `×${item.vexp63.toFixed(2)}`,
+          on: item.vexp63 != null && item.vexp63 >= TIER_MIN_VEXP,
+        },
+      ];
       return (
         <Pressable
-          style={styles.chartGridCell}
+          style={styles.alertCard}
           onPress={() =>
             router.push({
               pathname: "/stock/[symbol]",
@@ -884,10 +909,10 @@ export default function Index() {
             })
           }
         >
-          <View style={styles.chartGridCellHeader}>
-            <View style={styles.chartCellHeaderLeft}>
+          <View style={styles.alertCardBody}>
+            <View style={styles.alertCardTop}>
               <StyledText
-                variant="caption"
+                variant="bodySmall"
                 weight="bold"
                 color={colors.accent_light[400]}
               >
@@ -900,28 +925,69 @@ export default function Index() {
               >
                 ${item.close.toFixed(2)}
               </StyledText>
+              {/* G1은 ATR≥6이 진입 자격 — 날짜 대신 변동성을 보여준다 */}
+              <StyledText
+                variant="caption"
+                weight="medium"
+                color={colors.accent_warm[300]}
+                style={styles.alertCardAtr}
+              >
+                ATR {item.atrPct.toFixed(1)}%
+              </StyledText>
             </View>
-            {/* G1은 ATR≥6이 진입 자격 — 날짜 대신 변동성을 보여준다 */}
-            <StyledText
-              variant="caption"
-              weight="medium"
-              color={colors.accent_warm[300]}
-            >
-              ATR {item.atrPct.toFixed(1)}%
-            </StyledText>
+            {hasVotes ? (
+              <>
+                <View style={styles.voteRow}>
+                  {chips.map((c) => (
+                    <View
+                      key={c.label}
+                      style={[styles.voteChip, c.on && styles.voteChipOn]}
+                    >
+                      <View
+                        style={[styles.voteDot, c.on && styles.voteDotOn]}
+                      />
+                      <StyledText
+                        variant="caption"
+                        weight="semibold"
+                        color={c.on ? colors.accent_warm[300] : colors.primary[300]}
+                      >
+                        {c.label}
+                      </StyledText>
+                      <StyledText
+                        variant="caption"
+                        color={c.on ? colors.accent_warm[300] : colors.primary[300]}
+                        style={styles.voteValue}
+                      >
+                        {c.value}
+                      </StyledText>
+                    </View>
+                  ))}
+                </View>
+                <StyledText
+                  variant="caption"
+                  weight="semibold"
+                  color={colors.accent_light[400]}
+                  style={styles.voteCount}
+                >
+                  {item.votes}/3
+                </StyledText>
+              </>
+            ) : (
+              <StyledText variant="caption" color={colors.secondary[600]}>
+                티어 표는 다음 스캔부터 표시됩니다
+              </StyledText>
+            )}
           </View>
-          <View style={styles.chartGridChartWrap}>
+          <View style={styles.alertCardChart}>
             {bars && bars.length > 0 ? (
               <StockChart
                 bars={bars}
-                height={CHART_CELL_H - 24}
+                height={ALERT_CARD_H - spacing.md * 2}
                 compact
                 maPeriods={CHART_SMA}
                 emaPeriods={CHART_EMA}
               />
-            ) : (
-              <View style={styles.chartGridChartWrap} />
-            )}
+            ) : null}
           </View>
         </Pressable>
       );
@@ -1646,6 +1712,9 @@ export default function Index() {
                   color={colors.secondary[500]}
                 >
                   {alertFeed.scanDateET} ET · {alertFeed.count}종목
+                  {alertFeed.alerts.some((a) => a.votes != null)
+                    ? ` · 2표↑ ${alertFeed.alerts.filter((a) => (a.votes ?? 0) >= 2).length}`
+                    : ""}
                 </StyledText>
               )}
             </View>
@@ -1691,51 +1760,27 @@ export default function Index() {
           )}
 
           {alertFeed && alertFeed.alerts.length === 0 && !alertsLoading && (
-            // 근접 종목이 있으면 "왜 0건인지"가 빈 화면을 대신 설명한다.
-            (alertFeed.near?.length ?? 0) > 0 ? (
-              <ScrollView
-                contentContainerStyle={styles.nearScroll}
-                showsVerticalScrollIndicator={false}
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="moon-outline"
+                size={48}
+                color={colors.primary[400]}
+              />
+              <StyledText
+                variant="bodyLarge"
+                color={colors.secondary[400]}
+                style={styles.emptyTitle}
               >
-                <View style={styles.emptyStateCompact}>
-                  <Ionicons
-                    name="moon-outline"
-                    size={48}
-                    color={colors.primary[400]}
-                  />
-                  <StyledText
-                    variant="bodyLarge"
-                    color={colors.secondary[400]}
-                    style={styles.emptyTitle}
-                  >
-                    오늘은 추천 종목이 없어요
-                  </StyledText>
-                </View>
-                <G1NearList feed={alertFeed} onPressSymbol={openNearSymbol} />
-              </ScrollView>
-            ) : (
-              <View style={styles.emptyState}>
-                <Ionicons
-                  name="moon-outline"
-                  size={48}
-                  color={colors.primary[400]}
-                />
-                <StyledText
-                  variant="bodyLarge"
-                  color={colors.secondary[400]}
-                  style={styles.emptyTitle}
-                >
-                  오늘은 추천 종목이 없어요
-                </StyledText>
-                <StyledText
-                  variant="bodySmall"
-                  color={colors.secondary[600]}
-                  style={styles.emptyDesc}
-                >
-                  미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
-                </StyledText>
-              </View>
-            )
+                오늘은 추천 종목이 없어요
+              </StyledText>
+              <StyledText
+                variant="bodySmall"
+                color={colors.secondary[600]}
+                style={styles.emptyDesc}
+              >
+                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
+              </StyledText>
+            </View>
           )}
 
           {alertFeed && alertFeed.alerts.length > 0 && (
@@ -1751,24 +1796,24 @@ export default function Index() {
                 </View>
               )}
               <FlatList
-                data={[...alertFeed.alerts].sort((a, b) => b.atrPct - a.atrPct)}
+                // 득표 내림차순, 같은 표면 ATR 내림차순 (슬롯 경합 우선순위)
+                data={[...alertFeed.alerts].sort(
+                  (a, b) =>
+                    (b.votes ?? 0) - (a.votes ?? 0) || b.atrPct - a.atrPct,
+                )}
                 keyExtractor={(item) => item.symbol}
-                numColumns={CHART_GRID_COLS}
-                renderItem={renderAlertChartItem}
-                contentContainerStyle={styles.chartGridList}
+                renderItem={renderAlertCard}
+                contentContainerStyle={styles.alertList}
                 showsVerticalScrollIndicator={false}
                 windowSize={3}
                 maxToRenderPerBatch={4}
                 initialNumToRender={6}
                 getItemLayout={(_data, index) => ({
-                  length: CHART_ROW_H,
-                  offset: CHART_ROW_H * Math.floor(index / CHART_GRID_COLS),
+                  length: ALERT_ROW_H,
+                  offset: ALERT_ROW_H * index,
                   index,
                 })}
                 extraData={alertCharts}
-                ListFooterComponent={
-                  <G1NearList feed={alertFeed} onPressSymbol={openNearSymbol} />
-                }
               />
             </>
           )}
@@ -1971,68 +2016,6 @@ export default function Index() {
   );
 }
 
-/**
- * G1 근접 종목 리스트 (Today 탭) — 매수 0건인 날 "왜 0건인지"를 설명한다.
- * 오늘 크로스가 떴는데 조건 하나에 막힌 종목이 먼저, 크로스 대기 풀이 뒤.
- */
-function G1NearList({
-  feed,
-  onPressSymbol,
-}: {
-  feed: AlertFeed;
-  onPressSymbol: (symbol: string) => void;
-}) {
-  const near = feed.near ?? [];
-  if (near.length === 0) return null;
-  const omitted = (feed.nearTotal ?? near.length) - near.length;
-  return (
-    <View style={styles.nearSection}>
-      <View style={styles.nearHeader}>
-        <Ionicons name="eye-outline" size={16} color={colors.accent_warm[300]} />
-        <StyledText variant="bodySmall" weight="bold" color={colors.secondary[400]}>
-          근접 종목 {feed.nearTotal ?? near.length}
-        </StyledText>
-      </View>
-      <StyledText variant="caption" color={colors.secondary[600]}>
-        조건 하나에 막혔거나 골든크로스만 남은 종목 — 막힌 이유를 함께 표시
-      </StyledText>
-      {near.map((n) => (
-        <Pressable
-          key={n.symbol}
-          style={styles.nearRow}
-          onPress={() => onPressSymbol(n.symbol)}
-        >
-          <View style={styles.nearRowTop}>
-            <StyledText variant="bodySmall" weight="bold">
-              {n.symbol}
-            </StyledText>
-            {n.crossedToday && (
-              <StyledText variant="caption" color={colors.accent_warm[300]}>
-                오늘 크로스
-              </StyledText>
-            )}
-            <StyledText variant="caption" color={colors.secondary[500]}>
-              ${n.close.toFixed(2)} · ATR {n.atrPct.toFixed(1)}%
-            </StyledText>
-          </View>
-          <StyledText
-            variant="caption"
-            color={colors.secondary[600]}
-            numberOfLines={2}
-          >
-            {n.blockers.join(" · ")}
-          </StyledText>
-        </Pressable>
-      ))}
-      {omitted > 0 && (
-        <StyledText variant="caption" color={colors.secondary[600]}>
-          외 {omitted}종목
-        </StyledText>
-      )}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -2130,36 +2113,79 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: spacing.xl,
   },
-  // 빈 날 + 근접 종목이 있을 때: 중앙 정렬 대신 스크롤 상단에 컴팩트하게.
-  emptyStateCompact: {
-    alignItems: "center",
-    paddingHorizontal: spacing["3xl"],
-    paddingVertical: spacing["2xl"],
-    gap: spacing.sm,
+  // --- Today 카드 (G1 신호 + 티어 3표) ---
+  alertList: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    ...Platform.select({
+      web: { paddingBottom: 32 },
+      default: { paddingBottom: 40 },
+    }),
   },
-  nearScroll: {
-    paddingBottom: spacing["4xl"],
-  },
-  nearSection: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    gap: spacing.sm,
-  },
-  nearHeader: {
+  alertCard: {
+    height: ALERT_CARD_H,
+    marginBottom: spacing.sm,
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
-  },
-  nearRow: {
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     backgroundColor: colors.primary[800],
-    gap: spacing.xs,
+    borderRadius: borderRadius.md,
+    overflow: "hidden",
   },
-  nearRowTop: {
+  alertCardBody: {
+    flex: 1,
+    gap: spacing.sm,
+  },
+  alertCardTop: {
     flexDirection: "row",
     alignItems: "baseline",
     gap: spacing.sm,
+  },
+  alertCardAtr: {
+    marginLeft: "auto",
+  },
+  alertCardChart: {
+    width: ALERT_CHART_W,
+    height: ALERT_CARD_H - spacing.md * 2,
+    overflow: "hidden",
+  },
+  voteRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs + 1,
+  },
+  voteChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.primary[600],
+  },
+  voteChipOn: {
+    borderColor: "rgba(225, 217, 188, 0.45)",
+    backgroundColor: "rgba(225, 217, 188, 0.14)",
+  },
+  voteDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: colors.primary[300],
+  },
+  voteDotOn: {
+    borderWidth: 0,
+    backgroundColor: colors.accent_warm[500],
+  },
+  voteValue: {
+    fontFamily: fonts.data,
+  },
+  voteCount: {
+    fontFamily: fonts.data,
   },
   scanBtn: {
     paddingHorizontal: spacing["5xl"],

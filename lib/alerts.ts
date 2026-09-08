@@ -21,17 +21,23 @@ export interface AlertItem {
   baseDays: number;
   /** (close/EMA21 - 1) * 100 — 크로스 시점 과확장 정도 */
   extPct: number;
+
+  // --- v20 티어 3표 (stock-quant explosive_hunt_v1.md v20) ---
+  // 진입 조건이 아니라 비중 근거. 구버전 피드에는 없어 optional, null은 봉 부족.
+  /** 크로스 직전 EMA9<EMA21 연속 봉수. 14 이상이면 1표 */
+  belowDays?: number | null;
+  /** 오늘 ATR%의 최근 252봉 백분위(0~100). 60 이상이면 1표 */
+  atrRank252?: number | null;
+  /** 50일 평균 거래대금 / 63봉 전. 1.15 이상이면 1표 */
+  vexp63?: number | null;
+  /** 위 세 표의 합 (0~3) */
+  votes?: number;
 }
 
-/** G1 근접 종목 — 조건 하나에 막혔거나 크로스만 기다리는 종목 (blockers가 사유) */
-export interface NearItem {
-  symbol: string;
-  close: number;
-  atrPct: number;
-  /** 오늘 골든크로스가 떴는지 — true면 조건 미달, false면 크로스 대기 */
-  crossedToday: boolean;
-  blockers: string[];
-}
+/** v20 티어 임계값 — 스캐너(scanner/scanner.ts)와 같은 값 */
+export const TIER_MIN_BELOW_DAYS = 14;
+export const TIER_MIN_ATR_RANK = 60;
+export const TIER_MIN_VEXP = 1.15;
 
 export interface AlertFeed {
   scannedAt: string | null;
@@ -39,9 +45,6 @@ export interface AlertFeed {
   total: number;
   count: number;
   alerts: AlertItem[];
-  /** 구버전 피드에는 없어 optional */
-  near?: NearItem[];
-  nearTotal?: number;
 }
 
 /** EMA 9/21 골든크로스 종목 (TradingView ta.crossover(ema9, ema21) 포팅) */

@@ -13,6 +13,9 @@
  *        Universe: top 2000 by market cap only — widening to 5000 was
  *        falsified (small-cap signals crowd out the good ones) — plus
  *        $5 price, $10M/day 50d dollar volume, China/HK ADRs excluded.
+ *        Each signal also carries the v20 tier votes (below-days /
+ *        ATR%-self-rank / volume-expansion) so the app can show which
+ *        of the three sizing conditions it meets.
  *
  *   2) EMA9 / SMA50  → data/alerts/latest.json   (legacy feed)
  *        previous days (5+ consecutive):  EMA9 / SMA50 < 1.0
@@ -55,7 +58,15 @@ const G1_MAX_EXT_PCT = 5;          // (close/EMA21 - 1)*100 <= 5
 const G1_MIN_DOLLAR_VOL = 10_000_000; // 50일 평균 거래대금 >= $10M
 const G1_WINDOW = 252;             // 52주 창
 const G1_MIN_BARS = 260;           // 252일 창 + 여유
-const G1_NEAR_MAX = 30;            // g1.json에 싣는 근접 종목 상한
+
+// --- v20 티어 3표 (stock-quant explosive_hunt_v1.md v20) ---
+// 셋 중 2표 이상이면 백테스트에서 대패율이 절반 이하로 떨어졌다.
+// 진입 조건이 아니라 "얼마나 실을지"의 근거 — 표시만 하고 걸러내지 않는다.
+const TIER_MIN_BELOW_DAYS = 14;    // 크로스 직전 EMA9<EMA21 지속 봉수 >= 14
+const TIER_MIN_ATR_RANK = 60;      // ATR%의 자기 252봉 백분위 >= 60
+const TIER_MIN_VEXP = 1.15;        // 50일 평균 거래대금 / 63봉 전 >= 1.15
+const ATR_PERIOD = 20;
+const TIER_MIN_BARS = G1_WINDOW + ATR_PERIOD; // ATR% 252개가 전부 유효하려면
 
 /** 중국/홍콩 ADR — 승률 36%/대패율 36%로 검증에서 제외 확정 (stock-quant meta.csv) */
 const CHINA_ADR = new Set([
@@ -100,6 +111,20 @@ interface ScanResult {
   baseDays: number | null;     // 252일 최저 저가 이후 경과 봉수
   extPct: number | null;       // (close / EMA21 - 1) * 100
   dollarVol50: number | null;  // 50일 평균 거래대금 (close × volume)
+
+  // --- v20 티어 3표 재료 (봉 부족 시 null) ---
+  belowDays: number | null;    // 크로스 직전 EMA9<EMA21 연속 봉수 (오늘 제외)
+  atrRank252: number | null;   // 오늘 ATR%의 최근 252봉 내 백분위 (0~100)
+  vexp63: number | null;       // dollarVol50 / 63봉 전 dollarVol50
+}
+
+/** v20 티어 득표 수 (0~3). null 지표는 미충족으로 센다 (python fillna(False)). */
+function tierVotes(r: ScanResult): number {
+  return (
+    Number(r.belowDays != null && r.belowDays >= TIER_MIN_BELOW_DAYS) +
+    Number(r.atrRank252 != null && r.atrRank252 >= TIER_MIN_ATR_RANK) +
+    Number(r.vexp63 != null && r.vexp63 >= TIER_MIN_VEXP)
+  );
 }
 
 function isCrossover(r: ScanResult): boolean {
@@ -138,50 +163,6 @@ function isG1Signal(r: ScanResult): boolean {
     r.extPct != null && r.extPct <= G1_MAX_EXT_PCT &&
     r.dollarVol50 != null && r.dollarVol50 >= G1_MIN_DOLLAR_VOL
   );
-}
-
-/**
- * G1 근접 종목 — 빈 매수 리스트가 "왜 비었는지"를 스스로 설명하게 한다.
- * 반환값은 막힌 조건의 설명 목록, 근접이 아니면 null.
- *
- * 두 부류만 근접으로 친다:
- *   1) 오늘 크로스가 떴는데 나머지 4조건 중 정확히 하나가 막은 종목
- *   2) 4조건은 전부 통과했지만 크로스 상태가 아닌 종목 (대기 풀)
- * 유동성·ADR 게이트는 유니버스 정의라 근접으로 치지 않는다.
- */
-function g1NearMiss(r: ScanResult): string[] | null {
-  if (CHINA_ADR.has(r.symbol) || r.close < MIN_PRICE) return null;
-  if (
-    r.declinePct == null || r.baseDays == null ||
-    r.extPct == null || r.dollarVol50 == null
-  ) {
-    return null; // 판정불가는 근접이 아니다
-  }
-  if (r.dollarVol50 < G1_MIN_DOLLAR_VOL) return null;
-
-  const fails: string[] = [];
-  if (r.atrPct < G1_MIN_ATR_PCT) {
-    fails.push(`ATR ${r.atrPct.toFixed(1)}% < ${G1_MIN_ATR_PCT}%`);
-  }
-  if (r.declinePct < G1_MIN_DECLINE_PCT) {
-    fails.push(`선행하락 ${r.declinePct.toFixed(0)}% < ${G1_MIN_DECLINE_PCT}%`);
-  }
-  if (r.baseDays < G1_MIN_BASE_DAYS) {
-    fails.push(`바닥 ${r.baseDays}일 < ${G1_MIN_BASE_DAYS}일`);
-  }
-  if (r.extPct > G1_MAX_EXT_PCT) {
-    fails.push(`이격 +${r.extPct.toFixed(1)}% > ${G1_MAX_EXT_PCT}%`);
-  }
-
-  if (r.ema921Cross) {
-    return fails.length === 1 ? fails : null;
-  }
-  if (fails.length > 0) return null;
-  return [
-    r.emaFast > r.emaSlow
-      ? "이미 크로스 상태 (신호는 크로스 당일만)"
-      : "골든크로스 대기 (EMA9<EMA21)",
-  ];
 }
 
 function isEma921Signal(r: ScanResult): boolean {
@@ -502,7 +483,79 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
         : 0,
     atrPct: calcAtrPct(bars),
     ...calcG1Metrics(bars, emaSlowArr),
+    ...calcTierMetrics(bars, emaFastArr, emaSlowArr),
   };
+}
+
+/**
+ * v20 티어 3표 재료 — stock-quant scripts/g1_tier_study.py의 정의를 이식.
+ *   belowDays  : 어제까지 EMA9<EMA21이 연속된 봉수 (below_before)
+ *   atrRank252 : 오늘 ATR%의 최근 252봉 백분위, pandas rolling.rank(pct=True)
+ *                (동순위는 평균 순위) 와 동일
+ *   vexp63     : 50일 평균 거래대금 / 63봉 전 같은 값
+ */
+function calcTierMetrics(
+  bars: DailyBar[],
+  ema9Arr: (number | null)[],
+  ema21Arr: (number | null)[],
+): Pick<ScanResult, "belowDays" | "atrRank252" | "vexp63"> {
+  const n = bars.length;
+  if (n < TIER_MIN_BARS) {
+    return { belowDays: null, atrRank252: null, vexp63: null };
+  }
+
+  // below_before: 오늘(n-1)을 빼고 어제부터 거슬러 세는 역배열 연속 봉수
+  let belowDays = 0;
+  for (let i = n - 2; i >= 0; i--) {
+    const f = ema9Arr[i];
+    const sl = ema21Arr[i];
+    if (f == null || sl == null || !(f < sl)) break;
+    belowDays++;
+  }
+
+  // ATR% 시계열 → 최근 252봉 안에서 오늘 값의 백분위
+  const atrPctSeries = calcAtrPctSeries(bars, ATR_PERIOD);
+  const win = atrPctSeries.slice(n - G1_WINDOW);
+  const today = win.at(-1)!;
+  let less = 0;
+  let equal = 0;
+  for (const v of win) {
+    if (v < today) less++;
+    else if (v === today) equal++;
+  }
+  const atrRank252 = ((less + (equal + 1) / 2) / win.length) * 100;
+
+  // vexp63: dollarVol50(today) / dollarVol50(63봉 전)
+  const dv50 = (endExclusive: number): number => {
+    const seg = bars.slice(endExclusive - 50, endExclusive);
+    return seg.reduce((a, b) => a + b.close * b.volume, 0) / seg.length;
+  };
+  const past = dv50(n - 63);
+  const vexp63 = past > 0 ? dv50(n) / past : null;
+
+  return { belowDays, atrRank252, vexp63 };
+}
+
+/** 봉마다 ATR(period)/close*100. 앞 period 봉은 NaN (python rolling과 동일). */
+function calcAtrPctSeries(bars: DailyBar[], period: number): number[] {
+  const n = bars.length;
+  const tr = new Array<number>(n).fill(NaN);
+  for (let i = 1; i < n; i++) {
+    const b = bars[i];
+    const pc = bars[i - 1].close;
+    tr[i] = Math.max(b.high - b.low, Math.abs(b.high - pc), Math.abs(b.low - pc));
+  }
+  const out = new Array<number>(n).fill(NaN);
+  let sum = 0;
+  for (let i = 1; i < n; i++) {
+    sum += tr[i];
+    if (i > period) sum -= tr[i - period];
+    if (i >= period) {
+      const c = bars[i].close;
+      out[i] = c > 0 ? (sum / period / c) * 100 : NaN;
+    }
+  }
+  return out;
 }
 
 /**
@@ -664,17 +717,6 @@ async function main(): Promise<void> {
     .filter(isG1Signal)
     .sort((a, b) => b.atrPct - a.atrPct);
 
-  // 3c-2. G1 근접 — 오늘 크로스+1조건 미달이 먼저, 그다음 크로스 대기 풀.
-  const g1Near = results
-    .filter((r) => (rank.get(r.symbol) ?? Infinity) < G1_UNIVERSE_TOP)
-    .map((r) => ({ r, blockers: g1NearMiss(r) }))
-    .filter((x): x is { r: ScanResult; blockers: string[] } => x.blockers != null)
-    .sort(
-      (a, b) =>
-        Number(b.r.ema921Cross) - Number(a.r.ema921Cross) ||
-        b.r.atrPct - a.r.atrPct
-    );
-
   if (process.env.TEST_SYMBOLS) {
     // 지표 정합성 검증용 덤프 (stock-quant python 구현과 대조)
     for (const r of results) {
@@ -682,24 +724,21 @@ async function main(): Promise<void> {
         `  ${r.symbol}: close=${r.close.toFixed(2)} atr=${r.atrPct.toFixed(2)}% ` +
           `decl=${r.declinePct?.toFixed(1)}% base=${r.baseDays}d ` +
           `ext=${r.extPct?.toFixed(2)}% dv50=${((r.dollarVol50 ?? 0) / 1e6).toFixed(1)}M ` +
-          `cross=${r.ema921Cross}`,
+          `cross=${r.ema921Cross} | below=${r.belowDays} atrRank=${r.atrRank252?.toFixed(1)} ` +
+          `vexp=${r.vexp63?.toFixed(2)} votes=${tierVotes(r)}`,
       );
     }
   }
 
   console.log(
     `Scan complete — total: ${symbols.length}, ` +
-      `g1: ${g1.length} (+${g1Near.length} near), crossovers: ${crossed.length}, ` +
+      `g1: ${g1.length}, crossovers: ${crossed.length}, ` +
       `ema9/21: ${ema921.length}, errors: ${errors.length}`
   );
   if (g1.length > 0) {
-    console.log("G1 symbols:", g1.map((r) => r.symbol).join(", "));
-  }
-  const nearCrossed = g1Near.filter((x) => x.r.ema921Cross);
-  if (nearCrossed.length > 0) {
     console.log(
-      "G1 near (crossed today):",
-      nearCrossed.map((x) => `${x.r.symbol} [${x.blockers[0]}]`).join(", ")
+      "G1 symbols:",
+      g1.map((r) => `${r.symbol}(${tierVotes(r)}표)`).join(", ")
     );
   }
 
@@ -716,7 +755,7 @@ async function main(): Promise<void> {
   if (process.env.TEST_SYMBOLS) {
     console.log("TEST_SYMBOLS mode — skipping alert JSON writes.");
   } else {
-    writeG1Json(g1, g1Near, symbols.length);
+    writeG1Json(g1, symbols.length);
     writeAlertsJson(crossed, symbols.length);
     writeEma921Json(ema921, symbols.length);
   }
@@ -743,11 +782,7 @@ function writeAlertFile(filename: string, payload: unknown, count: number): void
   console.log(`Wrote ${outPath} (${count} alerts)`);
 }
 
-function writeG1Json(
-  signals: ScanResult[],
-  near: { r: ScanResult; blockers: string[] }[],
-  total: number
-): void {
+function writeG1Json(signals: ScanResult[], total: number): void {
   const slim = signals.map((r) => ({
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
@@ -757,14 +792,11 @@ function writeG1Json(
     declinePct: Number((r.declinePct ?? 0).toFixed(1)),
     baseDays: r.baseDays ?? 0,
     extPct: Number((r.extPct ?? 0).toFixed(2)),
-  }));
-
-  const slimNear = near.slice(0, G1_NEAR_MAX).map(({ r, blockers }) => ({
-    symbol: r.symbol,
-    close: Number(r.close.toFixed(4)),
-    atrPct: Number(r.atrPct.toFixed(2)),
-    crossedToday: r.ema921Cross,
-    blockers,
+    // v20 티어 3표 — null은 봉 부족(판정불가)
+    belowDays: r.belowDays,
+    atrRank252: r.atrRank252 == null ? null : Number(r.atrRank252.toFixed(1)),
+    vexp63: r.vexp63 == null ? null : Number(r.vexp63.toFixed(2)),
+    votes: tierVotes(r),
   }));
 
   writeAlertFile(
@@ -775,8 +807,6 @@ function writeG1Json(
       total,
       count: slim.length,
       alerts: slim,
-      near: slimNear,
-      nearTotal: near.length,
     },
     slim.length
   );
