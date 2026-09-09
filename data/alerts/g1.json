@@ -1,68 +1,68 @@
 {
-  "scannedAt": "2026-09-08T23:37:59.809Z",
-  "scanDateET": "2026-09-08",
+  "scannedAt": "2026-09-09T23:31:39.096Z",
+  "scanDateET": "2026-09-09",
   "total": 5000,
   "count": 0,
   "alerts": [],
   "near": [
     {
-      "symbol": "NBIS",
-      "close": 243.88,
-      "atrPct": 8.04,
+      "symbol": "HUT",
+      "close": 95.92,
+      "atrPct": 7.63,
       "crossedToday": true,
       "blockers": [
-        "이격 +11.6% > 5%"
+        "이격 +8.1% > 5%"
       ]
     },
     {
-      "symbol": "RIOT",
-      "close": 22.26,
-      "atrPct": 7.72,
+      "symbol": "CLSK",
+      "close": 13.28,
+      "atrPct": 7.06,
       "crossedToday": true,
       "blockers": [
-        "이격 +9.2% > 5%"
+        "이격 +6.3% > 5%"
       ]
     },
     {
-      "symbol": "KGS",
-      "close": 64.14,
-      "atrPct": 4.13,
+      "symbol": "MRVL",
+      "close": 235.01,
+      "atrPct": 6.51,
       "crossedToday": true,
       "blockers": [
-        "ATR 4.1% < 6%"
+        "이격 +5.6% > 5%"
       ]
     },
     {
-      "symbol": "AEO",
-      "close": 17.22,
-      "atrPct": 3.93,
+      "symbol": "STX",
+      "close": 885.92,
+      "atrPct": 5.96,
       "crossedToday": true,
       "blockers": [
-        "ATR 3.9% < 6%"
+        "ATR 6.0% < 6%"
       ]
     },
     {
-      "symbol": "CMC",
-      "close": 70.76,
-      "atrPct": 3.36,
+      "symbol": "SANM",
+      "close": 206.15,
+      "atrPct": 4.44,
       "crossedToday": true,
       "blockers": [
-        "ATR 3.4% < 6%"
-      ]
-    },
-    {
-      "symbol": "JEF",
-      "close": 55.72,
-      "atrPct": 2.68,
-      "crossedToday": true,
-      "blockers": [
-        "ATR 2.7% < 6%"
+        "ATR 4.4% < 6%"
       ]
     },
     {
       "symbol": "AEHR",
-      "close": 90.79,
-      "atrPct": 12.19,
+      "close": 95.56,
+      "atrPct": 11.47,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "AXTI",
+      "close": 68.91,
+      "atrPct": 11.31,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -70,8 +70,8 @@
     },
     {
       "symbol": "CRDO",
-      "close": 167.75,
-      "atrPct": 10.86,
+      "close": 167.92,
+      "atrPct": 10.81,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -79,17 +79,26 @@
     },
     {
       "symbol": "AAOI",
-      "close": 111.55,
-      "atrPct": 10.24,
+      "close": 107.93,
+      "atrPct": 10.42,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "FSLY",
-      "close": 21.49,
-      "atrPct": 8.62,
+      "symbol": "TTAN",
+      "close": 57.12,
+      "atrPct": 10.4,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "CIFR",
+      "close": 16.9,
+      "atrPct": 9.11,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -97,53 +106,44 @@
     },
     {
       "symbol": "SLS",
-      "close": 13.96,
-      "atrPct": 8.54,
+      "close": 13.95,
+      "atrPct": 8.58,
       "crossedToday": false,
       "blockers": [
         "이미 크로스 상태 (신호는 크로스 당일만)"
       ]
     },
     {
-      "symbol": "LUNR",
-      "close": 15.68,
-      "atrPct": 7.86,
+      "symbol": "FSLY",
+      "close": 22.71,
+      "atrPct": 8.44,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "MXL",
-      "close": 66.5,
-      "atrPct": 7.81,
+      "symbol": "LUNR",
+      "close": 14.94,
+      "atrPct": 8.23,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "BRZE",
+      "close": 23.725,
+      "atrPct": 7.83,
+      "crossedToday": false,
+      "blockers": [
+        "이미 크로스 상태 (신호는 크로스 당일만)"
       ]
     },
     {
       "symbol": "CIEN",
-      "close": 341.29,
-      "atrPct": 7.73,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "OUST",
-      "close": 37.49,
-      "atrPct": 7.63,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "USAR",
-      "close": 17.66,
-      "atrPct": 7.38,
+      "close": 338,
+      "atrPct": 7.8,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -151,80 +151,26 @@
     },
     {
       "symbol": "FIG",
-      "close": 22.75,
-      "atrPct": 7.38,
+      "close": 22.01,
+      "atrPct": 7.68,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "COHR",
-      "close": 301.88,
-      "atrPct": 7.35,
+      "symbol": "USAR",
+      "close": 17.06,
+      "atrPct": 7.48,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "ALAB",
-      "close": 288.85,
-      "atrPct": 7.07,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "PATH",
-      "close": 14.01,
-      "atrPct": 7.05,
-      "crossedToday": false,
-      "blockers": [
-        "이미 크로스 상태 (신호는 크로스 당일만)"
-      ]
-    },
-    {
-      "symbol": "FORM",
-      "close": 109.86,
-      "atrPct": 7.03,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "ONDS",
-      "close": 7.62,
-      "atrPct": 7.02,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "ERAS",
-      "close": 16.28,
-      "atrPct": 6.95,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "FN",
-      "close": 416.31,
-      "atrPct": 6.94,
-      "crossedToday": false,
-      "blockers": [
-        "골든크로스 대기 (EMA9<EMA21)"
-      ]
-    },
-    {
-      "symbol": "NVTS",
-      "close": 12,
-      "atrPct": 6.92,
+      "symbol": "OUST",
+      "close": 36.24,
+      "atrPct": 7.47,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -232,26 +178,71 @@
     },
     {
       "symbol": "VICR",
-      "close": 193.32,
-      "atrPct": 6.87,
+      "close": 183.87,
+      "atrPct": 7.43,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "UCTT",
-      "close": 75.62,
-      "atrPct": 6.83,
+      "symbol": "PATH",
+      "close": 13.57,
+      "atrPct": 7.37,
+      "crossedToday": false,
+      "blockers": [
+        "이미 크로스 상태 (신호는 크로스 당일만)"
+      ]
+    },
+    {
+      "symbol": "COHR",
+      "close": 303.48,
+      "atrPct": 7.24,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "HIMS",
-      "close": 28.17,
-      "atrPct": 6.8,
+      "symbol": "ONDS",
+      "close": 7.29,
+      "atrPct": 7.23,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "ERAS",
+      "close": 15.7,
+      "atrPct": 7.19,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "NVTS",
+      "close": 11.6,
+      "atrPct": 7.12,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "AGX",
+      "close": 402.13,
+      "atrPct": 7.08,
+      "crossedToday": false,
+      "blockers": [
+        "골든크로스 대기 (EMA9<EMA21)"
+      ]
+    },
+    {
+      "symbol": "IONQ",
+      "close": 38.14,
+      "atrPct": 7.04,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
@@ -259,22 +250,31 @@
     },
     {
       "symbol": "PL",
-      "close": 17.81,
-      "atrPct": 6.73,
+      "close": 17.22,
+      "atrPct": 6.94,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
     },
     {
-      "symbol": "LIF",
-      "close": 43.09,
-      "atrPct": 6.63,
+      "symbol": "WULF",
+      "close": 17.13,
+      "atrPct": 6.92,
       "crossedToday": false,
       "blockers": [
         "골든크로스 대기 (EMA9<EMA21)"
       ]
+    },
+    {
+      "symbol": "GLXY",
+      "close": 25.15,
+      "atrPct": 6.9,
+      "crossedToday": false,
+      "blockers": [
+        "이미 크로스 상태 (신호는 크로스 당일만)"
+      ]
     }
   ],
-  "nearTotal": 56
+  "nearTotal": 61
 }
