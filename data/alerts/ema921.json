@@ -1,6 +1,6 @@
 {
-  "scannedAt": "2026-09-18T23:34:27.996Z",
-  "scanDateET": "2026-09-18",
+  "scannedAt": "2026-09-22T00:20:10.713Z",
+  "scanDateET": "2026-09-21",
   "total": 5000,
   "count": 25,
   "alerts": [
@@ -12,7 +12,7 @@
       "gapPct": 0.06,
       "changePct": 1.34,
       "atrPct": 3.14,
-      "avgVolume10": 113597794
+      "avgVolume10": 113686690
     },
     {
       "symbol": "GOOGL",
@@ -22,7 +22,7 @@
       "gapPct": 0.21,
       "changePct": 0.64,
       "atrPct": 2.19,
-      "avgVolume10": 27098334
+      "avgVolume10": 27105000
     },
     {
       "symbol": "GOOG",
@@ -32,7 +32,7 @@
       "gapPct": 0.08,
       "changePct": 0.21,
       "atrPct": 2.12,
-      "avgVolume10": 17643419
+      "avgVolume10": 17649270
     },
     {
       "symbol": "COHR",
@@ -42,7 +42,7 @@
       "gapPct": 0.13,
       "changePct": 7.22,
       "atrPct": 5.96,
-      "avgVolume10": 7024702
+      "avgVolume10": 7025880
     },
     {
       "symbol": "FIGR",
@@ -52,7 +52,7 @@
       "gapPct": 0.06,
       "changePct": 5.28,
       "atrPct": 7.6,
-      "avgVolume10": 5068504
+      "avgVolume10": 5069300
     },
     {
       "symbol": "DXCM",
@@ -62,7 +62,7 @@
       "gapPct": 0.17,
       "changePct": 1.61,
       "atrPct": 2.75,
-      "avgVolume10": 5031566
+      "avgVolume10": 5036560
     },
     {
       "symbol": "ARQT",
@@ -71,8 +71,8 @@
       "ema21": 24.8507,
       "gapPct": 0.24,
       "changePct": -4.08,
-      "atrPct": 4.15,
-      "avgVolume10": 4793758
+      "atrPct": 4.16,
+      "avgVolume10": 4797410
     },
     {
       "symbol": "ARM",
@@ -82,7 +82,7 @@
       "gapPct": 0.57,
       "changePct": 4.04,
       "atrPct": 5.19,
-      "avgVolume10": 4659606
+      "avgVolume10": 4660950
     },
     {
       "symbol": "AZN",
@@ -92,7 +92,7 @@
       "gapPct": 0.15,
       "changePct": -0.04,
       "atrPct": 2.04,
-      "avgVolume10": 3401188
+      "avgVolume10": 3401200
     },
     {
       "symbol": "AVAV",
@@ -102,17 +102,7 @@
       "gapPct": 0.08,
       "changePct": -2.1,
       "atrPct": 5.25,
-      "avgVolume10": 3320271
-    },
-    {
-      "symbol": "EPD",
-      "close": 38.89,
-      "ema9": 38.7431,
-      "ema21": 38.7273,
-      "gapPct": 0.04,
-      "changePct": 1.14,
-      "atrPct": 1.42,
-      "avgVolume10": 2506535
+      "avgVolume10": 3320540
     },
     {
       "symbol": "AMRX",
@@ -122,7 +112,17 @@
       "gapPct": 0.49,
       "changePct": 2.35,
       "atrPct": 3.05,
-      "avgVolume10": 2504010
+      "avgVolume10": 2509150
+    },
+    {
+      "symbol": "EPD",
+      "close": 38.89,
+      "ema9": 38.7431,
+      "ema21": 38.7273,
+      "gapPct": 0.04,
+      "changePct": 1.14,
+      "atrPct": 1.42,
+      "avgVolume10": 2506590
     },
     {
       "symbol": "ACHV",
@@ -132,7 +132,7 @@
       "gapPct": 0.37,
       "changePct": 0.88,
       "atrPct": 4.87,
-      "avgVolume10": 2014460
+      "avgVolume10": 2014500
     },
     {
       "symbol": "VITL",
@@ -142,7 +142,7 @@
       "gapPct": 0.17,
       "changePct": 2.48,
       "atrPct": 4.42,
-      "avgVolume10": 1734351
+      "avgVolume10": 1734350
     },
     {
       "symbol": "VOYG",
@@ -152,7 +152,7 @@
       "gapPct": 0.03,
       "changePct": -1.99,
       "atrPct": 5.78,
-      "avgVolume10": 1647146
+      "avgVolume10": 1647200
     },
     {
       "symbol": "BKKT",
@@ -162,7 +162,7 @@
       "gapPct": 0.41,
       "changePct": 15.42,
       "atrPct": 7.88,
-      "avgVolume10": 1304043
+      "avgVolume10": 1304700
     },
     {
       "symbol": "FORM",
@@ -172,7 +172,7 @@
       "gapPct": 0.13,
       "changePct": 6.14,
       "atrPct": 5.54,
-      "avgVolume10": 1227526
+      "avgVolume10": 1227750
     },
     {
       "symbol": "DNA",
@@ -182,7 +182,7 @@
       "gapPct": 0.71,
       "changePct": 0.51,
       "atrPct": 5.59,
-      "avgVolume10": 1138815
+      "avgVolume10": 1139500
     },
     {
       "symbol": "KEYS",
@@ -192,7 +192,7 @@
       "gapPct": 0.07,
       "changePct": 1.07,
       "atrPct": 2.92,
-      "avgVolume10": 1072565
+      "avgVolume10": 1072580
     },
     {
       "symbol": "SIMO",
@@ -202,7 +202,7 @@
       "gapPct": 0.4,
       "changePct": 7.43,
       "atrPct": 6.51,
-      "avgVolume10": 841284
+      "avgVolume10": 841950
     },
     {
       "symbol": "MSM",
@@ -212,7 +212,7 @@
       "gapPct": 0.14,
       "changePct": 0.37,
       "atrPct": 2.3,
-      "avgVolume10": 752350
+      "avgVolume10": 753560
     },
     {
       "symbol": "CHEF",
@@ -222,7 +222,7 @@
       "gapPct": 0.02,
       "changePct": 0.63,
       "atrPct": 3.49,
-      "avgVolume10": 707313
+      "avgVolume10": 707590
     },
     {
       "symbol": "AMBQ",
@@ -232,7 +232,7 @@
       "gapPct": 0.45,
       "changePct": 4.99,
       "atrPct": 5,
-      "avgVolume10": 681919
+      "avgVolume10": 687110
     },
     {
       "symbol": "TFPM",
@@ -242,7 +242,7 @@
       "gapPct": 0.03,
       "changePct": 0.82,
       "atrPct": 3.57,
-      "avgVolume10": 502997
+      "avgVolume10": 504660
     },
     {
       "symbol": "SCZM",
@@ -252,7 +252,7 @@
       "gapPct": 0.05,
       "changePct": 6.84,
       "atrPct": 6.79,
-      "avgVolume10": 500349
+      "avgVolume10": 503450
     }
   ]
 }
