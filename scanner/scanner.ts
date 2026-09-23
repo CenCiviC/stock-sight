@@ -826,6 +826,12 @@ function writeAlertFile(filename: string, payload: unknown, count: number): void
   console.log(`Wrote ${outPath} (${count} alerts)`);
 }
 
+/** 소수 digits자리에서 내림. 1e-9는 1.15*100 = 114.999…의 부동소수 오차 보정. */
+function floorTo(x: number, digits: number): number {
+  const k = 10 ** digits;
+  return Math.floor(x * k + 1e-9) / k;
+}
+
 /** g1.json 한 줄 — 앱 lib/alerts.ts의 AlertItem과 같은 모양 */
 function g1Item(r: ScanResult) {
   return {
@@ -839,8 +845,10 @@ function g1Item(r: ScanResult) {
     extPct: Number((r.extPct ?? 0).toFixed(2)),
     // v20 티어 3표 — null은 봉 부족(판정불가)
     belowDays: r.belowDays,
-    atrRank252: r.atrRank252 == null ? null : Number(r.atrRank252.toFixed(1)),
-    vexp63: r.vexp63 == null ? null : Number(r.vexp63.toFixed(2)),
+    // 반올림하면 1.146 → "1.15"처럼 미달 값이 임계값 이상으로 보여 표와 어긋난다.
+    // 내림으로 자르면 표시값 >= 임계값 ⇔ 실제 득표가 성립한다.
+    atrRank252: r.atrRank252 == null ? null : floorTo(r.atrRank252, 1),
+    vexp63: r.vexp63 == null ? null : floorTo(r.vexp63, 2),
     votes: tierVotes(r),
     gcDays: r.gcDays,
   };
