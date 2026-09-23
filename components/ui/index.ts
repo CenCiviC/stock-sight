@@ -13,3 +13,4 @@ export { StockCard } from './stock-card';
 export { SectorChart } from './sector-chart';
 export { RankingCard } from './ranking-card';
 export { FavoriteCard } from './favorite-card';
+export { G1HistoryCard } from './g1-history-card';

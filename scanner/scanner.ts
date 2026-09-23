@@ -28,7 +28,7 @@
  *        Liquidity filters only (price / volume) — no trend filter.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 // ──────────────────────────────────────────────
@@ -67,6 +67,10 @@ const TIER_MIN_ATR_RANK = 60;      // ATR%의 자기 252봉 백분위 >= 60
 const TIER_MIN_VEXP = 1.15;        // 50일 평균 거래대금 / 63봉 전 >= 1.15
 const ATR_PERIOD = 20;
 const TIER_MIN_BARS = G1_WINDOW + ATR_PERIOD; // ATR% 252개가 전부 유효하려면
+
+// --- G1 히스토리 (app Today 탭 "최근 30일") ---
+// g1.json은 매 스캔 통째로 덮어써서 하루만 보인다. 신호를 누적해 두는 별도 파일.
+const G1_HISTORY_KEEP_DAYS = 120;  // 63거래일 보유(~90일) + 여유
 
 /** 중국/홍콩 ADR — 승률 36%/대패율 36%로 검증에서 제외 확정 (stock-quant meta.csv) */
 const CHINA_ADR = new Set([
@@ -116,6 +120,11 @@ interface ScanResult {
   belowDays: number | null;    // 크로스 직전 EMA9<EMA21 연속 봉수 (오늘 제외)
   atrRank252: number | null;   // 오늘 ATR%의 최근 252봉 내 백분위 (0~100)
   vexp63: number | null;       // dollarVol50 / 63봉 전 dollarVol50
+
+  /** SMA50이 SMA200 위로 올라선 지 몇 봉째인지 (0 = 오늘 크로스). 역배열이면 null. */
+  gcDays: number | null;
+  /** 마지막 봉의 거래일 (ET, YYYY-MM-DD) — 스캔 실행 시각과 다를 수 있다 */
+  barDate: string;
 }
 
 /** v20 티어 득표 수 (0~3). null 지표는 미충족으로 센다 (python fillna(False)). */
@@ -295,6 +304,8 @@ async function fetchNasdaqSymbols(): Promise<string[]> {
 // ──────────────────────────────────────────────
 
 interface DailyBar {
+  /** 봉 시작 시각 (unix seconds, Yahoo timestamp) */
+  time: number;
   high: number;
   low: number;
   close: number;
@@ -328,6 +339,7 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   type YahooChartJson = {
     chart?: {
       result?: Array<{
+        timestamp?: number[];
         indicators?: {
           quote?: Array<{
             high?: (number | null)[];
@@ -344,6 +356,7 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   if (!result) return null;
 
   const q = result.indicators?.quote?.[0];
+  const rawTimes: number[] = result.timestamp ?? [];
   const rawCloses: (number | null)[] = q?.close ?? [];
   const rawVolumes: (number | null)[] = q?.volume ?? [];
   const rawHighs: (number | null)[] = q?.high ?? [];
@@ -360,6 +373,7 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
     const h = rawHighs[i];
     const l = rawLows[i];
     bars.push({
+      time: rawTimes[i] ?? 0,
       high: h != null && Number.isFinite(h) ? h : c,
       low: l != null && Number.isFinite(l) ? l : c,
       close: c,
@@ -484,7 +498,31 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     atrPct: calcAtrPct(bars),
     ...calcG1Metrics(bars, emaSlowArr),
     ...calcTierMetrics(bars, emaFastArr, emaSlowArr),
+    gcDays: calcGcDays(sma50, sma200),
+    barDate: etDate(new Date(bars.at(-1)!.time * 1000)),
   };
+}
+
+/**
+ * 50/200 골든크로스 경과 봉수 — stock-quant signals/indicators.py
+ * cross_days_ago(sma_50, sma_200)와 같은 정의. 0 = 오늘 크로스,
+ * null = 오늘 SMA50 <= SMA200 (살아 있는 골든크로스가 없음).
+ * 2y 창에서 SMA200이 시작되는 지점까지 정배열이면 실제 값의 하한이 된다.
+ */
+function calcGcDays(
+  sma50: (number | null)[],
+  sma200: (number | null)[],
+): number | null {
+  const above = (i: number): boolean => {
+    const f = sma50[i];
+    const s = sma200[i];
+    return f != null && s != null && f > s;
+  };
+  const last = sma50.length - 1;
+  if (!above(last)) return null;
+  let days = 0;
+  for (let i = last - 1; i >= 0 && above(i); i--) days++;
+  return days;
 }
 
 /**
@@ -725,7 +763,7 @@ async function main(): Promise<void> {
           `decl=${r.declinePct?.toFixed(1)}% base=${r.baseDays}d ` +
           `ext=${r.extPct?.toFixed(2)}% dv50=${((r.dollarVol50 ?? 0) / 1e6).toFixed(1)}M ` +
           `cross=${r.ema921Cross} | below=${r.belowDays} atrRank=${r.atrRank252?.toFixed(1)} ` +
-          `vexp=${r.vexp63?.toFixed(2)} votes=${tierVotes(r)}`,
+          `vexp=${r.vexp63?.toFixed(2)} votes=${tierVotes(r)} gc=${r.gcDays} bar=${r.barDate}`,
       );
     }
   }
@@ -756,6 +794,7 @@ async function main(): Promise<void> {
     console.log("TEST_SYMBOLS mode — skipping alert JSON writes.");
   } else {
     writeG1Json(g1, symbols.length);
+    writeG1History(g1);
     writeAlertsJson(crossed, symbols.length);
     writeEma921Json(ema921, symbols.length);
   }
@@ -763,14 +802,19 @@ async function main(): Promise<void> {
   console.log("Done.");
 }
 
-/** 미국 동부 기준 스캔 날짜 (YYYY-MM-DD) */
-function scanDateET(): string {
+/** 미국 동부 기준 날짜 (YYYY-MM-DD) */
+function etDate(d: Date): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(d);
+}
+
+/** 미국 동부 기준 스캔 날짜 (YYYY-MM-DD) */
+function scanDateET(): string {
+  return etDate(new Date());
 }
 
 /** data/alerts/<filename> 에 payload 기록 (scanner.ts 기준 ../data/alerts) */
@@ -782,8 +826,9 @@ function writeAlertFile(filename: string, payload: unknown, count: number): void
   console.log(`Wrote ${outPath} (${count} alerts)`);
 }
 
-function writeG1Json(signals: ScanResult[], total: number): void {
-  const slim = signals.map((r) => ({
+/** g1.json 한 줄 — 앱 lib/alerts.ts의 AlertItem과 같은 모양 */
+function g1Item(r: ScanResult) {
+  return {
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
     ema9: Number(r.emaFast.toFixed(4)),
@@ -797,7 +842,12 @@ function writeG1Json(signals: ScanResult[], total: number): void {
     atrRank252: r.atrRank252 == null ? null : Number(r.atrRank252.toFixed(1)),
     vexp63: r.vexp63 == null ? null : Number(r.vexp63.toFixed(2)),
     votes: tierVotes(r),
-  }));
+    gcDays: r.gcDays,
+  };
+}
+
+function writeG1Json(signals: ScanResult[], total: number): void {
+  const slim = signals.map(g1Item);
 
   writeAlertFile(
     "g1.json",
@@ -809,6 +859,45 @@ function writeG1Json(signals: ScanResult[], total: number): void {
       alerts: slim,
     },
     slim.length
+  );
+}
+
+interface G1HistoryEntry extends ReturnType<typeof g1Item> {
+  /** 신호가 난 봉의 거래일 (ET). 앱은 이 다음 봉 시가를 진입가로 본다. */
+  signalDate: string;
+}
+
+/**
+ * 오늘 G1 신호를 g1_history.json에 누적한다.
+ *
+ * 키는 (symbol, signalDate). 같은 날 재실행이 같은 신호를 다시 찾으면 값만
+ * 갱신하고, 못 찾더라도 기존 기록은 지우지 않는다 — 한 번 앱에 떴던 신호는
+ * 사용자가 이미 봤을 수 있어서 히스토리에서 사라지면 안 된다.
+ */
+function writeG1History(signals: ScanResult[]): void {
+  const outPath = resolve(process.cwd(), "..", "data", "alerts", "g1_history.json");
+  let entries: G1HistoryEntry[] = [];
+  if (existsSync(outPath)) {
+    const prev = JSON.parse(readFileSync(outPath, "utf8")) as { entries?: G1HistoryEntry[] };
+    entries = prev.entries ?? [];
+  }
+
+  const key = (e: { symbol: string; signalDate: string }) => `${e.symbol}|${e.signalDate}`;
+  const byKey = new Map(entries.map((e) => [key(e), e]));
+  for (const r of signals) {
+    const e: G1HistoryEntry = { ...g1Item(r), signalDate: r.barDate };
+    byKey.set(key(e), { ...byKey.get(key(e)), ...e });
+  }
+
+  const cutoff = etDate(new Date(Date.now() - G1_HISTORY_KEEP_DAYS * 86_400_000));
+  const kept = [...byKey.values()]
+    .filter((e) => e.signalDate >= cutoff)
+    .sort((a, b) => b.signalDate.localeCompare(a.signalDate) || b.votes - a.votes);
+
+  writeAlertFile(
+    "g1_history.json",
+    { updatedAt: new Date().toISOString(), keepDays: G1_HISTORY_KEEP_DAYS, entries: kept },
+    kept.length,
   );
 }
 

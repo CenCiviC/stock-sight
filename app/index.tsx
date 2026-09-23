@@ -3,6 +3,7 @@ import {
   Button,
   Divider,
   FavoriteCard,
+  G1HistoryCard,
   ProgressBar,
   RankingCard,
   SectorChart,
@@ -18,10 +19,14 @@ import type {
   AlertItem,
   Ema921Feed,
   Ema921Item,
+  G1HistoryEntry,
+  G1HistoryFeed,
 } from "@/lib/alerts";
 import {
   fetchAlertFeed,
   fetchEma921Feed,
+  fetchG1History,
+  g1Grade,
   TIER_MIN_ATR_RANK,
   TIER_MIN_BELOW_DAYS,
   TIER_MIN_VEXP,
@@ -102,6 +107,20 @@ const CHART_ROW_H = CHART_CELL_H + 8;
 const ALERT_CARD_H = 96;               // Today 카드 (칩 3개 + 미니 차트)
 const ALERT_ROW_H = ALERT_CARD_H + spacing.sm;
 const ALERT_CHART_W = 112;
+const G1_HISTORY_WINDOW_DAYS = 30;     // Today 탭 하단 기본 노출 범위
+const WEEKDAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
+
+/** YYYY-MM-DD 문자열을 날짜 연산 없이 비교하려고 N일 전 날짜를 같은 형식으로 만든다 */
+function daysAgoIso(days: number): string {
+  const d = new Date(Date.now() - days * 86_400_000);
+  return (
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
+  );
+}
 
 export default function Index() {
   const router = useRouter();
@@ -157,6 +176,8 @@ export default function Index() {
   const [alertsError, setAlertsError] = useState<string | null>(null);
   const [alertCharts, setAlertCharts] = useState<Record<string, OHLCVBar[]>>({});
   const [alertChartsLoading, setAlertChartsLoading] = useState(false);
+  const [g1History, setG1History] = useState<G1HistoryFeed | null>(null);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
 
   // --- EMA 9/21 crossover state ---
   const [ema921Feed, setEma921Feed] = useState<Ema921Feed | null>(null);
@@ -532,27 +553,54 @@ export default function Index() {
   const loadAlertFeed = useCallback(async () => {
     setAlertsLoading(true);
     setAlertsError(null);
-    try {
-      const feed = await fetchAlertFeed();
-      setAlertFeed(feed);
-    } catch (e) {
+    // 히스토리는 부가 정보 — 실패해도 오늘 피드는 보여준다.
+    const [feed, history] = await Promise.allSettled([
+      fetchAlertFeed(),
+      fetchG1History(),
+    ]);
+    if (feed.status === "fulfilled") {
+      setAlertFeed(feed.value);
+    } else {
+      const e = feed.reason;
       setAlertsError(e instanceof Error ? e.message : "Fetch failed");
-    } finally {
-      setAlertsLoading(false);
     }
+    if (history.status === "fulfilled") setG1History(history.value);
+    setAlertsLoading(false);
   }, []);
+
+  // 오늘 피드에 이미 있는 신호는 히스토리에서 뺀다 (같은 종목이 두 번 보이지 않게).
+  // 피드의 scanDateET는 실행 시각이라 봉 날짜와 하루 어긋날 수 있어 3일 여유를 둔다.
+  const historyEntries = useMemo(() => {
+    if (!g1History) return { shown: [] as G1HistoryEntry[], olderCount: 0 };
+    const todaySyms = new Set(alertFeed?.alerts.map((a) => a.symbol) ?? []);
+    const feedDate = alertFeed?.scanDateET ?? "";
+    const nearFeed = (d: string) =>
+      feedDate !== "" &&
+      Math.abs(Date.parse(d) - Date.parse(feedDate)) <= 3 * 86_400_000;
+    const all = g1History.entries.filter(
+      (e) => !(todaySyms.has(e.symbol) && nearFeed(e.signalDate)),
+    );
+    const cutoff = daysAgoIso(G1_HISTORY_WINDOW_DAYS);
+    const recent = all.filter((e) => e.signalDate >= cutoff);
+    return {
+      shown: historyExpanded ? all : recent,
+      olderCount: all.length - recent.length,
+    };
+  }, [g1History, alertFeed, historyExpanded]);
 
   useEffect(() => {
     if (!isAlerts) return;
     void loadAlertFeed();
   }, [isAlerts, loadAlertFeed]);
 
-  // Fetch chart bars for alerts (2-grid view)
+  // Fetch chart bars for alerts (미니 차트 + 히스토리 수익률 계산)
   useEffect(() => {
-    if (!isAlerts || !alertFeed || alertFeed.alerts.length === 0) return;
-    const missing = alertFeed.alerts
-      .map((a) => a.symbol)
-      .filter((sym) => !alertCharts[sym]);
+    if (!isAlerts) return;
+    const wanted = new Set([
+      ...(alertFeed?.alerts.map((a) => a.symbol) ?? []),
+      ...historyEntries.shown.map((e) => e.symbol),
+    ]);
+    const missing = [...wanted].filter((sym) => !alertCharts[sym]);
     if (missing.length === 0) return;
 
     let cancelled = false;
@@ -582,7 +630,7 @@ export default function Index() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAlerts, alertFeed]);
+  }, [isAlerts, alertFeed, historyEntries]);
 
   // Fetch EMA 9/21 feed (called on tab activation + manual refresh)
   const loadEma921Feed = useCallback(async () => {
@@ -994,6 +1042,89 @@ export default function Index() {
     },
     [alertCharts, router, CHART_SMA, CHART_EMA],
   );
+
+  // Today 탭 하단 "최근 30일 G1" — 신호일별 묶음, 최신 날짜 먼저.
+  const historyFooter = useMemo(() => {
+    const { shown, olderCount } = historyEntries;
+    if (!g1History || (shown.length === 0 && olderCount === 0)) return null;
+
+    const groups: { date: string; items: G1HistoryEntry[] }[] = [];
+    for (const e of shown) {
+      const last = groups.at(-1);
+      if (last && last.date === e.signalDate) last.items.push(e);
+      else groups.push({ date: e.signalDate, items: [e] });
+    }
+    const upCount = shown.filter(
+      (e) => g1Grade(e.votes, e.gcDays) === "확대",
+    ).length;
+
+    return (
+      <View style={styles.historySection}>
+        <View style={styles.historyHeader}>
+          <StyledText variant="body" weight="bold" color={colors.accent_light[400]}>
+            {historyExpanded ? "G1 히스토리" : `최근 ${G1_HISTORY_WINDOW_DAYS}일 G1`}
+          </StyledText>
+          <StyledText variant="caption" color={colors.secondary[600]}>
+            {shown.length}건 · 확대 {upCount}
+          </StyledText>
+        </View>
+        <View style={styles.historyLegend}>
+          <StyledText variant="caption" color={colors.secondary[700]}>
+            점수 1표씩: 역배열 {TIER_MIN_BELOW_DAYS}일↑ · ATR%ile {TIER_MIN_ATR_RANK}↑
+            · 거래량 ×{TIER_MIN_VEXP}↑ (금색 = 충족)
+          </StyledText>
+          <StyledText variant="caption" color={colors.secondary[700]}>
+            진입 = 신호 다음 날 시가 · D+n / 63거래일 · 등급은 백테스트 기반 참고
+          </StyledText>
+        </View>
+
+        {groups.map((g) => (
+          <View key={g.date} style={styles.historyGroup}>
+            <View style={styles.historyDateRow}>
+              <StyledText
+                variant="caption"
+                weight="semibold"
+                color={colors.secondary[300]}
+                style={styles.voteValue}
+              >
+                {g.date.slice(5)}
+              </StyledText>
+              <View style={styles.historyDateLine} />
+              <StyledText variant="caption" color={colors.secondary[700]}>
+                {WEEKDAYS_KO[new Date(`${g.date}T12:00:00Z`).getUTCDay()]}
+              </StyledText>
+            </View>
+            {g.items.map((e) => (
+              <G1HistoryCard
+                key={`${e.symbol}-${e.signalDate}`}
+                entry={e}
+                bars={alertCharts[e.symbol]}
+                onPress={() =>
+                  router.push({
+                    pathname: "/stock/[symbol]",
+                    params: { symbol: e.symbol },
+                  })
+                }
+              />
+            ))}
+          </View>
+        ))}
+
+        {(olderCount > 0 || historyExpanded) && (
+          <Pressable
+            style={styles.historyMoreBtn}
+            onPress={() => setHistoryExpanded((v) => !v)}
+          >
+            <StyledText variant="bodySmall" weight="semibold" color={colors.secondary[300]}>
+              {historyExpanded
+                ? `최근 ${G1_HISTORY_WINDOW_DAYS}일만 보기`
+                : `이전 신호 더 보기 (${olderCount}건)`}
+            </StyledText>
+          </Pressable>
+        )}
+      </View>
+    );
+  }, [historyEntries, g1History, historyExpanded, alertCharts, router]);
 
   const renderEma921ChartItem = useCallback(
     ({ item }: { item: Ema921Item }) => {
@@ -1759,31 +1890,7 @@ export default function Index() {
             </View>
           )}
 
-          {alertFeed && alertFeed.alerts.length === 0 && !alertsLoading && (
-            <View style={styles.emptyState}>
-              <Ionicons
-                name="moon-outline"
-                size={48}
-                color={colors.primary[400]}
-              />
-              <StyledText
-                variant="bodyLarge"
-                color={colors.secondary[400]}
-                style={styles.emptyTitle}
-              >
-                오늘은 추천 종목이 없어요
-              </StyledText>
-              <StyledText
-                variant="bodySmall"
-                color={colors.secondary[600]}
-                style={styles.emptyDesc}
-              >
-                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
-              </StyledText>
-            </View>
-          )}
-
-          {alertFeed && alertFeed.alerts.length > 0 && (
+          {alertFeed && (
             <>
               {alertChartsLoading && (
                 <View style={styles.favChartsLoadingRow}>
@@ -1814,6 +1921,35 @@ export default function Index() {
                   index,
                 })}
                 extraData={alertCharts}
+                ListEmptyComponent={
+                  alertsLoading ? null : (
+                    // 히스토리가 바로 보이도록 빈 상태는 한 줄 카드로 줄인다
+                    <View style={styles.alertsEmptyCard}>
+                      <Ionicons
+                        name="moon-outline"
+                        size={22}
+                        color={colors.primary[300]}
+                      />
+                      <View style={styles.alertsEmptyText}>
+                        <StyledText
+                          variant="bodySmall"
+                          weight="semibold"
+                          color={colors.secondary[200]}
+                        >
+                          오늘은 새 G1 신호가 없어요
+                        </StyledText>
+                        <StyledText
+                          variant="caption"
+                          color={colors.secondary[600]}
+                        >
+                          다음 스캔: 평일 ET 17:30 · 아래에서 최근 신호를
+                          확인하세요
+                        </StyledText>
+                      </View>
+                    </View>
+                  )
+                }
+                ListFooterComponent={historyFooter}
               />
             </>
           )}
@@ -2295,6 +2431,59 @@ const styles = StyleSheet.create({
   },
   alertsRefreshBtn: {
     padding: spacing.xs,
+  },
+  alertsEmptyCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.primary[900],
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: colors.primary[500],
+    borderRadius: borderRadius.lg,
+  },
+  alertsEmptyText: {
+    flex: 1,
+    gap: 2,
+  },
+  historySection: {
+    marginTop: spacing["2xl"],
+    gap: spacing.md,
+  },
+  historyHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  historyLegend: {
+    gap: 2,
+    paddingHorizontal: spacing.xs,
+    marginTop: -spacing.xs,
+  },
+  historyGroup: {
+    gap: spacing.sm,
+  },
+  historyDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  historyDateLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.primary[700],
+  },
+  historyMoreBtn: {
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.primary[500],
+    borderRadius: borderRadius.md,
   },
   chartGridCellHeader: {
     flexDirection: "row",
