@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-23T02:41:00.317960Z",
+  "updatedAt": "2026-09-23T23:58:10.500Z",
   "keepDays": 120,
   "entries": [
     {
@@ -29,7 +29,7 @@
       "baseDays": 206,
       "extPct": 3.07,
       "belowDays": 19,
-      "atrRank252": 56.0,
+      "atrRank252": 56,
       "vexp63": 0.56,
       "votes": 1,
       "gcDays": 265,
@@ -46,7 +46,7 @@
       "baseDays": 228,
       "extPct": 1.41,
       "belowDays": 12,
-      "atrRank252": 56.0,
+      "atrRank252": 56,
       "vexp63": 0.55,
       "votes": 0,
       "gcDays": 237,
@@ -131,7 +131,7 @@
       "baseDays": 139,
       "extPct": 3.87,
       "belowDays": 38,
-      "atrRank252": 54.0,
+      "atrRank252": 54,
       "vexp63": 1.17,
       "votes": 2,
       "gcDays": 47,
