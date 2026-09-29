@@ -20,6 +20,11 @@ interface G1HistoryCardProps {
   /** 신호 이후 일봉. 아직 못 불러왔으면 undefined — 수익률 자리만 비워 둔다 */
   bars?: OHLCVBar[];
   onPress?: () => void;
+  /**
+   * today: Today 추천 카드 — 같은 골격에 수익률 대신 종가, 진입가 대신 ATR%.
+   * 아직 진입 전이라 진행 바는 비어 있다.
+   */
+  variant?: 'history' | 'today';
 }
 
 const GRADE_STYLE: Record<G1Grade, { fg: string; bg: string; border: string }> = {
@@ -29,13 +34,15 @@ const GRADE_STYLE: Record<G1Grade, { fg: string; bg: string; border: string }> =
 };
 
 /**
- * Today 탭 "최근 30일 G1" 카드 — 신호 당일 3표가 어떤 조건으로 나왔는지,
+ * Today 탭 G1 카드 — 신호 당일 3표가 어떤 조건으로 나왔는지,
  * 50/200 골든크로스 경과, 그리고 신호 다음 날 시가에 샀다면 지금 어떤지.
+ * Today 추천(variant="today")과 "최근 30일 G1"이 같은 모양을 쓴다.
  */
-export function G1HistoryCard({ entry, bars, onPress }: G1HistoryCardProps) {
+export function G1HistoryCard({ entry, bars, onPress, variant = 'history' }: G1HistoryCardProps) {
+  const isToday = variant === 'today';
   const grade = g1Grade(entry.votes, entry.gcDays);
   const gs = GRADE_STYLE[grade];
-  const progress = bars ? g1Progress(entry.signalDate, bars) : null;
+  const progress = !isToday && bars ? g1Progress(entry.signalDate, bars) : null;
 
   const chips = [
     {
@@ -60,7 +67,7 @@ export function G1HistoryCard({ entry, bars, onPress }: G1HistoryCardProps) {
   const retColor =
     ret == null ? colors.secondary[600] : ret >= 0 ? colors.positive : colors.negative;
 
-  let dayText = '';
+  let dayText = isToday ? '내일 시가 진입' : '';
   if (progress) {
     if (progress.entryPrice == null) dayText = '진입 대기';
     else if (progress.expired) dayText = '만기';
@@ -72,7 +79,7 @@ export function G1HistoryCard({ entry, bars, onPress }: G1HistoryCardProps) {
       onPress={onPress}
       style={[styles.card, { borderColor: gs.border }]}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.symbol} ${entry.signalDate} G1 신호, ${grade}, ${entry.votes}표`}
+      accessibilityLabel={`${entry.symbol} ${isToday ? '오늘' : entry.signalDate} G1 신호, ${grade}, ${entry.votes}표`}
     >
       <View style={styles.row}>
         <StyledText variant="body" weight="bold" color={colors.accent_light[400]}>
@@ -83,9 +90,20 @@ export function G1HistoryCard({ entry, bars, onPress }: G1HistoryCardProps) {
             {grade}
           </StyledText>
         </View>
-        <StyledText variant="body" weight="semibold" color={retColor} style={styles.ret}>
-          {retText}
-        </StyledText>
+        {isToday ? (
+          <StyledText
+            variant="body"
+            weight="semibold"
+            color={colors.accent_light[400]}
+            style={styles.ret}
+          >
+            ${entry.close.toFixed(2)}
+          </StyledText>
+        ) : (
+          <StyledText variant="body" weight="semibold" color={retColor} style={styles.ret}>
+            {retText}
+          </StyledText>
+        )}
       </View>
 
       <View style={styles.row}>
@@ -122,6 +140,17 @@ export function G1HistoryCard({ entry, bars, onPress }: G1HistoryCardProps) {
         <StyledText variant="caption" color={colors.secondary[600]}>
           {entry.gcDays == null ? '역배열' : `GC ${entry.gcDays}일`}
         </StyledText>
+        {/* G1은 ATR≥6이 진입 자격 — 진입 전인 오늘 카드는 진입가 대신 변동성 */}
+        {isToday && (
+          <StyledText
+            variant="caption"
+            weight="semibold"
+            color={colors.accent_warm[300]}
+            style={styles.mono}
+          >
+            ATR {entry.atrPct.toFixed(1)}%
+          </StyledText>
+        )}
         {progress?.entryPrice != null && (
           <StyledText variant="caption" color={colors.secondary[600]} style={styles.mono}>
             진입 ${progress.entryPrice.toFixed(2)}

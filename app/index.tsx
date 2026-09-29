@@ -104,9 +104,6 @@ const CHART_GRID_COLS = 2;
 const CHART_CELL_H = 140;
 // Row height for getItemLayout: cell height + vertical margin (xs * 2)
 const CHART_ROW_H = CHART_CELL_H + 8;
-const ALERT_CARD_H = 96;               // Today 카드 (칩 3개 + 미니 차트)
-const ALERT_ROW_H = ALERT_CARD_H + spacing.sm;
-const ALERT_CHART_W = 112;
 const G1_HISTORY_WINDOW_DAYS = 30;     // Today 탭 하단 기본 노출 범위
 const WEEKDAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -593,13 +590,10 @@ export default function Index() {
     void loadAlertFeed();
   }, [isAlerts, loadAlertFeed]);
 
-  // Fetch chart bars for alerts (미니 차트 + 히스토리 수익률 계산)
+  // Fetch chart bars for history cards (신호 이후 수익률 계산)
   useEffect(() => {
     if (!isAlerts) return;
-    const wanted = new Set([
-      ...(alertFeed?.alerts.map((a) => a.symbol) ?? []),
-      ...historyEntries.shown.map((e) => e.symbol),
-    ]);
+    const wanted = new Set(historyEntries.shown.map((e) => e.symbol));
     const missing = [...wanted].filter((sym) => !alertCharts[sym]);
     if (missing.length === 0) return;
 
@@ -630,7 +624,7 @@ export default function Index() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAlerts, alertFeed, historyEntries]);
+  }, [isAlerts, historyEntries]);
 
   // Fetch EMA 9/21 feed (called on tab activation + manual refresh)
   const loadEma921Feed = useCallback(async () => {
@@ -923,124 +917,28 @@ export default function Index() {
     [favCharts, router, CHART_SMA, CHART_EMA, toggleFavorite],
   );
 
-  // Today 카드 — 종목 한 줄 + v20 티어 3표 칩 + 미니 차트.
-  // 칩은 값이 임계값을 넘으면 채워진 점, 아니면 빈 점. 값은 미충족이어도
-  // 그대로 보여서 "얼마나 모자란지"가 읽힌다. null(봉 부족)은 "—".
+  // Today 카드 — "최근 30일 G1"과 같은 카드에 종가와 ATR%를 얹는다.
   const renderAlertCard = useCallback(
-    ({ item }: { item: AlertItem }) => {
-      const bars = alertCharts[item.symbol];
-      const hasVotes = item.votes != null;
-      const chips: { label: string; value: string; on: boolean }[] = [
-        {
-          label: "역배열",
-          value: item.belowDays == null ? "—" : `${item.belowDays}일`,
-          on: item.belowDays != null && item.belowDays >= TIER_MIN_BELOW_DAYS,
-        },
-        {
-          label: "ATR%ile",
-          value: item.atrRank252 == null ? "—" : item.atrRank252.toFixed(0),
-          on: item.atrRank252 != null && item.atrRank252 >= TIER_MIN_ATR_RANK,
-        },
-        {
-          label: "거래량",
-          value: item.vexp63 == null ? "—" : `×${item.vexp63.toFixed(2)}`,
-          on: item.vexp63 != null && item.vexp63 >= TIER_MIN_VEXP,
-        },
-      ];
-      return (
-        <Pressable
-          style={styles.alertCard}
+    ({ item }: { item: AlertItem }) => (
+      <View style={styles.alertCardWrap}>
+        <G1HistoryCard
+          variant="today"
+          entry={{
+            ...item,
+            signalDate: alertFeed?.scanDateET ?? "",
+            votes: item.votes ?? 0,
+            gcDays: item.gcDays ?? null,
+          }}
           onPress={() =>
             router.push({
               pathname: "/stock/[symbol]",
               params: { symbol: item.symbol },
             })
           }
-        >
-          <View style={styles.alertCardBody}>
-            <View style={styles.alertCardTop}>
-              <StyledText
-                variant="bodySmall"
-                weight="bold"
-                color={colors.accent_light[400]}
-              >
-                {item.symbol}
-              </StyledText>
-              <StyledText
-                variant="caption"
-                weight="medium"
-                color={colors.secondary[500]}
-              >
-                ${item.close.toFixed(2)}
-              </StyledText>
-              {/* G1은 ATR≥6이 진입 자격 — 날짜 대신 변동성을 보여준다 */}
-              <StyledText
-                variant="caption"
-                weight="medium"
-                color={colors.accent_warm[300]}
-                style={styles.alertCardAtr}
-              >
-                ATR {item.atrPct.toFixed(1)}%
-              </StyledText>
-            </View>
-            {hasVotes ? (
-              <>
-                <View style={styles.voteRow}>
-                  {chips.map((c) => (
-                    <View
-                      key={c.label}
-                      style={[styles.voteChip, c.on && styles.voteChipOn]}
-                    >
-                      <View
-                        style={[styles.voteDot, c.on && styles.voteDotOn]}
-                      />
-                      <StyledText
-                        variant="caption"
-                        weight="semibold"
-                        color={c.on ? colors.accent_warm[300] : colors.primary[300]}
-                      >
-                        {c.label}
-                      </StyledText>
-                      <StyledText
-                        variant="caption"
-                        color={c.on ? colors.accent_warm[300] : colors.primary[300]}
-                        style={styles.voteValue}
-                      >
-                        {c.value}
-                      </StyledText>
-                    </View>
-                  ))}
-                </View>
-                <StyledText
-                  variant="caption"
-                  weight="semibold"
-                  color={colors.accent_light[400]}
-                  style={styles.voteCount}
-                >
-                  {item.votes}/3
-                </StyledText>
-              </>
-            ) : (
-              <StyledText variant="caption" color={colors.secondary[600]}>
-                티어 표는 다음 스캔부터 표시됩니다
-              </StyledText>
-            )}
-          </View>
-          <View style={styles.alertCardChart}>
-            {bars && bars.length > 0 ? (
-              <StockChart
-                bars={bars}
-                height={ALERT_CARD_H - spacing.md * 2}
-                compact
-                maPeriods={CHART_SMA}
-                emaPeriods={CHART_EMA}
-              />
-            ) : null}
-          </View>
-        </Pressable>
-      );
-    },
-    [alertCharts, router, CHART_SMA, CHART_EMA],
+        />
+      </View>
+    ),
+    [alertFeed?.scanDateET, router],
   );
 
   // Today 탭 하단 "최근 30일 G1" — 신호일별 묶음, 최신 날짜 먼저.
@@ -1915,12 +1813,6 @@ export default function Index() {
                 windowSize={3}
                 maxToRenderPerBatch={4}
                 initialNumToRender={6}
-                getItemLayout={(_data, index) => ({
-                  length: ALERT_ROW_H,
-                  offset: ALERT_ROW_H * index,
-                  index,
-                })}
-                extraData={alertCharts}
                 ListEmptyComponent={
                   alertsLoading ? null : (
                     // 히스토리가 바로 보이도록 빈 상태는 한 줄 카드로 줄인다
@@ -1942,7 +1834,7 @@ export default function Index() {
                           variant="caption"
                           color={colors.secondary[600]}
                         >
-                          다음 스캔: 평일 ET 17:30 · 아래에서 최근 신호를
+                          다음 스캔: 평일 ET 18시 이후 · 아래에서 최근 신호를
                           확인하세요
                         </StyledText>
                       </View>
@@ -2030,7 +1922,7 @@ export default function Index() {
                 color={colors.secondary[600]}
                 style={styles.emptyDesc}
               >
-                미국 장 마감 후(평일 ET 17:30) 새 알림이 올라옵니다.
+                미국 장 마감 후(평일 ET 18시 이후) 새 알림이 올라옵니다.
               </StyledText>
             </View>
           )}
@@ -2258,69 +2150,10 @@ const styles = StyleSheet.create({
       default: { paddingBottom: 40 },
     }),
   },
-  alertCard: {
-    height: ALERT_CARD_H,
+  alertCardWrap: {
     marginBottom: spacing.sm,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.primary[800],
-    borderRadius: borderRadius.md,
-    overflow: "hidden",
-  },
-  alertCardBody: {
-    flex: 1,
-    gap: spacing.sm,
-  },
-  alertCardTop: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: spacing.sm,
-  },
-  alertCardAtr: {
-    marginLeft: "auto",
-  },
-  alertCardChart: {
-    width: ALERT_CHART_W,
-    height: ALERT_CARD_H - spacing.md * 2,
-    overflow: "hidden",
-  },
-  voteRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.xs + 1,
-  },
-  voteChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    paddingVertical: 3,
-    paddingHorizontal: 7,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    borderColor: colors.primary[600],
-  },
-  voteChipOn: {
-    borderColor: "rgba(225, 217, 188, 0.45)",
-    backgroundColor: "rgba(225, 217, 188, 0.14)",
-  },
-  voteDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: colors.primary[300],
-  },
-  voteDotOn: {
-    borderWidth: 0,
-    backgroundColor: colors.accent_warm[500],
   },
   voteValue: {
-    fontFamily: fonts.data,
-  },
-  voteCount: {
     fontFamily: fonts.data,
   },
   scanBtn: {
