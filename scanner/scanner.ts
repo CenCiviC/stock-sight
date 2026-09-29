@@ -46,6 +46,14 @@ const DELAY_MS = 200;          // ms between each batch
 const RETRY_MAX = 3;           // retries on 429 / network error
 const MIN_BARS = 210;          // minimum bars needed (SMA200 + buffer)
 
+// --- 봉 지연 방어 ---
+// Yahoo는 장 마감 몇 시간 뒤에도 일부(때로는 전부) 종목의 당일 일봉을 빼고
+// 준다. 그대로 쓰면 전날 봉을 "오늘 신호"로 기록하게 되므로, 세션 날짜보다
+// 오래된 봉은 다시 받아 보고, 끝까지 밀린 종목은 신호에서 뺀다.
+const STALE_RETRY_ROUNDS = 3;          // 밀린 종목 재요청 횟수
+const STALE_RETRY_WAIT_MS = 90_000;    // 재요청 전 대기
+const STALE_MAX_RATIO = 0.03;          // 이보다 많이 밀리면 결과를 쓰지 않고 실패
+
 const EMA_FAST = 9;            // EMA 9/21 전략의 단기선
 const EMA_SLOW = 21;           // EMA 9/21 전략의 장기선
 
@@ -125,6 +133,10 @@ interface ScanResult {
   gcDays: number | null;
   /** 마지막 봉의 거래일 (ET, YYYY-MM-DD) — 스캔 실행 시각과 다를 수 있다 */
   barDate: string;
+  /** Yahoo meta.regularMarketTime의 ET 날짜 — 시세 기준 마지막 거래일 */
+  marketDate: string | null;
+  /** 응답의 마지막 봉이 close=null이라 버려졌는지 (당일 봉 미확정 신호) */
+  tailNullClose: boolean;
 }
 
 /** v20 티어 득표 수 (0~3). null 지표는 미충족으로 센다 (python fillna(False)). */
@@ -312,11 +324,19 @@ interface DailyBar {
   volume: number;
 }
 
+interface FetchedBars {
+  bars: DailyBar[];
+  /** meta.regularMarketTime의 ET 날짜. 없으면 null */
+  marketDate: string | null;
+  /** 원본 마지막 봉의 close가 null이었는지 */
+  tailNullClose: boolean;
+}
+
 /**
  * Fetch close prices and volume from Yahoo Finance v8 chart API.
  * Returns null if the symbol has insufficient data or doesn't exist.
  */
-async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
+async function fetchBars(symbol: string): Promise<FetchedBars | null> {
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}` +
     `?range=2y&interval=1d`; // G1의 252일 창 + 여유 (1y로는 52주 지표가 항상 미달)
@@ -339,6 +359,7 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
   type YahooChartJson = {
     chart?: {
       result?: Array<{
+        meta?: { regularMarketTime?: number };
         timestamp?: number[];
         indicators?: {
           quote?: Array<{
@@ -381,7 +402,25 @@ async function fetchBars(symbol: string): Promise<DailyBar[] | null> {
     });
   }
 
-  return bars.length >= MIN_BARS ? bars : null;
+  if (bars.length < MIN_BARS) return null;
+  const rmt = result.meta?.regularMarketTime;
+  return {
+    bars,
+    marketDate: rmt ? etDate(new Date(rmt * 1000)) : null,
+    tailNullClose: rawCloses.length > 0 && rawCloses.at(-1) == null,
+  };
+}
+
+/**
+ * 이번 스캔이 다뤄야 할 세션(거래일) 날짜 — SPY의 시세 시각과 마지막 봉 중 늦은 쪽.
+ * 휴장일이면 직전 거래일이 나오고, Yahoo가 SPY까지 밀려 있으면 역시 이전 날짜가
+ * 나온다 (그 경우 main이 "이미 스캔함"으로 보고 다음 스케줄에 맡긴다).
+ */
+async function fetchSessionDate(): Promise<string> {
+  const spy = await fetchBars("SPY");
+  if (!spy) throw new Error("SPY bars unavailable — cannot determine session date");
+  const barDate = etDate(new Date(spy.bars.at(-1)!.time * 1000));
+  return spy.marketDate && spy.marketDate > barDate ? spy.marketDate : barDate;
 }
 
 // ──────────────────────────────────────────────
@@ -413,8 +452,9 @@ function calcAtrPct(bars: DailyBar[], period = 20): number {
 }
 
 async function scanSymbol(symbol: string): Promise<ScanResult | null> {
-  const bars = await fetchBars(symbol);
-  if (!bars) return null;
+  const fetched = await fetchBars(symbol);
+  if (!fetched) return null;
+  const { bars } = fetched;
 
   const closes = bars.map((b) => b.close);
   const volumes = bars.map((b) => b.volume);
@@ -500,6 +540,8 @@ async function scanSymbol(symbol: string): Promise<ScanResult | null> {
     ...calcTierMetrics(bars, emaFastArr, emaSlowArr),
     gcDays: calcGcDays(sma50, sma200),
     barDate: etDate(new Date(bars.at(-1)!.time * 1000)),
+    marketDate: fetched.marketDate,
+    tailNullClose: fetched.tailNullClose,
   };
 }
 
@@ -705,6 +747,21 @@ async function runBatch(
 // ──────────────────────────────────────────────
 
 async function main(): Promise<void> {
+  // 0. 세션 날짜 확인 — 이미 스캔한 세션이면 건너뛴다 (예비 cron의 중복 실행,
+  //    휴장일, Yahoo가 아직 새 봉을 안 준 경우). 수동 실행은 FORCE_SCAN=1로 강제.
+  let sessionDate = await fetchSessionDate();
+  console.log(`Session date (ET): ${sessionDate}`);
+  if (!process.env.TEST_SYMBOLS && !process.env.FORCE_SCAN) {
+    const prev = readPrevScanDate();
+    if (prev != null && prev >= sessionDate) {
+      console.log(
+        `Session ${sessionDate} already scanned (g1.json scanDateET=${prev}) — ` +
+          "no newer bar from Yahoo yet, or market holiday. Skipping.",
+      );
+      return;
+    }
+  }
+
   // 1. Fetch NASDAQ symbols
   console.log("Fetching NASDAQ symbols...");
   let symbols: string[];
@@ -728,29 +785,72 @@ async function main(): Promise<void> {
   console.log(`Scanning ${symbols.length} symbols for EMA9/SMA50 crossover...`);
 
   let lastLog = 0;
-  const { results, errors } = await runBatch(symbols, (done, total) => {
+  const first = await runBatch(symbols, (done, total) => {
     // Log every 250 symbols to avoid noise
     if (done - lastLog >= 250 || done === total) {
       console.log(`  Progress: ${done}/${total}`);
       lastLog = done;
     }
   });
+  let results = first.results;
+  const errors = first.errors;
+
+  // 2b. 세션 날짜보다 오래된 마지막 봉 = Yahoo가 아직 당일 봉을 안 붙인 종목.
+  //     잠시 뒤 다시 받아 본다. 한 종목이라도 새 봉이 있으면 세션 날짜를 올린다.
+  const latestBar = (rs: ScanResult[]) =>
+    rs.reduce((m, r) => (r.barDate > m ? r.barDate : m), sessionDate);
+  sessionDate = latestBar(results);
+  for (let round = 1; round <= STALE_RETRY_ROUNDS; round++) {
+    const lagging = results.filter((r) => r.barDate < sessionDate);
+    if (lagging.length === 0) break;
+    console.log(
+      `Stale bars: ${lagging.length} symbols behind ${sessionDate} — ` +
+        `retry ${round}/${STALE_RETRY_ROUNDS} in ${STALE_RETRY_WAIT_MS / 1000}s`,
+    );
+    await sleep(STALE_RETRY_WAIT_MS);
+    const retry = await runBatch(lagging.map((r) => r.symbol));
+    const bySymbol = new Map(retry.results.map((r) => [r.symbol, r]));
+    results = results.map((r) => bySymbol.get(r.symbol) ?? r);
+    sessionDate = latestBar(results);
+  }
+  logBarDates(results);
+
+  // 끝까지 밀린 종목은 신호에서 뺀다 — 전날 봉의 크로스를 오늘 신호로 쓰면
+  // 앱의 "다음 날 시가 진입"이 이미 지난 날짜가 된다. 많이 밀렸으면 아예
+  // 쓰지 않고 실패시켜서 다음 스케줄(예비 cron)이 다시 돌게 한다.
+  const stale = results.filter((r) => r.barDate < sessionDate);
+  const staleRatio = results.length > 0 ? stale.length / results.length : 0;
+  if (stale.length > 0) {
+    console.warn(
+      `Excluding ${stale.length} stale symbols (${(staleRatio * 100).toFixed(1)}%): ` +
+        stale.slice(0, 30).map((r) => `${r.symbol}@${r.barDate}`).join(", ") +
+        (stale.length > 30 ? ", ..." : ""),
+    );
+  }
+  if (!process.env.TEST_SYMBOLS && staleRatio > STALE_MAX_RATIO) {
+    console.error(
+      `Stale ratio ${(staleRatio * 100).toFixed(1)}% > ${STALE_MAX_RATIO * 100}% — ` +
+        "Yahoo has not published this session's bars yet. Not writing alerts.",
+    );
+    process.exit(1);
+  }
+  const fresh = results.filter((r) => r.barDate === sessionDate);
 
   // 3. Filter to crossover symbols only, sort by daysOutside asc (최신 크로스오버 먼저)
-  const crossed = results
+  const crossed = fresh
     .filter(isCrossover)
     .filter((r) => r.close >= MIN_PRICE)
     .sort((a, b) => a.daysOutside - b.daysOutside);
 
   // 3b. EMA 9/21 골든크로스, 거래량 큰 순으로 정렬
-  const ema921 = results
+  const ema921 = fresh
     .filter(isEma921Signal)
     .sort((a, b) => b.avgVolume10 - a.avgVolume10);
 
   // 3c. G1 — 시총 상위 2000 안에서만 (symbols는 시총 내림차순).
   //     ATR 내림차순 정렬: 포트폴리오 시뮬의 슬롯 경합 우선순위와 동일.
   const rank = new Map(symbols.map((s, i) => [s, i]));
-  const g1 = results
+  const g1 = fresh
     .filter((r) => (rank.get(r.symbol) ?? Infinity) < G1_UNIVERSE_TOP)
     .filter(isG1Signal)
     .sort((a, b) => b.atrPct - a.atrPct);
@@ -793,10 +893,10 @@ async function main(): Promise<void> {
   if (process.env.TEST_SYMBOLS) {
     console.log("TEST_SYMBOLS mode — skipping alert JSON writes.");
   } else {
-    writeG1Json(g1, symbols.length);
+    writeG1Json(g1, symbols.length, sessionDate);
     writeG1History(g1);
-    writeAlertsJson(crossed, symbols.length);
-    writeEma921Json(ema921, symbols.length);
+    writeAlertsJson(crossed, symbols.length, sessionDate);
+    writeEma921Json(ema921, symbols.length, sessionDate);
   }
 
   console.log("Done.");
@@ -812,9 +912,34 @@ function etDate(d: Date): string {
   }).format(d);
 }
 
-/** 미국 동부 기준 스캔 날짜 (YYYY-MM-DD) */
-function scanDateET(): string {
-  return etDate(new Date());
+/** 직전 스캔이 기록한 세션 날짜 (g1.json scanDateET). 파일이 없거나 읽을 수 없으면 null */
+function readPrevScanDate(): string | null {
+  const p = resolve(process.cwd(), "..", "data", "alerts", "g1.json");
+  if (!existsSync(p)) return null;
+  try {
+    return (JSON.parse(readFileSync(p, "utf8")) as { scanDateET?: string }).scanDateET ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 마지막 봉 날짜 분포 — Yahoo 지연이 생겼을 때 봉이 빠졌는지(날짜가 밀림),
+ * close=null로 왔는지(tail null), 시세는 갱신됐는데 봉만 없는지를 구분하는 근거.
+ */
+function logBarDates(results: ScanResult[]): void {
+  const dist = new Map<string, number>();
+  for (const r of results) dist.set(r.barDate, (dist.get(r.barDate) ?? 0) + 1);
+  const top = [...dist]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 5)
+    .map(([d, n]) => `${d}=${n}`)
+    .join(", ");
+  const tailNull = results.filter((r) => r.tailNullClose).length;
+  const quoteAhead = results.filter((r) => r.marketDate != null && r.marketDate > r.barDate).length;
+  console.log(
+    `Bar dates: ${top} | tail close=null: ${tailNull} | quote newer than bar: ${quoteAhead}`,
+  );
 }
 
 /** data/alerts/<filename> 에 payload 기록 (scanner.ts 기준 ../data/alerts) */
@@ -854,14 +979,14 @@ function g1Item(r: ScanResult) {
   };
 }
 
-function writeG1Json(signals: ScanResult[], total: number): void {
+function writeG1Json(signals: ScanResult[], total: number, sessionDate: string): void {
   const slim = signals.map(g1Item);
 
   writeAlertFile(
     "g1.json",
     {
       scannedAt: new Date().toISOString(),
-      scanDateET: scanDateET(),
+      scanDateET: sessionDate,
       total,
       count: slim.length,
       alerts: slim,
@@ -909,7 +1034,7 @@ function writeG1History(signals: ScanResult[]): void {
   );
 }
 
-function writeAlertsJson(crossed: ScanResult[], total: number): void {
+function writeAlertsJson(crossed: ScanResult[], total: number, sessionDate: string): void {
   const slim = crossed.map((r) => ({
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
@@ -924,7 +1049,7 @@ function writeAlertsJson(crossed: ScanResult[], total: number): void {
     "latest.json",
     {
       scannedAt: new Date().toISOString(),
-      scanDateET: scanDateET(),
+      scanDateET: sessionDate,
       total,
       count: slim.length,
       alerts: slim,
@@ -933,7 +1058,7 @@ function writeAlertsJson(crossed: ScanResult[], total: number): void {
   );
 }
 
-function writeEma921Json(crossed: ScanResult[], total: number): void {
+function writeEma921Json(crossed: ScanResult[], total: number, sessionDate: string): void {
   const slim = crossed.map((r) => ({
     symbol: r.symbol,
     close: Number(r.close.toFixed(4)),
@@ -949,7 +1074,7 @@ function writeEma921Json(crossed: ScanResult[], total: number): void {
     "ema921.json",
     {
       scannedAt: new Date().toISOString(),
-      scanDateET: scanDateET(),
+      scanDateET: sessionDate,
       total,
       count: slim.length,
       alerts: slim,

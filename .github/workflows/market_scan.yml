@@ -1,17 +1,28 @@
 name: Market Scan — G1 + EMA9/SMA50 + EMA9/21
 
 on:
-  # 미국 동부 시간 오후 5시 30분 (UTC 21:30) 평일 실행
-  # EDT (UTC-4): 21:30 UTC = 17:30 ET
-  # EST (UTC-5): 21:30 UTC = 16:30 ET  ← 동절기 마감 직후
+  # GitHub cron은 보장이 아니다 — 몇 시간씩 밀리거나 통째로 건너뛴다.
+  # 그래서 같은 세션을 세 번 노린다. scanner.ts가 이미 스캔한 세션이면
+  # 바로 끝내므로 먼저 성공한 한 번만 커밋된다. 정각/30분은 GitHub 전체
+  # 부하가 몰려 지연이 커서 :17분에 건다.
+  #   22:17 UTC = 18:17 EDT / 17:17 EST (월~금 본 실행)
+  #   01:17 UTC = 21:17 EDT / 20:17 EST (화~토, 전날 세션 예비)
+  #   04:17 UTC = 00:17 EDT / 23:17 EST (화~토, 전날 세션 예비)
   schedule:
-    - cron: "30 21 * * 1-5"
+    - cron: "17 22 * * 1-5"
+    - cron: "17 1 * * 2-6"
+    - cron: "17 4 * * 2-6"
 
   # 수동 실행 (Actions 탭 → Run workflow)
   workflow_dispatch:
 
 permissions:
   contents: write   # data/alerts/latest.json 자동 커밋용
+
+# 예비 cron이 밀려서 본 실행과 겹치면 push가 충돌한다 — 한 번에 하나씩.
+concurrency:
+  group: market-scan
+  cancel-in-progress: false
 
 jobs:
   scan:
@@ -37,6 +48,9 @@ jobs:
       - name: Run scanner
         run: npx tsx scanner.ts
         working-directory: scanner
+        env:
+          # 수동 실행은 이미 스캔한 세션이어도 다시 돈다
+          FORCE_SCAN: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
 
       - name: Commit alerts JSON
         run: |
