@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-10-01T01:38:18.763Z",
+  "updatedAt": "2026-10-02T01:51:47.033Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "NVTS",
+      "close": 12.12,
+      "ema9": 11.8171,
+      "ema21": 11.8133,
+      "atrPct": 6.04,
+      "declinePct": 72.4,
+      "baseDays": 214,
+      "extPct": 2.6,
+      "belowDays": 27,
+      "atrRank252": 3.5,
+      "vexp63": 0.21,
+      "votes": 1,
+      "gcDays": null,
+      "signalDate": "2026-10-01"
+    },
     {
       "symbol": "AMBA",
       "close": 69.51,

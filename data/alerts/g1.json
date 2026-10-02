@@ -1,53 +1,23 @@
 {
-  "scannedAt": "2026-10-01T01:38:18.761Z",
-  "scanDateET": "2026-09-30",
+  "scannedAt": "2026-10-02T01:51:47.031Z",
+  "scanDateET": "2026-10-01",
   "total": 5000,
-  "count": 3,
+  "count": 1,
   "alerts": [
     {
-      "symbol": "CRDO",
-      "close": 194.79,
-      "ema9": 191.0325,
-      "ema21": 190.8332,
-      "atrPct": 6.28,
-      "declinePct": 51.7,
-      "baseDays": 127,
-      "extPct": 2.07,
-      "belowDays": 25,
-      "atrRank252": 5.5,
-      "vexp63": 0.7,
-      "votes": 1,
-      "gcDays": 95
-    },
-    {
-      "symbol": "AMBA",
-      "close": 69.51,
-      "ema9": 68.7482,
-      "ema21": 68.683,
-      "atrPct": 6.18,
-      "declinePct": 50,
-      "baseDays": 127,
-      "extPct": 1.2,
+      "symbol": "NVTS",
+      "close": 12.12,
+      "ema9": 11.8171,
+      "ema21": 11.8133,
+      "atrPct": 6.04,
+      "declinePct": 72.4,
+      "baseDays": 214,
+      "extPct": 2.6,
       "belowDays": 27,
-      "atrRank252": 61.1,
-      "vexp63": 1.1,
-      "votes": 2,
-      "gcDays": 65
-    },
-    {
-      "symbol": "TENB",
-      "close": 36.39,
-      "ema9": 35.3391,
-      "ema21": 35.2416,
-      "atrPct": 6.09,
-      "declinePct": 37,
-      "baseDays": 119,
-      "extPct": 3.26,
-      "belowDays": 2,
-      "atrRank252": 74.6,
-      "vexp63": 1.59,
-      "votes": 2,
-      "gcDays": 65
+      "atrRank252": 3.5,
+      "vexp63": 0.21,
+      "votes": 1,
+      "gcDays": null
     }
   ]
 }
