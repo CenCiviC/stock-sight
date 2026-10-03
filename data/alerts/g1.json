@@ -1,23 +1,7 @@
 {
-  "scannedAt": "2026-10-02T01:51:47.031Z",
-  "scanDateET": "2026-10-01",
+  "scannedAt": "2026-10-03T06:45:31.196Z",
+  "scanDateET": "2026-10-02",
   "total": 5000,
-  "count": 1,
-  "alerts": [
-    {
-      "symbol": "NVTS",
-      "close": 12.12,
-      "ema9": 11.8171,
-      "ema21": 11.8133,
-      "atrPct": 6.04,
-      "declinePct": 72.4,
-      "baseDays": 214,
-      "extPct": 2.6,
-      "belowDays": 27,
-      "atrRank252": 3.5,
-      "vexp63": 0.21,
-      "votes": 1,
-      "gcDays": null
-    }
-  ]
+  "count": 0,
+  "alerts": []
 }
