@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-10-22T08:42:59.020Z",
+  "updatedAt": "2026-10-23T08:34:35.797Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "CRCL",
+      "close": 86.62,
+      "ema9": 85.1818,
+      "ema21": 85.1043,
+      "atrPct": 6.19,
+      "declinePct": 66.2,
+      "baseDays": 179,
+      "extPct": 1.78,
+      "belowDays": 16,
+      "atrRank252": 7.1,
+      "vexp63": 1.01,
+      "votes": 1,
+      "gcDays": 1,
+      "signalDate": "2026-10-22"
+    },
     {
       "symbol": "NVTS",
       "close": 12.12,

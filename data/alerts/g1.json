@@ -1,7 +1,23 @@
 {
-  "scannedAt": "2026-10-22T08:42:59.018Z",
-  "scanDateET": "2026-10-21",
+  "scannedAt": "2026-10-23T08:34:35.794Z",
+  "scanDateET": "2026-10-22",
   "total": 5000,
-  "count": 0,
-  "alerts": []
+  "count": 1,
+  "alerts": [
+    {
+      "symbol": "CRCL",
+      "close": 86.62,
+      "ema9": 85.1818,
+      "ema21": 85.1043,
+      "atrPct": 6.19,
+      "declinePct": 66.2,
+      "baseDays": 179,
+      "extPct": 1.78,
+      "belowDays": 16,
+      "atrRank252": 7.1,
+      "vexp63": 1.01,
+      "votes": 1,
+      "gcDays": 1
+    }
+  ]
 }
