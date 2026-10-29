@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-10-28T15:17:24.819Z",
+  "updatedAt": "2026-10-29T15:26:10.484Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "ERAS",
+      "close": 15.1498,
+      "ema9": 14.8237,
+      "ema21": 14.8223,
+      "atrPct": 6.38,
+      "declinePct": 64.2,
+      "baseDays": 244,
+      "extPct": 2.21,
+      "belowDays": 41,
+      "atrRank252": 18.2,
+      "vexp63": 0.85,
+      "votes": 1,
+      "gcDays": 272,
+      "signalDate": "2026-10-29"
+    },
     {
       "symbol": "CRCL",
       "close": 86.62,
