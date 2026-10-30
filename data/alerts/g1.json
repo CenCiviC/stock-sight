@@ -1,23 +1,7 @@
 {
-  "scannedAt": "2026-10-29T15:26:10.483Z",
-  "scanDateET": "2026-10-29",
+  "scannedAt": "2026-10-30T15:14:36.421Z",
+  "scanDateET": "2026-10-30",
   "total": 5000,
-  "count": 1,
-  "alerts": [
-    {
-      "symbol": "ERAS",
-      "close": 15.1498,
-      "ema9": 14.8237,
-      "ema21": 14.8223,
-      "atrPct": 6.38,
-      "declinePct": 64.2,
-      "baseDays": 244,
-      "extPct": 2.21,
-      "belowDays": 41,
-      "atrRank252": 18.2,
-      "vexp63": 0.85,
-      "votes": 1,
-      "gcDays": 272
-    }
-  ]
+  "count": 0,
+  "alerts": []
 }
