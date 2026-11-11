@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-11-10T16:36:51.320Z",
+  "updatedAt": "2026-11-11T16:22:14.217Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "ATI",
+      "close": 185.51,
+      "ema9": 178.9162,
+      "ema21": 178.6646,
+      "atrPct": 6.36,
+      "declinePct": 37,
+      "baseDays": 243,
+      "extPct": 3.83,
+      "belowDays": 50,
+      "atrRank252": 98.8,
+      "vexp63": 0.89,
+      "votes": 2,
+      "gcDays": 302,
+      "signalDate": "2026-11-11"
+    },
     {
       "symbol": "ERAS",
       "close": 15.11,
