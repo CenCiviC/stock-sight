@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-11-12T17:00:08.634Z",
+  "updatedAt": "2026-11-13T16:36:24.085Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "DIOD",
+      "close": 87.17,
+      "ema9": 85.8287,
+      "ema21": 85.8264,
+      "atrPct": 7.1,
+      "declinePct": 46.6,
+      "baseDays": 246,
+      "extPct": 1.57,
+      "belowDays": 23,
+      "atrRank252": 82.5,
+      "vexp63": 0.75,
+      "votes": 2,
+      "gcDays": 208,
+      "signalDate": "2026-11-13"
+    },
     {
       "symbol": "ATI",
       "close": 185.51,
