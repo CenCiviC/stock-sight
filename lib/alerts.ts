@@ -44,22 +44,57 @@ export const TIER_MIN_ATR_RANK = 60;
 export const TIER_MIN_VEXP = 1.15;
 
 /**
- * G1 비중 등급 — 3표 × 50/200 골든크로스 경과일로 나눈 참고 분류.
- * stock-quant G1 신호 528건(2018~2026.4) 사후 분석에서 나온 가설이라
- * 검증된 규칙이 아니다. 확대(2~3표 & GC 21~120일): 폭발 48%·승률 70%,
- * 축소(GC 0~20일, 또는 0~1표 & GC 61일+): 대패가 많거나 중앙값이 약함.
+ * G1 매수 등급 — Today 탭은 확장·확대 신호만 보여주고 나머지 G1은 숨긴다.
+ * 근거: stock-quant 상폐 포함 PIT(Sharadar) 512건, 2016-07~2026-07, 63일 결과.
+ *   확장: (거래대금 ×1.15↑ 또는 ATR 8%↑) ∧ SMA50/200 GC 120일 이하 또는 역배열
+ *         141건 · hit50(63일 내 +50%) 37% · 평균 r63 +14%
+ *   확대: 3표 중 2표↑ ∧ GC 21~120일 — 62건 · hit50 35.5%. 55건이 확장과 겹친다.
+ *   그 외 G1: 364건 · hit50 17% · 평균 r63 +6% (숨김)
  */
-export type G1Grade = "확대" | "기본" | "축소";
+export const EXT_MIN_ATR = 8;
+export const EXT_MIN_VEXP = 1.15;
+export const EXT_MAX_GC = 120;
+export const HWAK_MIN_GC = 21;
+export const HWAK_MAX_GC = 120;
 
-export function g1Grade(votes: number, gcDays: number | null): G1Grade {
-  if (gcDays == null) return "기본";
-  if (votes >= 2 && gcDays >= 21 && gcDays <= 120) return "확대";
-  if (gcDays <= 20 || (votes <= 1 && gcDays > 60)) return "축소";
-  return "기본";
+type TierFields = Pick<AlertItem, "atrPct" | "vexp63" | "gcDays" | "votes">;
+
+/** 확장 — 수급(거래대금 증가) 또는 고변동성, 그리고 장기 추세가 너무 늦지 않음 */
+export function isExt(e: TierFields): boolean {
+  const gcOk = e.gcDays == null || e.gcDays <= EXT_MAX_GC;
+  const vexpOk = e.vexp63 != null && e.vexp63 >= EXT_MIN_VEXP;
+  return gcOk && (vexpOk || e.atrPct >= EXT_MIN_ATR);
+}
+
+/** 확대 — 3표 중 2표 이상 ∧ GC 21~120일 */
+export function isHwak(e: TierFields): boolean {
+  return (
+    (e.votes ?? 0) >= 2 &&
+    e.gcDays != null &&
+    e.gcDays >= HWAK_MIN_GC &&
+    e.gcDays <= HWAK_MAX_GC
+  );
+}
+
+/** Today 탭에 보여줄 신호인가 (확장 또는 확대) */
+export function isShownG1(e: TierFields): boolean {
+  return isExt(e) || isHwak(e);
+}
+
+/** 정렬 순위 — 둘 다 0, 확장만 1, 확대만 2, 나머지 3 */
+export function tierRank(e: TierFields): number {
+  const x = isExt(e);
+  const h = isHwak(e);
+  return x && h ? 0 : x ? 1 : h ? 2 : 3;
 }
 
 /** G1 보유 기간 — 신호 다음 날 시가 진입, 63거래일째 종가 청산 */
 export const G1_HOLD_DAYS = 63;
+
+/** 매매 규칙 — 장중 −15% 손절, 21거래일째 종가가 진입가 아래면 다음 날 시가 정리, +50% 익절 */
+export const G1_STOP_PCT = 15;
+export const G1_TIME_STOP_DAY = 21;
+export const G1_TAKE_PROFIT_PCT = 50;
 
 export interface G1Progress {
   /** 신호 다음 봉 시가. 아직 다음 봉이 없으면 null */
@@ -86,6 +121,62 @@ export function g1Progress(signalDate: string, bars: OHLCVBar[]): G1Progress {
     day: Math.min(after.length, G1_HOLD_DAYS),
     returnPct: entryPrice > 0 ? (exitBar.close / entryPrice - 1) * 100 : null,
     expired,
+  };
+}
+
+export type G1ExitState = "wait" | "live" | "stop" | "time" | "tp" | "expired";
+
+export interface G1Exit {
+  /** 신호 다음 봉 시가. 아직 다음 봉이 없으면 null */
+  entryPrice: number | null;
+  /** live: 경과 거래일, 청산됨: 청산한 거래일 (진입일 = 1) */
+  day: number;
+  /** 진입가 대비 수익률 %. live는 최근 종가, 청산됨은 청산가 기준 */
+  returnPct: number | null;
+  state: G1ExitState;
+  /** 시간손절이 확정됐지만 다음 날 시가가 아직 없음 */
+  pending: boolean;
+}
+
+/**
+ * 매매 규칙대로 들고 있었다면 지금 어떤지 (stock-quant stop_scan.py와 같은 순서).
+ * 매 봉: ① 전날 시간손절 확정이면 시가 청산 ② 저가 ≤ −15%면 손절(갭이면 시가)
+ * ③ 고가 ≥ +50%면 익절(갭이면 시가) ④ 21번째 봉 종가 < 진입가면 다음 날 시가 정리
+ * ⑤ 63번째 봉 종가 만기. 같은 봉에서 손절과 익절이 겹치면 손절이 먼저다.
+ */
+export function g1Exit(signalDate: string, bars: OHLCVBar[]): G1Exit {
+  const after = bars.filter((b) => b.date > signalDate);
+  if (after.length === 0 || !(after[0].open > 0)) {
+    return { entryPrice: null, day: 0, returnPct: null, state: "wait", pending: false };
+  }
+  const entry = after[0].open;
+  const stop = entry * (1 - G1_STOP_PCT / 100);
+  const tp = entry * (1 + G1_TAKE_PROFIT_PCT / 100);
+  const ret = (px: number) => (px / entry - 1) * 100;
+  const done = (state: G1ExitState, i: number, px: number): G1Exit => ({
+    entryPrice: entry,
+    day: i + 1,
+    returnPct: ret(px),
+    state,
+    pending: false,
+  });
+  let timeExit = false;
+  for (let i = 0; i < Math.min(after.length, G1_HOLD_DAYS); i++) {
+    const b = after[i];
+    if (timeExit) return done("time", i, b.open);
+    if (b.low <= stop) return done("stop", i, Math.min(b.open, stop));
+    if (b.high >= tp) return done("tp", i, Math.max(b.open, tp));
+    if (i === G1_HOLD_DAYS - 1) return done("expired", i, b.close);
+    if (i === G1_TIME_STOP_DAY - 1 && b.close < entry) timeExit = true;
+  }
+  const n = Math.min(after.length, G1_HOLD_DAYS);
+  const last = after[n - 1];
+  return {
+    entryPrice: entry,
+    day: n,
+    returnPct: ret(last.close),
+    state: timeExit ? "time" : "live",
+    pending: timeExit,
   };
 }
 

@@ -3,13 +3,18 @@ import { colors } from '@/constants/colors';
 import { borderRadius, spacing } from '@/constants/spacing';
 import { fonts } from '@/constants/typography';
 import {
+  EXT_MAX_GC,
+  EXT_MIN_ATR,
+  EXT_MIN_VEXP,
   G1_HOLD_DAYS,
-  g1Grade,
+  G1_STOP_PCT,
+  G1_TAKE_PROFIT_PCT,
+  G1_TIME_STOP_DAY,
+  g1Exit,
   g1Progress,
-  TIER_MIN_ATR_RANK,
-  TIER_MIN_BELOW_DAYS,
-  TIER_MIN_VEXP,
-  type G1Grade,
+  isExt,
+  isHwak,
+  type G1ExitState,
   type G1HistoryEntry,
 } from '@/lib/alerts';
 import type { OHLCVBar } from '@/lib/scanner';
@@ -21,75 +26,114 @@ interface G1HistoryCardProps {
   bars?: OHLCVBar[];
   onPress?: () => void;
   /**
-   * today: Today 추천 카드 — 같은 골격에 수익률 대신 종가, 진입가 대신 ATR%.
+   * today: Today 추천 카드 — 같은 골격에 수익률 대신 종가와 매매 계획(손절가·익절가).
    * 아직 진입 전이라 진행 바는 비어 있다.
    */
   variant?: 'history' | 'today';
 }
 
-const GRADE_STYLE: Record<G1Grade, { fg: string; bg: string; border: string }> = {
-  확대: { fg: colors.primary[950], bg: colors.accent_warm[300], border: 'rgba(225, 217, 188, 0.45)' },
-  기본: { fg: colors.secondary[300], bg: colors.primary[500], border: colors.primary[700] },
-  축소: { fg: colors.secondary[600], bg: colors.primary[900], border: colors.primary[700] },
+/** 확장 등급 색 — 확대(금색)와 구분되는 청록 */
+export const EXT_COLOR = '#7FD1C2';
+const EXT_BORDER = 'rgba(127, 209, 194, 0.45)';
+const EXT_FILL = 'rgba(127, 209, 194, 0.12)';
+const HWAK_BORDER = 'rgba(225, 217, 188, 0.45)';
+
+const STATE_STYLE: Record<G1ExitState, { label: string; fg: string; bg: string } | null> = {
+  wait: null,
+  live: null,
+  stop: { label: `손절 −${G1_STOP_PCT}%`, fg: colors.negative, bg: 'rgba(248, 113, 113, 0.12)' },
+  time: { label: `${G1_TIME_STOP_DAY}일 정리`, fg: colors.warning, bg: 'rgba(251, 191, 36, 0.12)' },
+  tp: { label: `익절 +${G1_TAKE_PROFIT_PCT}%`, fg: colors.positive, bg: 'rgba(74, 222, 128, 0.12)' },
+  expired: { label: '만기', fg: colors.secondary[500], bg: colors.primary[900] },
 };
 
+const fmtPct = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
+const fmtPx = (v: number) => `$${v.toFixed(2)}`;
+
 /**
- * Today 탭 G1 카드 — 신호 당일 3표가 어떤 조건으로 나왔는지,
- * 50/200 골든크로스 경과, 그리고 신호 다음 날 시가에 샀다면 지금 어떤지.
- * Today 추천(variant="today")과 "최근 30일 G1"이 같은 모양을 쓴다.
+ * Today 탭 G1 카드 — 확장·확대 배지, 확장 판정 칩(거래량 또는 ATR, 그리고 GC),
+ * 그리고 매매 규칙(−15% 손절 · 21일 본전 · +50% 익절)대로 들고 있었다면 지금 어떤지.
+ * Today 추천(variant="today")과 히스토리가 같은 모양을 쓴다.
  */
 export function G1HistoryCard({ entry, bars, onPress, variant = 'history' }: G1HistoryCardProps) {
   const isToday = variant === 'today';
-  const grade = g1Grade(entry.votes, entry.gcDays);
-  const gs = GRADE_STYLE[grade];
-  const progress = !isToday && bars ? g1Progress(entry.signalDate, bars) : null;
+  const ext = isExt(entry);
+  const hwak = isHwak(entry);
+  const exit = !isToday && bars ? g1Exit(entry.signalDate, bars) : null;
+  const hold = exit && exit.state !== 'live' && exit.state !== 'wait' && bars
+    ? g1Progress(entry.signalDate, bars)
+    : null;
 
   const chips = [
     {
-      label: '역배열',
-      value: entry.belowDays == null ? '—' : `${entry.belowDays}일`,
-      on: entry.belowDays != null && entry.belowDays >= TIER_MIN_BELOW_DAYS,
-    },
-    {
-      label: 'ATR%ile',
-      value: entry.atrRank252 == null ? '—' : entry.atrRank252.toFixed(0),
-      on: entry.atrRank252 != null && entry.atrRank252 >= TIER_MIN_ATR_RANK,
-    },
-    {
       label: '거래량',
       value: entry.vexp63 == null ? '—' : `×${entry.vexp63.toFixed(2)}`,
-      on: entry.vexp63 != null && entry.vexp63 >= TIER_MIN_VEXP,
+      on: entry.vexp63 != null && entry.vexp63 >= EXT_MIN_VEXP,
+    },
+    {
+      label: 'ATR',
+      value: `${entry.atrPct.toFixed(1)}%`,
+      on: entry.atrPct >= EXT_MIN_ATR,
+    },
+    {
+      label: 'GC',
+      value: entry.gcDays == null ? '역배열' : `${entry.gcDays}일`,
+      on: entry.gcDays == null || entry.gcDays <= EXT_MAX_GC,
     },
   ];
 
-  const ret = progress?.returnPct;
-  const retText = ret == null ? '—' : `${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%`;
+  const ret = exit?.returnPct;
+  const retText = ret == null ? '—' : fmtPct(ret);
   const retColor =
     ret == null ? colors.secondary[600] : ret >= 0 ? colors.positive : colors.negative;
+  const st = exit ? STATE_STYLE[exit.state] : null;
 
   let dayText = isToday ? '내일 시가 진입' : '';
-  if (progress) {
-    if (progress.entryPrice == null) dayText = '진입 대기';
-    else if (progress.expired) dayText = '만기';
-    else dayText = `D+${progress.day}`;
+  if (exit) {
+    if (exit.state === 'wait') dayText = '진입 대기';
+    else if (exit.state === 'live') dayText = `D+${exit.day}`;
+    else if (exit.pending) dayText = '내일 시가 정리';
+    else dayText = `D+${exit.day} 청산`;
   }
+
+  const holdDays = exit ? exit.day : 0;
+  const labels = [ext && '확장', hwak && '확대'].filter(Boolean).join('·') || 'G1';
 
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.card, { borderColor: gs.border }]}
+      style={[
+        styles.card,
+        { borderColor: ext ? EXT_BORDER : hwak ? HWAK_BORDER : colors.primary[700] },
+      ]}
       accessibilityRole="button"
-      accessibilityLabel={`${entry.symbol} ${isToday ? '오늘' : entry.signalDate} G1 신호, ${grade}, ${entry.votes}표`}
+      accessibilityLabel={`${entry.symbol} ${isToday ? '오늘' : entry.signalDate} G1 신호, ${labels}`}
     >
       <View style={styles.row}>
         <StyledText variant="body" weight="bold" color={colors.accent_light[400]}>
           {entry.symbol}
         </StyledText>
-        <View style={[styles.grade, { backgroundColor: gs.bg }]}>
-          <StyledText variant="caption" weight="bold" color={gs.fg}>
-            {grade}
-          </StyledText>
-        </View>
+        {ext && (
+          <View style={[styles.grade, { backgroundColor: EXT_COLOR }]}>
+            <StyledText variant="caption" weight="bold" color={colors.primary[950]}>
+              확장
+            </StyledText>
+          </View>
+        )}
+        {hwak && (
+          <View style={[styles.grade, { backgroundColor: colors.accent_warm[300] }]}>
+            <StyledText variant="caption" weight="bold" color={colors.primary[950]}>
+              확대
+            </StyledText>
+          </View>
+        )}
+        {st && (
+          <View style={[styles.state, { backgroundColor: st.bg }]}>
+            <StyledText variant="caption" weight="semibold" color={st.fg}>
+              {st.label}
+            </StyledText>
+          </View>
+        )}
         {isToday ? (
           <StyledText
             variant="body"
@@ -97,7 +141,7 @@ export function G1HistoryCard({ entry, bars, onPress, variant = 'history' }: G1H
             color={colors.accent_light[400]}
             style={styles.ret}
           >
-            ${entry.close.toFixed(2)}
+            {fmtPx(entry.close)}
           </StyledText>
         ) : (
           <StyledText variant="body" weight="semibold" color={retColor} style={styles.ret}>
@@ -107,53 +151,76 @@ export function G1HistoryCard({ entry, bars, onPress, variant = 'history' }: G1H
       </View>
 
       <View style={styles.row}>
-        {chips.map((c) => (
-          <View key={c.label} style={[styles.chip, c.on && styles.chipOn]}>
-            <View style={[styles.dot, c.on && styles.dotOn]} />
-            <StyledText
-              variant="caption"
-              weight="semibold"
-              color={c.on ? colors.accent_warm[300] : colors.secondary[700]}
-            >
-              {c.label}
-            </StyledText>
-            <StyledText
-              variant="caption"
-              color={c.on ? colors.accent_warm[300] : colors.secondary[700]}
-              style={styles.mono}
-            >
-              {c.value}
-            </StyledText>
+        {chips.map((c, i) => (
+          <View key={c.label} style={styles.chipWrap}>
+            {i === 1 && (
+              <StyledText variant="caption" color={colors.secondary[800]}>
+                또는
+              </StyledText>
+            )}
+            <View style={[styles.chip, c.on && styles.chipOn]}>
+              <View style={[styles.dot, c.on && styles.dotOn]} />
+              <StyledText
+                variant="caption"
+                weight="semibold"
+                color={c.on ? EXT_COLOR : colors.secondary[700]}
+              >
+                {c.label}
+              </StyledText>
+              <StyledText
+                variant="caption"
+                color={c.on ? EXT_COLOR : colors.secondary[700]}
+                style={styles.mono}
+              >
+                {c.value}
+              </StyledText>
+            </View>
           </View>
         ))}
         <StyledText
           variant="caption"
           weight="semibold"
-          color={entry.votes >= 2 ? colors.accent_warm[300] : colors.secondary[600]}
+          color={(entry.votes ?? 0) >= 2 ? colors.accent_warm[300] : colors.secondary[600]}
           style={[styles.mono, styles.pushRight]}
         >
-          {entry.votes}/3
+          {entry.votes ?? 0}/3
         </StyledText>
       </View>
 
+      {/* 오늘 카드: 종가 기준 손절가·익절가 (실제 기준은 내일 시가라 ≈) */}
+      {isToday && (
+        <View style={styles.plan}>
+          <View style={styles.planCell}>
+            <StyledText variant="caption" color={colors.negative} style={styles.mono}>
+              손절 ≈{fmtPx(entry.close * (1 - G1_STOP_PCT / 100))}
+            </StyledText>
+          </View>
+          <View style={styles.planCell}>
+            <StyledText variant="caption" color={colors.secondary[600]}>
+              {G1_TIME_STOP_DAY}일 본전
+            </StyledText>
+          </View>
+          <View style={styles.planCell}>
+            <StyledText variant="caption" color={colors.positive} style={styles.mono}>
+              익절 ≈{fmtPx(entry.close * (1 + G1_TAKE_PROFIT_PCT / 100))}
+            </StyledText>
+          </View>
+        </View>
+      )}
+
       <View style={styles.row}>
-        <StyledText variant="caption" color={colors.secondary[600]}>
-          {entry.gcDays == null ? '역배열' : `GC ${entry.gcDays}일`}
-        </StyledText>
-        {/* G1은 ATR≥6이 진입 자격 — 진입 전인 오늘 카드는 진입가 대신 변동성 */}
-        {isToday && (
-          <StyledText
-            variant="caption"
-            weight="semibold"
-            color={colors.accent_warm[300]}
-            style={styles.mono}
-          >
-            ATR {entry.atrPct.toFixed(1)}%
+        {exit?.entryPrice != null && (
+          <StyledText variant="caption" color={colors.secondary[600]} style={styles.mono}>
+            진입 {fmtPx(exit.entryPrice)}
+            {exit.state === 'live'
+              ? ` · 익절가 ${fmtPx(exit.entryPrice * (1 + G1_TAKE_PROFIT_PCT / 100))}`
+              : ''}
           </StyledText>
         )}
-        {progress?.entryPrice != null && (
-          <StyledText variant="caption" color={colors.secondary[600]} style={styles.mono}>
-            진입 ${progress.entryPrice.toFixed(2)}
+        {/* 규칙 없이 63일 들고 있었다면 — 손절이 무엇을 막았는지 */}
+        {hold?.returnPct != null && (
+          <StyledText variant="caption" color={colors.secondary[800]} style={styles.mono}>
+            {hold.expired ? '63일 보유 시' : '계속 보유 시'} {fmtPct(hold.returnPct)}
           </StyledText>
         )}
         <StyledText
@@ -169,8 +236,11 @@ export function G1HistoryCard({ entry, bars, onPress, variant = 'history' }: G1H
         <View
           style={[
             styles.fill,
-            { width: `${Math.round(((progress?.day ?? 0) / G1_HOLD_DAYS) * 100)}%` },
+            { width: `${Math.round((holdDays / G1_HOLD_DAYS) * 100)}%` },
           ]}
+        />
+        <View
+          style={[styles.tick, { left: `${(G1_TIME_STOP_DAY / G1_HOLD_DAYS) * 100}%` }]}
         />
       </View>
     </Pressable>
@@ -189,6 +259,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   grade: {
@@ -196,9 +267,19 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 5,
   },
+  state: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
   ret: {
     marginLeft: 'auto',
     fontFamily: fonts.data,
+  },
+  chipWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   chip: {
     flexDirection: 'row',
@@ -211,8 +292,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary[600],
   },
   chipOn: {
-    borderColor: 'rgba(225, 217, 188, 0.45)',
-    backgroundColor: 'rgba(225, 217, 188, 0.14)',
+    borderColor: EXT_BORDER,
+    backgroundColor: EXT_FILL,
   },
   dot: {
     width: 5,
@@ -223,7 +304,7 @@ const styles = StyleSheet.create({
   },
   dotOn: {
     borderWidth: 0,
-    backgroundColor: colors.accent_warm[500],
+    backgroundColor: EXT_COLOR,
   },
   mono: {
     fontFamily: fonts.data,
@@ -231,14 +312,32 @@ const styles = StyleSheet.create({
   pushRight: {
     marginLeft: 'auto',
   },
+  plan: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  planCell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 3,
+    borderRadius: 4,
+    backgroundColor: colors.primary[900],
+  },
   track: {
     height: 3,
     borderRadius: 2,
     backgroundColor: colors.primary[700],
-    overflow: 'hidden',
   },
   fill: {
     height: 3,
+    borderRadius: 2,
     backgroundColor: colors.accent_warm[800],
+  },
+  tick: {
+    position: 'absolute',
+    top: -3,
+    width: 1,
+    height: 9,
+    backgroundColor: colors.secondary[700],
   },
 });

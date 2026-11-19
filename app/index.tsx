@@ -26,10 +26,16 @@ import {
   fetchAlertFeed,
   fetchEma921Feed,
   fetchG1History,
-  g1Grade,
-  TIER_MIN_ATR_RANK,
-  TIER_MIN_BELOW_DAYS,
-  TIER_MIN_VEXP,
+  EXT_MAX_GC,
+  EXT_MIN_ATR,
+  EXT_MIN_VEXP,
+  G1_STOP_PCT,
+  G1_TAKE_PROFIT_PCT,
+  G1_TIME_STOP_DAY,
+  isExt,
+  isHwak,
+  isShownG1,
+  tierRank,
 } from "@/lib/alerts";
 import type { ComparisonResult, FavoriteRecord, RankChange } from "@/lib/db";
 import {
@@ -104,7 +110,7 @@ const CHART_GRID_COLS = 2;
 const CHART_CELL_H = 140;
 // Row height for getItemLayout: cell height + vertical margin (xs * 2)
 const CHART_ROW_H = CHART_CELL_H + 8;
-const G1_HISTORY_WINDOW_DAYS = 30;     // Today 탭 하단 기본 노출 범위
+const G1_HISTORY_WINDOW_DAYS = 90;     // Today 탭 하단 기본 노출 범위 (63거래일 보유가 다 보이게)
 const WEEKDAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** YYYY-MM-DD 문자열을 날짜 연산 없이 비교하려고 N일 전 날짜를 같은 형식으로 만든다 */
@@ -574,8 +580,10 @@ export default function Index() {
     const nearFeed = (d: string) =>
       feedDate !== "" &&
       Math.abs(Date.parse(d) - Date.parse(feedDate)) <= 3 * 86_400_000;
+    // 확장·확대만 남긴다 — 그 외 G1(구 기본·축소)은 숨긴다.
     const all = g1History.entries.filter(
-      (e) => !(todaySyms.has(e.symbol) && nearFeed(e.signalDate)),
+      (e) =>
+        isShownG1(e) && !(todaySyms.has(e.symbol) && nearFeed(e.signalDate)),
     );
     const cutoff = daysAgoIso(G1_HISTORY_WINDOW_DAYS);
     const recent = all.filter((e) => e.signalDate >= cutoff);
@@ -584,6 +592,29 @@ export default function Index() {
       olderCount: all.length - recent.length,
     };
   }, [g1History, alertFeed, historyExpanded]);
+
+  // 오늘 피드를 보여줄 신호(확장·확대)와 숨길 G1로 나눈다.
+  const todaySplit = useMemo(() => {
+    const alerts = alertFeed?.alerts ?? [];
+    return {
+      shown: alerts
+        .filter(isShownG1)
+        .sort((a, b) => tierRank(a) - tierRank(b) || b.atrPct - a.atrPct),
+      hidden: alerts.filter((a) => !isShownG1(a)),
+    };
+  }, [alertFeed]);
+
+  // 가장 최근 확장·확대 신호 (빈 날 안내용)
+  const lastShownSignal = useMemo(
+    () =>
+      g1History?.entries
+        .filter(isShownG1)
+        .reduce<G1HistoryEntry | null>(
+          (best, e) => (!best || e.signalDate > best.signalDate ? e : best),
+          null,
+        ) ?? null,
+    [g1History],
+  );
 
   useEffect(() => {
     if (!isAlerts) return;
@@ -944,7 +975,29 @@ export default function Index() {
   // Today 탭 하단 "최근 30일 G1" — 신호일별 묶음, 최신 날짜 먼저.
   const historyFooter = useMemo(() => {
     const { shown, olderCount } = historyEntries;
-    if (!g1History || (shown.length === 0 && olderCount === 0)) return null;
+    const { hidden } = todaySplit;
+    // 조건 미달로 숨긴 오늘 G1 — 매수 후보처럼 보이지 않게 카드 대신 회색 한 줄씩
+    const hiddenBlock =
+      hidden.length > 0 ? (
+        <View style={styles.hiddenBlock}>
+          <StyledText variant="caption" color={colors.secondary[600]}>
+            G1 {hidden.length}건은 확장·확대 조건 미달로 숨김
+          </StyledText>
+          {hidden.map((a) => (
+            <StyledText
+              key={a.symbol}
+              variant="caption"
+              color={colors.secondary[800]}
+              style={styles.voteValue}
+            >
+              {a.symbol} · ATR {a.atrPct.toFixed(1)}% · 거래량{" "}
+              {a.vexp63 == null ? "—" : `×${a.vexp63.toFixed(2)}`} · GC{" "}
+              {a.gcDays == null ? "역배열" : `${a.gcDays}일`}
+            </StyledText>
+          ))}
+        </View>
+      ) : null;
+    if (!g1History || (shown.length === 0 && olderCount === 0)) return hiddenBlock;
 
     const groups: { date: string; items: G1HistoryEntry[] }[] = [];
     for (const e of shown) {
@@ -952,27 +1005,31 @@ export default function Index() {
       if (last && last.date === e.signalDate) last.items.push(e);
       else groups.push({ date: e.signalDate, items: [e] });
     }
-    const upCount = shown.filter(
-      (e) => g1Grade(e.votes, e.gcDays) === "확대",
-    ).length;
+    const extCount = shown.filter(isExt).length;
+    const hwakCount = shown.filter(isHwak).length;
 
     return (
+      <>
+      {hiddenBlock}
       <View style={styles.historySection}>
         <View style={styles.historyHeader}>
           <StyledText variant="body" weight="bold" color={colors.accent_light[400]}>
-            {historyExpanded ? "G1 히스토리" : `최근 ${G1_HISTORY_WINDOW_DAYS}일 G1`}
+            {historyExpanded
+              ? "확장·확대 히스토리"
+              : `최근 ${G1_HISTORY_WINDOW_DAYS}일 확장·확대`}
           </StyledText>
           <StyledText variant="caption" color={colors.secondary[600]}>
-            {shown.length}건 · 확대 {upCount}
+            {shown.length}건 · 확장 {extCount} · 확대 {hwakCount}
           </StyledText>
         </View>
         <View style={styles.historyLegend}>
           <StyledText variant="caption" color={colors.secondary[700]}>
-            점수 1표씩: 역배열 {TIER_MIN_BELOW_DAYS}일↑ · ATR%ile {TIER_MIN_ATR_RANK}↑
-            · 거래량 ×{TIER_MIN_VEXP}↑ (금색 = 충족)
+            확장 = (거래량 ×{EXT_MIN_VEXP}↑ 또는 ATR {EXT_MIN_ATR}%↑) ∧ GC{" "}
+            {EXT_MAX_GC}일↓ (청록 = 충족) · 확대 = 3표 중 2표↑ ∧ GC 21~120일
           </StyledText>
           <StyledText variant="caption" color={colors.secondary[700]}>
-            진입 = 신호 다음 날 시가 · D+n / 63거래일 · 등급은 백테스트 기반 참고
+            신호 다음 날 시가 진입 · −{G1_STOP_PCT}% 손절 · {G1_TIME_STOP_DAY}
+            일째 본전 미만 정리 · +{G1_TAKE_PROFIT_PCT}% 익절 · 63일 만기
           </StyledText>
         </View>
 
@@ -1021,8 +1078,9 @@ export default function Index() {
           </Pressable>
         )}
       </View>
+      </>
     );
-  }, [historyEntries, g1History, historyExpanded, alertCharts, router]);
+  }, [historyEntries, todaySplit, g1History, historyExpanded, alertCharts, router]);
 
   const renderEma921ChartItem = useCallback(
     ({ item }: { item: Ema921Item }) => {
@@ -1229,7 +1287,7 @@ export default function Index() {
             </StyledText>
             {alertsLoading ? (
               <View style={styles.tabDotScanning} />
-            ) : alertFeed && alertFeed.alerts.length > 0 ? (
+            ) : todaySplit.shown.length > 0 ? (
               <View style={styles.tabDot} />
             ) : null}
           </Pressable>
@@ -1740,9 +1798,11 @@ export default function Index() {
                   variant="caption"
                   color={colors.secondary[500]}
                 >
-                  {alertFeed.scanDateET} ET · {alertFeed.count}종목
-                  {alertFeed.alerts.some((a) => a.votes != null)
-                    ? ` · 2표↑ ${alertFeed.alerts.filter((a) => (a.votes ?? 0) >= 2).length}`
+                  {alertFeed.scanDateET} ET · 확장{" "}
+                  {todaySplit.shown.filter(isExt).length} · 확대{" "}
+                  {todaySplit.shown.filter(isHwak).length}
+                  {todaySplit.hidden.length > 0
+                    ? ` · 숨긴 G1 ${todaySplit.hidden.length}`
                     : ""}
                 </StyledText>
               )}
@@ -1801,11 +1861,8 @@ export default function Index() {
                 </View>
               )}
               <FlatList
-                // 득표 내림차순, 같은 표면 ATR 내림차순 (슬롯 경합 우선순위)
-                data={[...alertFeed.alerts].sort(
-                  (a, b) =>
-                    (b.votes ?? 0) - (a.votes ?? 0) || b.atrPct - a.atrPct,
-                )}
+                // 확장·확대만. 둘 다 → 확장만 → 확대만, 같은 등급은 ATR 내림차순
+                data={todaySplit.shown}
                 keyExtractor={(item) => item.symbol}
                 renderItem={renderAlertCard}
                 contentContainerStyle={styles.alertList}
@@ -1828,14 +1885,15 @@ export default function Index() {
                           weight="semibold"
                           color={colors.secondary[200]}
                         >
-                          오늘은 새 G1 신호가 없어요
+                          오늘 확장·확대 신호 없음
                         </StyledText>
                         <StyledText
                           variant="caption"
                           color={colors.secondary[600]}
                         >
-                          다음 스캔: 평일 ET 18시 이후 · 아래에서 최근 신호를
-                          확인하세요
+                          {lastShownSignal
+                            ? `마지막 신호: ${lastShownSignal.symbol} · ${lastShownSignal.signalDate.slice(5)} (${isExt(lastShownSignal) ? "확장" : "확대"})`
+                            : "다음 스캔: 평일 ET 18시 이후"}
                         </StyledText>
                       </View>
                     </View>
@@ -2280,6 +2338,13 @@ const styles = StyleSheet.create({
   alertsEmptyText: {
     flex: 1,
     gap: 2,
+  },
+  hiddenBlock: {
+    gap: 2,
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.primary[700],
   },
   historySection: {
     marginTop: spacing["2xl"],
