@@ -6,6 +6,7 @@
   "build": {
     "development": {
       "node": "22.14.0",
+      "corepack": true,
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
@@ -14,11 +15,13 @@
     },
     "preview": {
       "node": "22.14.0",
+      "corepack": true,
       "distribution": "internal",
       "autoIncrement": true
     },
     "production": {
       "node": "22.14.0",
+      "corepack": true,
       "autoIncrement": true
     }
   },
