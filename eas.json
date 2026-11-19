@@ -5,6 +5,7 @@
   },
   "build": {
     "development": {
+      "node": "22.14.0",
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
@@ -12,10 +13,12 @@
       }
     },
     "preview": {
+      "node": "22.14.0",
       "distribution": "internal",
       "autoIncrement": true
     },
     "production": {
+      "node": "22.14.0",
       "autoIncrement": true
     }
   },
