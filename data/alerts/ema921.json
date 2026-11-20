@@ -1,88 +1,28 @@
 {
-  "scannedAt": "2026-11-19T17:33:28.338Z",
-  "scanDateET": "2026-11-19",
+  "scannedAt": "2026-11-20T17:08:58.506Z",
+  "scanDateET": "2026-11-20",
   "total": 5000,
-  "count": 8,
+  "count": 2,
   "alerts": [
     {
-      "symbol": "YMM",
-      "close": 8.86,
-      "ema9": 8.6349,
-      "ema21": 8.6219,
-      "gapPct": 0.15,
-      "changePct": 5.73,
-      "atrPct": 3.58,
-      "avgVolume10": 7762669
+      "symbol": "DHI",
+      "close": 147.785,
+      "ema9": 146.0674,
+      "ema21": 146.0672,
+      "gapPct": 0,
+      "changePct": 3.61,
+      "atrPct": 3.8,
+      "avgVolume10": 2508437
     },
     {
-      "symbol": "PDD",
-      "close": 87.02,
-      "ema9": 80.3401,
-      "ema21": 80.0502,
-      "gapPct": 0.36,
-      "changePct": 12.36,
-      "atrPct": 3.13,
-      "avgVolume10": 6807936
-    },
-    {
-      "symbol": "TENB",
-      "close": 46.23,
-      "ema9": 43.1679,
-      "ema21": 43.1221,
-      "gapPct": 0.11,
-      "changePct": 3.47,
-      "atrPct": 7.17,
-      "avgVolume10": 2931959
-    },
-    {
-      "symbol": "VITL",
-      "close": 9.76,
-      "ema9": 9.3537,
-      "ema21": 9.3503,
-      "gapPct": 0.04,
-      "changePct": 1.67,
-      "atrPct": 8.24,
-      "avgVolume10": 1617170
-    },
-    {
-      "symbol": "CHRW",
-      "close": 139.58,
-      "ema9": 135.4984,
-      "ema21": 135.2794,
-      "gapPct": 0.16,
-      "changePct": 1.53,
-      "atrPct": 3.76,
-      "avgVolume10": 1584456
-    },
-    {
-      "symbol": "GNRC",
-      "close": 210.31,
-      "ema9": 195.7698,
-      "ema21": 194.9786,
-      "gapPct": 0.41,
-      "changePct": 2.37,
-      "atrPct": 5.95,
-      "avgVolume10": 1133384
-    },
-    {
-      "symbol": "HLIT",
-      "close": 10.66,
-      "ema9": 10.3849,
-      "ema21": 10.3738,
-      "gapPct": 0.11,
-      "changePct": -0.74,
-      "atrPct": 5.12,
-      "avgVolume10": 1106255
-    },
-    {
-      "symbol": "WWD",
-      "close": 331.61,
-      "ema9": 323.0408,
-      "ema21": 322.5883,
-      "gapPct": 0.14,
-      "changePct": 3.93,
-      "atrPct": 4.68,
-      "avgVolume10": 720949
+      "symbol": "SLDE",
+      "close": 27.04,
+      "ema9": 26.6156,
+      "ema21": 26.5583,
+      "gapPct": 0.22,
+      "changePct": 0.71,
+      "atrPct": 3.7,
+      "avgVolume10": 1070984
     }
   ]
 }
