@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-11-24T13:47:35.357Z",
+  "updatedAt": "2026-11-24T16:03:47.676Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "MBX",
+      "close": 55.57,
+      "ema9": 53.7549,
+      "ema21": 53.7333,
+      "atrPct": 7.25,
+      "declinePct": 34.6,
+      "baseDays": 166,
+      "extPct": 3.42,
+      "belowDays": 2,
+      "atrRank252": 55.1,
+      "vexp63": 0.75,
+      "votes": 0,
+      "gcDays": 301,
+      "signalDate": "2026-11-24"
+    },
     {
       "symbol": "MPWR",
       "close": 1333.88,
