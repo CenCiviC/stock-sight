@@ -1,28 +1,208 @@
 {
-  "scannedAt": "2026-11-20T17:08:58.506Z",
-  "scanDateET": "2026-11-20",
+  "scannedAt": "2026-11-24T13:47:35.359Z",
+  "scanDateET": "2026-11-23",
   "total": 5000,
-  "count": 2,
+  "count": 20,
   "alerts": [
     {
-      "symbol": "DHI",
-      "close": 147.785,
-      "ema9": 146.0674,
-      "ema21": 146.0672,
-      "gapPct": 0,
-      "changePct": 3.61,
-      "atrPct": 3.8,
-      "avgVolume10": 2508437
+      "symbol": "JHX",
+      "close": 27.84,
+      "ema9": 27.3557,
+      "ema21": 27.3202,
+      "gapPct": 0.13,
+      "changePct": 5.14,
+      "atrPct": 4.32,
+      "avgVolume10": 17496250
     },
     {
-      "symbol": "SLDE",
-      "close": 27.04,
-      "ema9": 26.6156,
-      "ema21": 26.5583,
-      "gapPct": 0.22,
-      "changePct": 0.71,
-      "atrPct": 3.7,
-      "avgVolume10": 1070984
+      "symbol": "DOC",
+      "close": 20.01,
+      "ema9": 19.6666,
+      "ema21": 19.6507,
+      "gapPct": 0.08,
+      "changePct": 4,
+      "atrPct": 2.55,
+      "avgVolume10": 5787720
+    },
+    {
+      "symbol": "TENB",
+      "close": 45.81,
+      "ema9": 43.2339,
+      "ema21": 43.1121,
+      "gapPct": 0.28,
+      "changePct": 9.1,
+      "atrPct": 7.44,
+      "avgVolume10": 3222560
+    },
+    {
+      "symbol": "HON",
+      "close": 221.97,
+      "ema9": 219.9799,
+      "ema21": 219.8867,
+      "gapPct": 0.04,
+      "changePct": 4.39,
+      "atrPct": 3.03,
+      "avgVolume10": 2601440
+    },
+    {
+      "symbol": "A",
+      "close": 176.04,
+      "ema9": 174.5039,
+      "ema21": 174.3648,
+      "gapPct": 0.08,
+      "changePct": 3.32,
+      "atrPct": 3.05,
+      "avgVolume10": 2059790
+    },
+    {
+      "symbol": "CHRW",
+      "close": 137.17,
+      "ema9": 135.3831,
+      "ema21": 135.2223,
+      "gapPct": 0.12,
+      "changePct": 2.37,
+      "atrPct": 3.97,
+      "avgVolume10": 1856290
+    },
+    {
+      "symbol": "AAP",
+      "close": 46.11,
+      "ema9": 45.5684,
+      "ema21": 45.5024,
+      "gapPct": 0.14,
+      "changePct": 2.4,
+      "atrPct": 4.69,
+      "avgVolume10": 1674520
+    },
+    {
+      "symbol": "NABL",
+      "close": 5.06,
+      "ema9": 4.8459,
+      "ema21": 4.8294,
+      "gapPct": 0.34,
+      "changePct": 8.35,
+      "atrPct": 4.75,
+      "avgVolume10": 1646380
+    },
+    {
+      "symbol": "KYMR",
+      "close": 150.37,
+      "ema9": 128.4725,
+      "ema21": 125.7175,
+      "gapPct": 2.19,
+      "changePct": 30.4,
+      "atrPct": 6.24,
+      "avgVolume10": 1535490
+    },
+    {
+      "symbol": "RMD",
+      "close": 239.38,
+      "ema9": 238.2672,
+      "ema21": 238.2046,
+      "gapPct": 0.03,
+      "changePct": 1.59,
+      "atrPct": 3.45,
+      "avgVolume10": 1136450
+    },
+    {
+      "symbol": "OPTX",
+      "close": 7.25,
+      "ema9": 6.2739,
+      "ema21": 6.2614,
+      "gapPct": 0.2,
+      "changePct": 15.26,
+      "atrPct": 12.65,
+      "avgVolume10": 1062090
+    },
+    {
+      "symbol": "MPWR",
+      "close": 1333.88,
+      "ema9": 1297.5992,
+      "ema21": 1295.805,
+      "gapPct": 0.14,
+      "changePct": 16.8,
+      "atrPct": 7.89,
+      "avgVolume10": 1015580
+    },
+    {
+      "symbol": "PPC",
+      "close": 28.36,
+      "ema9": 28.2529,
+      "ema21": 28.2492,
+      "gapPct": 0.01,
+      "changePct": -0.84,
+      "atrPct": 4.47,
+      "avgVolume10": 959230
+    },
+    {
+      "symbol": "ALV",
+      "close": 119.72,
+      "ema9": 119.0478,
+      "ema21": 119.0209,
+      "gapPct": 0.02,
+      "changePct": 4.28,
+      "atrPct": 3,
+      "avgVolume10": 794590
+    },
+    {
+      "symbol": "FOXF",
+      "close": 17.48,
+      "ema9": 17.0703,
+      "ema21": 17.0559,
+      "gapPct": 0.08,
+      "changePct": 8.84,
+      "atrPct": 5.08,
+      "avgVolume10": 665520
+    },
+    {
+      "symbol": "MATW",
+      "close": 20.22,
+      "ema9": 19.4247,
+      "ema21": 19.3748,
+      "gapPct": 0.26,
+      "changePct": 4.28,
+      "atrPct": 3.58,
+      "avgVolume10": 639850
+    },
+    {
+      "symbol": "EPC",
+      "close": 28.63,
+      "ema9": 28.3326,
+      "ema21": 28.3211,
+      "gapPct": 0.04,
+      "changePct": 0.56,
+      "atrPct": 4.42,
+      "avgVolume10": 592540
+    },
+    {
+      "symbol": "VC",
+      "close": 84.1,
+      "ema9": 80.4416,
+      "ema21": 80.23,
+      "gapPct": 0.26,
+      "changePct": 5.06,
+      "atrPct": 4,
+      "avgVolume10": 592160
+    },
+    {
+      "symbol": "CBLL",
+      "close": 29.29,
+      "ema9": 27.0713,
+      "ema21": 26.7838,
+      "gapPct": 1.07,
+      "changePct": 6.94,
+      "atrPct": 5.25,
+      "avgVolume10": 528500
+    },
+    {
+      "symbol": "OSK",
+      "close": 140.47,
+      "ema9": 138.0635,
+      "ema21": 137.8062,
+      "gapPct": 0.19,
+      "changePct": 7.63,
+      "atrPct": 4.36,
+      "avgVolume10": 523710
     }
   ]
 }

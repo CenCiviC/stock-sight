@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-11-20T17:08:58.505Z",
+  "updatedAt": "2026-11-24T13:47:35.357Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "MPWR",
+      "close": 1333.88,
+      "ema9": 1297.5992,
+      "ema21": 1295.805,
+      "atrPct": 7.89,
+      "declinePct": 34.4,
+      "baseDays": 251,
+      "extPct": 2.94,
+      "belowDays": 1,
+      "atrRank252": 96.4,
+      "vexp63": 0.9,
+      "votes": 1,
+      "gcDays": null,
+      "signalDate": "2026-11-23"
+    },
     {
       "symbol": "DIOD",
       "close": 87.17,

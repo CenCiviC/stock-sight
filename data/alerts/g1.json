@@ -1,7 +1,23 @@
 {
-  "scannedAt": "2026-11-20T17:08:58.504Z",
-  "scanDateET": "2026-11-20",
+  "scannedAt": "2026-11-24T13:47:35.355Z",
+  "scanDateET": "2026-11-23",
   "total": 5000,
-  "count": 0,
-  "alerts": []
+  "count": 1,
+  "alerts": [
+    {
+      "symbol": "MPWR",
+      "close": 1333.88,
+      "ema9": 1297.5992,
+      "ema21": 1295.805,
+      "atrPct": 7.89,
+      "declinePct": 34.4,
+      "baseDays": 251,
+      "extPct": 2.94,
+      "belowDays": 1,
+      "atrRank252": 96.4,
+      "vexp63": 0.9,
+      "votes": 1,
+      "gcDays": null
+    }
+  ]
 }
