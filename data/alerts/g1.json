@@ -1,23 +1,38 @@
 {
-  "scannedAt": "2026-11-24T16:03:47.675Z",
-  "scanDateET": "2026-11-24",
+  "scannedAt": "2026-11-25T15:46:21.066Z",
+  "scanDateET": "2026-11-25",
   "total": 5000,
-  "count": 1,
+  "count": 2,
   "alerts": [
     {
-      "symbol": "MBX",
-      "close": 55.57,
-      "ema9": 53.7549,
-      "ema21": 53.7333,
-      "atrPct": 7.25,
-      "declinePct": 34.6,
-      "baseDays": 166,
-      "extPct": 3.42,
-      "belowDays": 2,
-      "atrRank252": 55.1,
-      "vexp63": 0.75,
-      "votes": 0,
-      "gcDays": 301
+      "symbol": "ZS",
+      "close": 218.565,
+      "ema9": 211.6838,
+      "ema21": 211.1752,
+      "atrPct": 7.03,
+      "declinePct": 60.7,
+      "baseDays": 159,
+      "extPct": 3.5,
+      "belowDays": 13,
+      "atrRank252": 89.6,
+      "vexp63": 1.62,
+      "votes": 2,
+      "gcDays": 47
+    },
+    {
+      "symbol": "STEP",
+      "close": 45.5,
+      "ema9": 45.1263,
+      "ema21": 45.109,
+      "atrPct": 6.11,
+      "declinePct": 50.1,
+      "baseDays": 105,
+      "extPct": 0.87,
+      "belowDays": 3,
+      "atrRank252": 87.3,
+      "vexp63": 0.66,
+      "votes": 1,
+      "gcDays": null
     }
   ]
 }
