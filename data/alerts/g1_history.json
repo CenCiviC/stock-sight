@@ -1,7 +1,23 @@
 {
-  "updatedAt": "2026-11-25T15:46:21.068Z",
+  "updatedAt": "2026-11-27T18:22:17.015Z",
   "keepDays": 120,
   "entries": [
+    {
+      "symbol": "CVNA",
+      "close": 70.18,
+      "ema9": 68.7278,
+      "ema21": 68.5842,
+      "atrPct": 6.01,
+      "declinePct": 44.1,
+      "baseDays": 168,
+      "extPct": 2.33,
+      "belowDays": 1,
+      "atrRank252": 68.2,
+      "vexp63": 0.89,
+      "votes": 1,
+      "gcDays": null,
+      "signalDate": "2026-11-27"
+    },
     {
       "symbol": "ZS",
       "close": 218.565,
